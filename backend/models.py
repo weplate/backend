@@ -65,7 +65,7 @@ class MealSelection(models.Model):
     school = models.ForeignKey(to=School, on_delete=models.CASCADE)
 
 
-class Profile(models.Model):
+class StudentProfile(models.Model):
     user = models.ForeignKey(to=User, on_delete=models.CASCADE)
     school = models.ForeignKey(to=School, on_delete=models.CASCADE)
 
@@ -109,6 +109,12 @@ class Profile(models.Model):
     allergies = models.ManyToManyField(to=Ingredient)
 
 
+class SchoolProfile(models.Model):
+    name = models.CharField(max_length=64)
+    user = models.ForeignKey(to=User, on_delete=models.CASCADE)
+    school = models.ForeignKey(to=School, on_delete=models.CASCADE)
+
+
 # Analytics
 class LogMealItemSwitch(models.Model):
     item_from = models.ForeignKey(to=MealItem, on_delete=models.CASCADE, related_name='item_from')
@@ -118,7 +124,7 @@ class LogMealItemSwitch(models.Model):
 # TODO: Make this name better
 class LogMeal(models.Model):
     # Basic info about who/when
-    profile = models.ForeignKey(to=Profile, on_delete=models.CASCADE)
+    profile = models.ForeignKey(to=StudentProfile, on_delete=models.CASCADE)
     timestamp = models.DateTimeField()
 
     # what meal/items is this tied to?
@@ -133,7 +139,7 @@ class LogMeal(models.Model):
 
 class LogUsageAnalytics(models.Model):
     # Basic info about who/when
-    profile = models.ForeignKey(to=Profile, on_delete=models.CASCADE)
+    profile = models.ForeignKey(to=StudentProfile, on_delete=models.CASCADE)
     timestamp = models.DateTimeField()  # When was the log reported
     track_duration = models.DurationField()  # How long was the logging period
 
