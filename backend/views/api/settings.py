@@ -15,24 +15,19 @@ def pk_list_check(table):
     return lambda o: type(o) == list and all(map(pk_check(table), o))
 
 
-def model_choices_check(l):
-    def func(o):
-        for prop, prop_name in l:
-            if prop == o:
-                return True
-        return False
-
-    return func
+def fn_list_check(fn):
+    return lambda o: type(o) == list and all(map(fn, o))
 
 
 STUDENT_PROPS = {
     'school': pk_check(School),
     'name': type_check(str),
     'height': type_check(float),
-    'age': type_check(int),
     'weight': type_check(float),
-    'sex': model_choices_check(StudentProfile.SEXES),
-    'health_goal': model_choices_check(StudentProfile.HEALTH_GOALS),
+
+    'sex': StudentProfile.valid_sex,
+    'health_goal': StudentProfile.valid_health_goal,
+
     'ban': pk_list_check(MealItem),
     'favour': pk_list_check(MealItem),
     'allergies': pk_list_check(Ingredient)

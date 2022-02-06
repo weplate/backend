@@ -21,8 +21,11 @@ class NutritionalInfo(models.Model):
 
     # Macronutrients
     calories = models.FloatField(verbose_name='Calories (cal)', default=0)
+    carbohydrate = models.FloatField(verbose_name='Carbohydrates (g)', default=0)
     protein = models.FloatField(verbose_name='Protein (g)', default=0)
-    fat = models.FloatField(verbose_name='Protein (g)', default=0)
+    unsaturated_fat = models.FloatField(verbose_name='Unsaturated Fat (g)', default=0)
+    saturated_fat = models.FloatField(verbose_name='Saturated Fat (g)', default=0)
+    trans_fat = models.FloatField(verbose_name='Trans Fat (g)', default=0)
 
     # Micronutrients
     sugar = models.FloatField(verbose_name='Sugar (g)', default=0)
@@ -33,9 +36,9 @@ class NutritionalInfo(models.Model):
     calcium = models.FloatField(verbose_name='Calcium (mg)', default=0)
     iron = models.FloatField(verbose_name='Iron (mg)', default=0)
 
-    vitamin_d = models.FloatField(verbose_name='Vitamin D (%)', default=0)
-    vitamin_c = models.FloatField(verbose_name='Vitamin C (%)', default=0)
-    vitamin_a = models.FloatField(verbose_name='Vitamin A (%)', default=0)
+    vitamin_d = models.FloatField(verbose_name='Vitamin D (IU)', default=0)
+    vitamin_c = models.FloatField(verbose_name='Vitamin C (mg)', default=0)
+    vitamin_a = models.FloatField(verbose_name='Vitamin A (RE)', default=0)
 
 
 class Ingredient(models.Model):
@@ -45,6 +48,7 @@ class Ingredient(models.Model):
 
 class MealItem(models.Model):
     name = models.CharField(max_length=64, unique=True)
+    station = models.CharField(max_length=64)
     graphic = models.FileField(upload_to=MEAL_ITEM_GRAPHICS, null=True)
 
     # Ingredients stuff
@@ -74,8 +78,10 @@ class StudentProfile(models.Model):
 
     # Biological Information and Diet Plan
     height = models.FloatField(verbose_name='Height (m)')
-    age = models.IntegerField(verbose_name='Age (years)')
     weight = models.FloatField(verbose_name='Weight (kg)')
+    birthdate = models.DateField(verbose_name='Birthdate')
+    meals = models.JSONField(verbose_name='Meals Eaten')
+    meal_length = models.FloatField(verbose_name='Meal Length (minutes)')
 
     # Choice stuff
     LOSE_WEIGHT = 'lose_weight'
@@ -100,8 +106,60 @@ class StudentProfile(models.Model):
         (FEMALE, 'Female')
     ]
 
+    MILD = 'mild'
+    MODERATE = 'moderate'
+    HEAVY = 'heavy'
+    EXTREME = 'extreme'
+
+    ACTIVITY_LEVELS = [
+        (MILD, 'Mild Activity'),
+        (MODERATE, 'Moderate Activity'),
+        (HEAVY, 'Heavy or Labour Intensive Activity'),
+        (EXTREME, 'Extreme Activity')
+    ]
+
+    # This one will be written differently since it's not "really" a choicefield
+    BREAKFAST = 'breakfast'
+    MORN_SNACK = 'morning_snack'
+    LUNCH = 'lunch'
+    AFT_SNACK = 'afternoon_snack'
+    DINNER = 'dinner'
+    EVE_SNACK = 'evening_snack'
+
+    MEALS = [
+        (BREAKFAST, 'Breakfast'),
+        (MORN_SNACK, 'Morning Snack'),
+        (LUNCH, 'Lunch'),
+        (AFT_SNACK, 'Afternoon Snack'),
+        (DINNER, 'Dinner'),
+        (EVE_SNACK, 'Evening Snack')
+    ]
+
     sex = models.CharField(max_length=64, verbose_name='Sex', choices=SEXES)
     health_goal = models.CharField(max_length=64, verbose_name='Health Goal', choices=HEALTH_GOALS)
+    activity_level = models.CharField(max_length=64, verbose_name='Activity Level', choices=ACTIVITY_LEVELS)
+
+    grad_year = models.IntegerField()
+
+    @staticmethod
+    def _valid_option(opt_list, opt):
+        return any((opt == opt_key for opt_key, opt_name in opt_list))
+
+    @classmethod
+    def valid_sex(cls, o):
+        return StudentProfile._valid_option(cls.SEXES, o)
+
+    @classmethod
+    def valid_health_goal(cls, o):
+        return StudentProfile._valid_option(cls.HEALTH_GOALS, o)
+
+    @classmethod
+    def valid_activity_level(cls, o):
+        return StudentProfile._valid_option(cls.ACTIVITY_LEVELS, o)
+
+    @classmethod
+    def valid_meal(cls, o):
+        return StudentProfile._valid_option(cls.MEALS, o)
 
     # banning/favouring meal items
     ban = models.ManyToManyField(to=MealItem, related_name='ban')
