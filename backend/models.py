@@ -1,3 +1,5 @@
+from django.utils.translation import gettext_lazy as _
+from django.core.exceptions import ValidationError
 from django.db import models
 from django.contrib.auth.models import User
 
@@ -14,6 +16,9 @@ class School(models.Model):
     @property
     def meal_items(self):
         return MealItem.objects.get(school=self)
+
+    def __str__(self):
+        return self.name
 
 
 class NutritionalInfo(models.Model):
@@ -45,6 +50,9 @@ class Ingredient(models.Model):
     name = models.CharField(max_length=64)
     school = models.ForeignKey(to=School, on_delete=models.CASCADE)
 
+    def __str__(self):
+        return f'{self.name} @ {self.school.name}'
+
 
 class MealItem(models.Model):
     name = models.CharField(max_length=64, unique=True)
@@ -57,6 +65,9 @@ class MealItem(models.Model):
 
     # School it belongs to
     school = models.ForeignKey(to=School, on_delete=models.CASCADE)
+
+    def __str__(self):
+        return f'{self.name} @ station {self.station} @ {self.school.name}'
 
 
 class MealSelection(models.Model):
@@ -165,6 +176,16 @@ class StudentProfile(models.Model):
     ban = models.ManyToManyField(to=MealItem, related_name='ban')
     favour = models.ManyToManyField(to=MealItem, related_name='favour')
     allergies = models.ManyToManyField(to=Ingredient)
+
+    def clean_fields(self, exclude=None):
+        super().clean_fields(exclude)
+        if 'meal' not in exclude:
+            for meal in self.meals:
+                if not StudentProfile.valid_meal(meal):
+                    raise ValidationError({'meal': f'Value \'{meal}\' is not a valid choice.'})
+
+    def __str__(self):
+        return f'{self.name} @ {self.school.name} (Email: {self.user.username}'
 
 
 class SchoolProfile(models.Model):

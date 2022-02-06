@@ -34,7 +34,7 @@ STUDENT_PROPS = {
 }
 
 
-@auth_endpoint(table=StudentProfile)
+@auth_endpoint(model=StudentProfile)
 def update(request):
     profile = StudentProfile.objects.get(user=request.user)
     upd = []
@@ -51,7 +51,7 @@ def update(request):
     return ok_response(f'Updated settings {" ".join(upd)}')
 
 
-@auth_endpoint(table=StudentProfile)
+@auth_endpoint(model=StudentProfile)
 def fetch(request):
     resp = {}
     profile = StudentProfile.objects.get(user=request.user)

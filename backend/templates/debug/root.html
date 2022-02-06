@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>WePlate Debug View</title>
+</head>
+<body>
+
+<h1>WePlate Debug View</h1>
+
+<h2>Schools</h2>
+
+<div>
+    <ul>
+        {% for school in schools %}
+            <li>{{ school }}</li>
+        {% endfor %}
+    </ul>
+</div>
+
+<h2>Student Profiles</h2>
+
+<div>
+    <ul>
+        {% for user in student_profiles %}
+            <li>{{ user }}</li>
+        {% endfor %}
+    </ul>
+</div>
+
+<h2>Meals</h2>
+
+<div>
+    <ul>
+        {% for meal in meals %}
+            <li>{{ meal }}</li>
+        {% endfor %}
+    </ul>
+</div>
+
+<h2>Meal Items</h2>
+
+<div>
+    <ul>
+        {% for item in meal_items %}
+            <li>{{ item }}</li>
+        {% endfor %}
+    </ul>
+</div>
+
+<h2>Ingredients</h2>
+
+<div>
+    <ul>
+        {% for ing in ingredients %}
+            <li>{{ ing }}</li>
+        {% endfor %}
+    </ul>
+</div>
+
+<h2>School Accounts</h2>
+
+<div>
+    <ul>
+        {% for acc in school_profiles %}
+            <li>{{ acc }}</li>
+        {% endfor %}
+    </ul>
+</div>
+
+</body>
+</html>
