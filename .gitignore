@@ -1,6 +1,5 @@
 # Venv/Intellij
 venv/
-.idea/
 
 # Django
 db.sqlite3
