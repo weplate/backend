@@ -49,7 +49,7 @@ class UserTestCase(TestCase):
             'password': 'goodpassword123',
             'school': self.school.pk,
             'name': 'Alex Hu',
-            'height': 0.5,
+            'height': 50,
             'weight': 7000.,  # that's TLC worthy!
             'birthdate': datetime.date(2003, 11, 24).isoformat(),
             'meals': ['breakfast', 'lunch'],  # alex needs to stay fit

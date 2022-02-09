@@ -1,7 +1,6 @@
-from django.utils.translation import gettext_lazy as _
+from django.contrib.auth.models import User
 from django.core.exceptions import ValidationError
 from django.db import models
-from django.contrib.auth.models import User
 
 MEAL_ITEM_GRAPHICS = 'assets/meal_items/'
 
@@ -88,7 +87,7 @@ class StudentProfile(models.Model):
     name = models.CharField(max_length=256)
 
     # Biological Information and Diet Plan
-    height = models.FloatField(verbose_name='Height (m)')
+    height = models.FloatField(verbose_name='Height (cm)')
     weight = models.FloatField(verbose_name='Weight (kg)')
     birthdate = models.DateField(verbose_name='Birthdate')
     meals = models.JSONField(verbose_name='Meals Eaten')

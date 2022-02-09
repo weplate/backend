@@ -1,6 +1,21 @@
 import datetime
+from recordclass import recordclass
 
-from backend.models import NutritionalInfo, StudentProfile
+NutritionalInfo = recordclass('NutritionalInfo', 'calories carbohydrate protein trans_fat saturated_fat '
+                                                 'unsaturated_fat sugar cholesterol fiber sodium potassium calcium '
+                                                 'iron vitamin_d vitamin_c vitamin_a name')
+StudentProfile = recordclass('StudentProfile', 'sex activity_level health_goal weight height birthdate')
+
+StudentProfile.MILD = 'mild'
+StudentProfile.MODERATE = 'moderate'
+StudentProfile.HEAVY = 'heavy'
+StudentProfile.EXTREME = 'extreme'
+
+StudentProfile.MALE = 'male'
+StudentProfile.FEMALE = 'female'
+
+StudentProfile.LOSE_WEIGHT = 'lose_weight'
+StudentProfile.BUILD_MUSCLE = 'build_muscle'
 
 DEFAULT_REQS = dict(
     name='Nutritional Requirements',
@@ -24,7 +39,6 @@ DEFAULT_REQS = dict(
     vitamin_c=16,
     vitamin_a=0,
 )
-
 
 ACTIVITY_LEVEL_COEFF = {
     StudentProfile.MILD: 1.3,
@@ -60,17 +74,18 @@ def nutritional_info_for(profile: StudentProfile) -> NutritionalInfo:
 
 
 if __name__ == '__main__':
-
-    sex = float(input('Input sex: '))
+    sex = input('Input sex: ')
     activity_level = input('Activity level: ')
+    health_goal = input('Health goal: ')
     weight = float(input('Weight (kg): '))
     height = float(input('Height (cm): '))
-    birthdate = datetime.date.fromisoformat(input('Birthdate (ISO 8061 format):'))
+    birthdate = datetime.date.fromisoformat(input('Birthdate (ISO 8061 format): '))
 
-    profile = StudentProfile(sex=sex, activity_level=activity_level, height=height, weight=weight, birthdate=birthdate)
-    profile.clean()
+    profile = StudentProfile(sex=sex, activity_level=activity_level, height=height, weight=weight, birthdate=birthdate,
+                             health_goal=health_goal)
 
     reqs = nutritional_info_for(profile)
-    for k, v in reqs.__dict__.items():
+    for k in DEFAULT_REQS.keys():
+        v = getattr(reqs, k)
         if not k.startswith('_'):
             print(f'{k}={v}')
