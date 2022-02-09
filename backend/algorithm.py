@@ -57,20 +57,3 @@ def nutritional_info_for(profile: StudentProfile) -> NutritionalInfo:
         reqs.calories += 250
 
     return reqs
-
-
-if __name__ == '__main__':
-
-    sex = float(input('Input sex: '))
-    activity_level = input('Activity level: ')
-    weight = float(input('Weight (kg): '))
-    height = float(input('Height (cm): '))
-    birthdate = datetime.date.fromisoformat(input('Birthdate (ISO 8061 format):'))
-
-    profile = StudentProfile(sex=sex, activity_level=activity_level, height=height, weight=weight, birthdate=birthdate)
-    profile.clean()
-
-    reqs = nutritional_info_for(profile)
-    for k, v in reqs.__dict__.items():
-        if not k.startswith('_'):
-            print(f'{k}={v}')

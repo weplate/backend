@@ -84,8 +84,7 @@ if __name__ == '__main__':
     profile = StudentProfile(sex=sex, activity_level=activity_level, height=height, weight=weight, birthdate=birthdate,
                              health_goal=health_goal)
 
+    print()
     reqs = nutritional_info_for(profile)
     for k in DEFAULT_REQS.keys():
-        v = getattr(reqs, k)
-        if not k.startswith('_'):
-            print(f'{k}={v}')
+        print(f'{k}={getattr(reqs, k)}')
