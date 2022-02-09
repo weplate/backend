@@ -74,12 +74,12 @@ def nutritional_info_for(profile: StudentProfile) -> NutritionalInfo:
 
 
 if __name__ == '__main__':
-    sex = input('Input sex: ')
-    activity_level = input('Activity level: ')
-    health_goal = input('Health goal: ')
+    sex = input('Input sex (male/female): ')
+    activity_level = input('Activity level (mild/moderate/heavy/extreme): ')
+    health_goal = input('Health goal (lose_weight/build_muscle/anything else): ')
     weight = float(input('Weight (kg): '))
     height = float(input('Height (cm): '))
-    birthdate = datetime.date.fromisoformat(input('Birthdate (ISO 8061 format): '))
+    birthdate = datetime.date.fromisoformat(input('Birthdate (ISO 8061 format) (yyyy-mm-dd): '))
 
     profile = StudentProfile(sex=sex, activity_level=activity_level, height=height, weight=weight, birthdate=birthdate,
                              health_goal=health_goal)
