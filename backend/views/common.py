@@ -29,10 +29,10 @@ def auth_endpoint(model):
 
     def decorator(func):
         @functools.wraps(func)
-        def wrapper(request: WSGIRequest):
-            if request.user.is_authenticated():
+        def wrapper(request: WSGIRequest, *args, **kwargs):
+            if request.user.is_authenticated:
                 if model.objects.filter(user__id=request.user.id).exists():
-                    return func(request)
+                    return func(request, *args, **kwargs)
                 else:
                     return err_response('Not authenticated')
             else:

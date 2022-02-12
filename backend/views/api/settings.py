@@ -48,6 +48,8 @@ def update(request):
             else:
                 return err_response(f'Could not update setting, ')
 
+    profile.save()
+
     return ok_response(f'Updated settings {" ".join(upd)}')
 
 

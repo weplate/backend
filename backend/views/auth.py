@@ -1,4 +1,4 @@
-from django.contrib.auth import login, logout
+from django.contrib.auth import login, logout, authenticate
 from django.contrib.auth.models import User
 from django.core.exceptions import ValidationError
 from django.db import IntegrityError
@@ -75,10 +75,14 @@ def view_login(request):
     auth_type = request.POST.get('type', None)
 
     try:
+        auth_user = authenticate(username=email, password=password)
+        if auth_user is None:
+            return err_response('Invalid login')
+
         if auth_type == 'school':
-            user_obj = SchoolProfile.objects.get(user__username=email, user__password=password).user
+            user_obj = SchoolProfile.objects.get(user=auth_user).user
         elif auth_type == 'student':
-            user_obj = StudentProfile.objects.get(user__username=email, user__password=password).user
+            user_obj = StudentProfile.objects.get(user=auth_user).user
         else:
             return err_response('Invalid auth type, should be \'school\' or \'student\'')
     except StudentProfile.DoesNotExist as e:
@@ -88,7 +92,7 @@ def view_login(request):
         login(request, user_obj)
         return ok_response()
     else:
-        return err_response('Invalid email + password combination')
+        return err_response('Login does not match school or student account')
 
 
 def view_logout(request: HttpRequest):

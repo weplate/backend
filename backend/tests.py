@@ -109,3 +109,62 @@ class AuthTestCase(UserTestCase):
 
     def test_auth_school(self):
         self.assertFalse(True, msg='TODO')
+
+
+class DataFetchTestCase(UserTestCase):
+    fixtures = ['test_school.yaml', 'test_user.yaml']
+
+    def test_schools(self):
+        c = Client()
+        res = c.get('/api/schools/').json()
+        self.assertFalse(res['error'])
+        self.assertEqual(len(res['data']), 1)
+
+        for school in res['data']:
+            self.assertIn('pk', school)
+
+    def test_meals(self):
+        c = Client()
+        print(c.post('/login/', {
+            'email': self.pdict_alex_hu['email'],
+            'password': self.pdict_alex_hu['password'],
+            'type': 'student'
+        }).json())
+
+        res = c.get('/api/meals/').json()
+        # print(res)
+
+        self.assertFalse(res['error'])
+        for meal in res['data']:
+            self.assertIn('pk', meal)
+
+    def test_items(self):
+        c = Client()
+        print(c.post('/login/', {
+            'email': self.pdict_alex_hu['email'],
+            'password': self.pdict_alex_hu['password'],
+            'type': 'student'
+        }).json())
+
+        meal_id = c.get('/api/meals/').json()['data'][0]['pk']
+        res = c.get(f'/api/items/{meal_id}/').json()
+        # print(res)
+
+        self.assertFalse(res['error'])
+        for item in res['data']:
+            self.assertIn('pk', item)
+
+    def test_ingredients(self):
+        c = Client()
+        print(c.post('/login/', {
+            'email': self.pdict_alex_hu['email'],
+            'password': self.pdict_alex_hu['password'],
+            'type': 'student'
+        }).json())
+
+        res = c.get(f'/api/ingredients/').json()
+        # print(res)
+
+        self.assertFalse(res['error'])
+        for ingredient in res['data']:
+            self.assertIn('pk', ingredient)
