@@ -114,57 +114,48 @@ class AuthTestCase(UserTestCase):
 class DataFetchTestCase(UserTestCase):
     fixtures = ['test_school.yaml', 'test_user.yaml']
 
+    def make_logged_in_client(self):
+        c = Client()
+        self.assertFalse(c.post('/login/', {
+            'email': self.pdict_alex_hu['email'],
+            'password': self.pdict_alex_hu['password'],
+            'type': 'student'
+        }).json()['error'])
+
+        return c
+
+    def check_response_list(self, res: dict):
+        self.assertFalse(res['error'])
+        for x in res['data']:
+            self.assertIn('pk', x)
+
     def test_schools(self):
         c = Client()
         res = c.get('/api/schools/').json()
-        self.assertFalse(res['error'])
+        self.check_response_list(res)
         self.assertEqual(len(res['data']), 1)
 
-        for school in res['data']:
-            self.assertIn('pk', school)
-
     def test_meals(self):
-        c = Client()
-        print(c.post('/login/', {
-            'email': self.pdict_alex_hu['email'],
-            'password': self.pdict_alex_hu['password'],
-            'type': 'student'
-        }).json())
-
+        c = self.make_logged_in_client()
         res = c.get('/api/meals/').json()
         # print(res)
-
-        self.assertFalse(res['error'])
-        for meal in res['data']:
-            self.assertIn('pk', meal)
+        self.check_response_list(res)
 
     def test_items(self):
-        c = Client()
-        print(c.post('/login/', {
-            'email': self.pdict_alex_hu['email'],
-            'password': self.pdict_alex_hu['password'],
-            'type': 'student'
-        }).json())
-
+        c = self.make_logged_in_client()
         meal_id = c.get('/api/meals/').json()['data'][0]['pk']
         res = c.get(f'/api/items/{meal_id}/').json()
         # print(res)
+        self.check_response_list(res)
 
-        self.assertFalse(res['error'])
-        for item in res['data']:
-            self.assertIn('pk', item)
+    def test_school_items(self):
+        c = self.make_logged_in_client()
+        res = c.get(f'/api/school_items/').json()
+        # print(res)
+        self.check_response_list(res)
 
     def test_ingredients(self):
-        c = Client()
-        print(c.post('/login/', {
-            'email': self.pdict_alex_hu['email'],
-            'password': self.pdict_alex_hu['password'],
-            'type': 'student'
-        }).json())
-
+        c = self.make_logged_in_client()
         res = c.get(f'/api/ingredients/').json()
         # print(res)
-
-        self.assertFalse(res['error'])
-        for ingredient in res['data']:
-            self.assertIn('pk', ingredient)
+        self.check_response_list(res)

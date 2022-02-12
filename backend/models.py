@@ -78,6 +78,9 @@ class MealSelection(models.Model):
     # School it belongs to
     school = models.ForeignKey(to=School, on_delete=models.CASCADE)
 
+    def __str__(self):
+        return f'{self.name} (group: {self.group}) @ {self.timestamp.isoformat()} @ {self.school.name}'
+
 
 class StudentProfile(models.Model):
     user = models.ForeignKey(to=User, on_delete=models.CASCADE)
@@ -184,7 +187,7 @@ class StudentProfile(models.Model):
                     raise ValidationError({'meal': f'Value \'{meal}\' is not a valid choice.'})
 
     def __str__(self):
-        return f'{self.name} @ {self.school.name} (Email: {self.user.username}'
+        return f'{self.name} @ {self.school.name} (Email: {self.user.username})'
 
 
 class SchoolProfile(models.Model):

@@ -39,3 +39,11 @@ def items(request, meal_id):
     items = get_object_or_404(MealSelection, pk=meal_id, school=profile.school).items.all()
 
     return json_response({'data': [dict_meal_item(item) for item in items]})
+
+
+@auth_endpoint(StudentProfile)
+def school_items(request):
+    profile = StudentProfile.objects.get(user=request.user)
+    items = get_object_or_404(MealSelection, school=profile.school).items.all()
+
+    return json_response({'data': [dict_meal_item(item) for item in items]})
