@@ -22,6 +22,7 @@ def debug_view(request):
 
 urlpatterns = [
     path('', debug_view, name='root_debug_view'),
+
     path('login/', view_login, name='login'),
     path('logout/', view_logout, name='logout'),
     path('register/', view_register_student, name='register_student'),

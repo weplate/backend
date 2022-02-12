@@ -3,6 +3,10 @@ from django.http import JsonResponse
 
 import functools
 
+from rest_framework import permissions
+
+from backend.models import StudentProfile
+
 
 def json_response(data: dict[str, object], error: bool = False, message: str = 'success') -> JsonResponse:
     return JsonResponse(
@@ -88,3 +92,10 @@ def without_keys(dict_obj: dict, keys: list) -> dict:
         if key in res:
             del res[key]
     return res
+
+
+class IsStudent(permissions.BasePermission):
+    message = 'Must be authenticated as student user'
+
+    def has_permission(self, request, view):
+        return StudentProfile.objects.filter(user=request.user).exists()

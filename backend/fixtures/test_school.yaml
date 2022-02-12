@@ -29,12 +29,18 @@
     name: 'tomato'
     school: 1
 
+- model: backend.NutritionalInfo
+  pk: 1
+  fields:
+    name: 'No Info'
+
 - model: backend.MealItem
   pk: 1
   fields:
     name: 'apple pie'
     station: 'dessert'
     school: 1
+    nutrition: 1
     ingredients: [1]
 - model: backend.MealItem
   pk: 2
@@ -42,6 +48,7 @@
     name: 'anchovy'
     station: 'meal'
     school: 1
+    nutrition: 1
     ingredients: [3]
 - model: backend.MealItem
   pk: 3
@@ -49,6 +56,7 @@
     name: 'pizza'
     station: 'meal'
     school: 1
+    nutrition: 1
     ingredients: [4, 5]
 - model: backend.MealItem
   pk: 4
@@ -56,6 +64,7 @@
     name: 'orange slice'
     station: 'AMD PAYS MINIMUM WAGE'
     school: 1
+    nutrition: 1
     ingredients: [2]
 
 - model: backend.MealSelection

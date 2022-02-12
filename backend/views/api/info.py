@@ -1,49 +1,89 @@
 import datetime
 
 from django.shortcuts import get_object_or_404
+from rest_framework import viewsets, serializers
+from rest_framework.authentication import SessionAuthentication, TokenAuthentication
+from rest_framework.permissions import IsAuthenticated
+from rest_framework.response import Response
 
-from backend.models import School, StudentProfile, Ingredient, MealSelection
-from backend.views.api.api_common import dict_ingredient, dict_school, dict_meal_selection, dict_meal_item
-from backend.views.common import json_response, auth_endpoint
+from backend.models import School, StudentProfile, Ingredient, MealSelection, MealItem, NutritionalInfo
+from backend.views.common import IsStudent
 
 MAX_MEALS = 5
 
 
-def schools(_):
-    return json_response({
-        'data': [dict_school(school) for school in School.objects.all()]
-    })
+class SchoolSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = School
+        fields = '__all__'
 
 
-@auth_endpoint(StudentProfile)
-def ingredients(request):
-    profile = StudentProfile.objects.get(user=request.user)
-
-    return json_response({
-        'data': [dict_ingredient(ingredient) for ingredient in Ingredient.objects.filter(school=profile.school)]
-    })
+class SchoolViewSet(viewsets.ReadOnlyModelViewSet):
+    queryset = School.objects.all()
+    serializer_class = SchoolSerializer
 
 
-@auth_endpoint(StudentProfile)
-def meals(request):
-    profile = StudentProfile.objects.get(user=request.user)
-    meals = MealSelection.objects.filter(school=profile.school, timestamp__gt=datetime.datetime.now()) \
-                .order_by('timestamp')[:MAX_MEALS]
-
-    return json_response({'data': [dict_meal_selection(meal) for meal in meals]})
+class IngredientSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Ingredient
+        fields = '__all__'
 
 
-@auth_endpoint(StudentProfile)
-def items(request, meal_id):
-    profile = StudentProfile.objects.get(user=request.user)
-    items = get_object_or_404(MealSelection, pk=meal_id, school=profile.school).items.all()
+class IngredientViewSet(viewsets.ReadOnlyModelViewSet):
+    authentication_classes = [SessionAuthentication, TokenAuthentication]
+    permission_classes = [IsAuthenticated, IsStudent]
+    serializer_class = IngredientSerializer
 
-    return json_response({'data': [dict_meal_item(item) for item in items]})
+    def get_queryset(self):
+        profile = StudentProfile.objects.get(user=self.request.user)
+        return Ingredient.objects.filter(school=profile.school)
 
 
-@auth_endpoint(StudentProfile)
-def school_items(request):
-    profile = StudentProfile.objects.get(user=request.user)
-    items = get_object_or_404(MealSelection, school=profile.school).items.all()
+class ReadNutritionalInfoSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = NutritionalInfo
+        exclude = ['name', 'id']
 
-    return json_response({'data': [dict_meal_item(item) for item in items]})
+
+class ReadMealItemSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = MealItem
+        exclude = ['school']
+
+    nutrition = ReadNutritionalInfoSerializer()
+
+
+class MealSelectionSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = MealSelection
+        fields = '__all__'
+
+
+class DetailMealSelectionSerializer(MealSelectionSerializer):
+    items = ReadMealItemSerializer(many=True)
+
+
+class MealSelectionViewSet(viewsets.ReadOnlyModelViewSet):
+    authentication_classes = [SessionAuthentication, TokenAuthentication]
+    permission_classes = [IsAuthenticated, IsStudent]
+    serializer_class = MealSelectionSerializer
+
+    def get_queryset(self):
+        profile = StudentProfile.objects.get(user=self.request.user)
+        return MealSelection.objects \
+                    .filter(school=profile.school, timestamp__gte=datetime.datetime.now()) \
+                    .order_by('-timestamp')[:MAX_MEALS]
+
+    def retrieve(self, request, pk=None, *args, **kwargs):
+        meal = get_object_or_404(MealSelection, pk=pk)
+        return Response(DetailMealSelectionSerializer(meal).data)
+
+
+class SchoolMealItemsViewSet(viewsets.ReadOnlyModelViewSet):
+    authentication_classes = [SessionAuthentication, TokenAuthentication]
+    permission_classes = [IsAuthenticated, IsStudent]
+    serializer_class = ReadMealItemSerializer
+
+    def get_queryset(self):
+        profile = StudentProfile.objects.get(user=self.request.user)
+        return MealItem.objects.filter(school=profile.school)

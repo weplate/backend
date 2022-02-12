@@ -11,6 +11,7 @@ Run the following commands:
 python3 install -r requirements.txt
 python3 manage.py createsuperuser
 python3 manage.py makemigrations backend
+python3 manage.py makemigrations authtoken
 python3 manage.py migrate
 ```
 
