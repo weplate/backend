@@ -1,47 +1,29 @@
 from django.test import TestCase
 from django.test.client import Client
 
-from backend.models import School, Ingredient, MealItem
+from backend.models import School, Ingredient, MealItem, MealSelection
 
 import datetime
 
 
 class UserTestCase(TestCase):
+    fixtures = ['test_school.yaml']
+
     def setUp(self):
-        self.school = School(name='Babson')
-        self.school.save()
+        self.school = School.objects.get(pk=1)
 
-        self.i_apple = Ingredient(name='apple', school=self.school)
-        self.i_orange = Ingredient(name='orange', school=self.school)
-        self.i_fish = Ingredient(name='fish', school=self.school)
-        self.i_dough = Ingredient(name='dough', school=self.school)
-        self.i_tomato = Ingredient(name='tomato', school=self.school)
-        for ing in [self.i_apple, self.i_orange, self.i_fish, self.i_dough, self.i_tomato]:
-            ing.save()
+        self.i_apple = Ingredient.objects.get(pk=1)
+        self.i_orange = Ingredient.objects.get(pk=2)
+        self.i_fish = Ingredient.objects.get(pk=3)
+        self.i_dough = Ingredient.objects.get(pk=4)
+        self.i_dough = Ingredient.objects.get(pk=5)
 
-        self.m_apple_pie = MealItem(
-            name='apple pie',
-            station='dessert',
-            school=self.school
-        )
-        self.m_anchovy = MealItem(
-            name='anchovy',
-            station='meal',
-            school=self.school
-        )
-        self.m_pizza = MealItem(
-            name='pizza',
-            station='meal',
-            school=self.school
-        )
-        for mi in [self.m_apple_pie, self.m_anchovy, self.m_pizza]:
-            mi.save()
+        self.m_apple_pie = MealItem.objects.get(pk=1)
+        self.m_anchovy = MealItem.objects.get(pk=2)
+        self.m_pizza = MealItem.objects.get(pk=3)
+        self.m_orange = MealItem.objects.get(pk=4)
 
-        self.m_apple_pie.ingredients.add(self.i_apple)
-        self.m_anchovy.ingredients.add(self.i_fish)
-        self.m_pizza.ingredients.add(self.i_dough, self.i_tomato)
-        for mi in [self.m_apple_pie, self.m_anchovy, self.m_pizza]:
-            mi.save()
+        self.mm_lunch = MealSelection.objects.get(pk=1)
 
         # Creating profiles
         self.pdict_alex_hu = {
@@ -88,7 +70,7 @@ class AuthTestCase(UserTestCase):
         with_replacement_test('invalid primary key', {'school': 6942069})
         with_replacement_test('invalid value', {'weight': 'one million'})
         with_replacement_test('invalid choice (obj)', {'sex': 'amogus'})  # I'm gonna get cancelled for this
-        with_replacement_test('invalid choice (list)', {'meal': 'i eat one meal a day'})
+        with_replacement_test('invalid choice (list)', {'meals': ['i eat one meal a day']})
 
     def test_auth_valid(self):
         c = Client()

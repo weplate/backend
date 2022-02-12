@@ -1,0 +1,68 @@
+- model: backend.School
+  pk: 1
+  fields:
+    name: Special Cafeteria Productions H.S.
+
+- model: backend.Ingredient
+  pk: 1
+  fields:
+    name: 'apple'
+    school: 1
+- model: backend.Ingredient
+  pk: 2
+  fields:
+    name: 'orange'
+    school: 1
+- model: backend.Ingredient
+  pk: 3
+  fields:
+    name: 'fish'
+    school: 1
+- model: backend.Ingredient
+  pk: 4
+  fields:
+    name: 'dough'
+    school: 1
+- model: backend.Ingredient
+  pk: 5
+  fields:
+    name: 'tomato'
+    school: 1
+
+- model: backend.MealItem
+  pk: 1
+  fields:
+    name: 'apple pie'
+    station: 'dessert'
+    school: 1
+    ingredients: [1]
+- model: backend.MealItem
+  pk: 2
+  fields:
+    name: 'anchovy'
+    station: 'meal'
+    school: 1
+    ingredients: [3]
+- model: backend.MealItem
+  pk: 3
+  fields:
+    name: 'pizza'
+    station: 'meal'
+    school: 1
+    ingredients: [4, 5]
+- model: backend.MealItem
+  pk: 4
+  fields:
+    name: 'orange slice'
+    station: 'AMD PAYS MINIMUM WAGE'
+    school: 1
+    ingredients: [2]
+
+- model: backend.MealSelection
+  pk: 1
+  fields:
+    name: Lunch in Sloth's Pit, Winsconsin
+    group: 'lunch'
+    timestamp: 2030-02-14 12:00:00Z
+    items: [1, 2, 3]
+    school: 1

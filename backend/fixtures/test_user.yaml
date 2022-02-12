@@ -1,0 +1,31 @@
+- model: auth.User
+  pk: 1
+  fields:
+    password: 'pbkdf2_sha256$320000$izg69CpVCM8NyrDUXGRZO5$37uvhHPDH8u+m/SuJ3E3ydg3N9pZPg5APMzPpuoejMM='  # pass: goodpassword123
+    last_login: 2000-1-01 00:00:00Z
+    is_superuser: false
+    username: '2021090@appleby.on.ca'
+    first_name: ''
+    last_name: ''
+    email: '2021090@appleby.on.ca'
+    is_staff: False
+    is_active: True
+    date_joined: 2022-2-11 11:23:10Z
+- model: backend.StudentProfile
+  pk: 1
+  fields:
+    user: 1 # Should link to above profile
+    school: 1
+    name: 'Alex Hu'
+    height: 50
+    weight: 7000
+    birthdate: 2003-11-24
+    meals: ['breakfast', 'lunch']
+    meal_length: 23
+    sex: 'male'
+    health_goal: 'athletic_performance'
+    activity_level: 'mild'
+    grad_year: 2025
+    ban: [2]
+    favour: [1, 3]
+    allergies: [3]

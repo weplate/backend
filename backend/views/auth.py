@@ -28,13 +28,18 @@ def view_register_student(request):
     except (School.DoesNotExist, ValueError) as e:
         return err_response(str(e))
 
-    print(props)
+    # print(props)
 
     user = None
     profile = None
     try:
-        user = User(username=request.POST.get('email'), password=request.POST.get('password'))
+        user = User.objects.create_user(
+            username=request.POST.get('email'),
+            email=request.POST.get('email'),
+            password=request.POST.get('password')
+        )
         user.save()
+        print(user.__dict__)
 
         profile = StudentProfile(**without_keys(props, ['ban', 'favour', 'allergies']), user=user)
         profile.full_clean()
@@ -68,8 +73,6 @@ def view_login(request):
     email = request.POST.get('email', '')
     password = request.POST.get('password', '')
     auth_type = request.POST.get('type', None)
-
-    print(email, password)
 
     try:
         if auth_type == 'school':
