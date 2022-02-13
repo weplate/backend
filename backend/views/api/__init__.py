@@ -4,6 +4,7 @@ from rest_framework.authtoken.views import obtain_auth_token
 
 from .info import SchoolViewSet, IngredientViewSet, MealSelectionViewSet, SchoolMealItemsViewSet
 from .meal_planning import NutritionalRequirementsViewSet
+from .register import register_student_view
 from .settings import SettingsViewSet
 
 router = routers.DefaultRouter()
@@ -17,6 +18,7 @@ router.register(r'settings', SettingsViewSet, basename='Settings')
 urlpatterns = [
     path('token_auth/', obtain_auth_token),
     path('auth/', include('rest_framework.urls')),
+    path('register/', register_student_view),
 
     path('', include(router.urls)),
 ]
