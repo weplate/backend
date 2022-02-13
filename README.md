@@ -26,6 +26,34 @@ python3 manage.py loaddata test_school.yaml
 python3 manage.py loaddata test_user.yaml
 ```
 
+## Endpoints
+
+### API
+
+Under `api/`:
+
+- `schools/`: Lists schools
+- `ingredients/`: Requires auth: lists all ingredients associated with a school
+- `school_items/`: Requires auth: lists all meal items associated with a school
+- `meals/`: Requires auth: lists all meals associated with a school, 5 most recent
+  - GET query parameter `group=<group>`: Filters by group
+  - GET query parameter `date=yyyy-mm-dd`: Filters by day
+  - `meals/<meal_id>/`: lists detailed information about a meal
+- `nutritional_requirements/`: Requires auth: returns nutritional requirements for this person
+- `settings/`: Requires auth: lists settings
+  - `settings/update/`: Allows updating of settings
+    - Partial updating is supported.  Updated settings should be given in the same format as how they are retrieved in `settings/`, except the fields `ban`, `favour`, `allergies` should be lists of primary keys (IDs) instead of objects
+
+### API Auth 
+
+- `token_auth/`: Token authentication.  See below
+- `auth/`: I have no idea what this is for
+
+### Authentication
+
+POST `api/token_auth` with the username (email) and password fields filled out in the request body.
+If they are correct, the response will contain a token.
+
 ## Design Paradigms
 
 - Most endpoints should require authentication.  These endpoints
