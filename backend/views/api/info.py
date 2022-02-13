@@ -70,9 +70,15 @@ class MealSelectionViewSet(viewsets.ReadOnlyModelViewSet):
 
     def get_queryset(self):
         profile = StudentProfile.objects.get(user=self.request.user)
-        return MealSelection.objects \
-                    .filter(school=profile.school, timestamp__gte=datetime.datetime.now()) \
-                    .order_by('-timestamp')[:MAX_MEALS]
+
+        objects = MealSelection.objects.filter(school=profile.school).order_by('-timestamp')
+        if 'group' in self.request.data:
+            objects = objects.filter(group=self.request.data['group'])
+        if 'date' in self.request.data:
+            dt = datetime.date.fromisoformat(self.request.data['date'])
+            objects = objects.filter(timestamp__year=dt.year, timestamp__month=dt.month, timestamp__day=dt.day)
+
+        return objects[:MAX_MEALS]
 
     def retrieve(self, request, pk=None, *args, **kwargs):
         meal = get_object_or_404(MealSelection, pk=pk)
