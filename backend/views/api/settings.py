@@ -1,70 +1,57 @@
 # List of properties to write
+from django.core.exceptions import ValidationError
+from rest_framework import serializers, viewsets
+from rest_framework.authentication import SessionAuthentication, TokenAuthentication
+from rest_framework.decorators import action
+from rest_framework.exceptions import APIException
+from rest_framework.permissions import IsAuthenticated
+from rest_framework.response import Response
+
 from backend.models import StudentProfile, School, MealItem, Ingredient
-from backend.views.common import auth_endpoint, err_response, ok_response, json_response
+from backend.views.common import auth_endpoint, err_response, ok_response, json_response, IsStudent, update_object
 
 
-def type_check(t):
-    return lambda o: type(o) == t
+class ReadSettingsSerializer(serializers.ModelSerializer):
+    class S_MealItem(serializers.ModelSerializer):
+        class Meta:
+            model = MealItem
+            exclude = ['school', 'graphic']
+
+    class S_Ingredient(serializers.ModelSerializer):
+        class Meta:
+            model = Ingredient
+            exclude = ['school']
+
+    class Meta:
+        model = StudentProfile
+        exclude = ['user']
+
+    ban = S_MealItem(many=True)
+    favour = S_MealItem(many=True)
+    allergies = S_Ingredient(many=True)
 
 
-def pk_check(table):
-    return lambda o: table.objects.filter(id=o).exists()
+class UpdateSettingsSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = StudentProfile
+        exclude = ['user', 'id']
+        required = False
 
 
-def pk_list_check(table):
-    return lambda o: type(o) == list and all(map(pk_check(table), o))
+class SettingsViewSet(viewsets.ViewSet):
+    authentication_classes = [SessionAuthentication, TokenAuthentication]
+    permission_classes = [IsAuthenticated, IsStudent]
 
+    # We don't actually want to list anything- we want one object
+    def list(self, request):
+        profile = StudentProfile.objects.get(user=request.user)
+        return Response(ReadSettingsSerializer(profile).data)
 
-def fn_list_check(fn):
-    return lambda o: type(o) == list and all(map(fn, o))
+    @action(detail=False, methods=['post'], url_path='update')
+    def settings_update(self, request):
+        serialized_data = UpdateSettingsSerializer(data=request.data, partial=True)
+        serialized_data.is_valid(raise_exception=True)
+        profile = StudentProfile.objects.get(user=request.user)
+        upd = update_object(serialized_data, profile)
 
-
-STUDENT_PROPS = {
-    'school': pk_check(School),
-    'name': type_check(str),
-    'height': type_check(float),
-    'weight': type_check(float),
-
-    'sex': StudentProfile.valid_sex,
-    'health_goal': StudentProfile.valid_health_goal,
-
-    'ban': pk_list_check(MealItem),
-    'favour': pk_list_check(MealItem),
-    'allergies': pk_list_check(Ingredient)
-}
-
-
-@auth_endpoint(model=StudentProfile)
-def update(request):
-    profile = StudentProfile.objects.get(user=request.user)
-    upd = []
-
-    for prop_key, prop_verify in STUDENT_PROPS:
-        if prop_key in request.POST:
-            prop_val = request.POST[prop_key]
-            if prop_verify(prop_val):
-                setattr(profile, prop_key, prop_val)
-                upd.append(prop_key)
-            else:
-                return err_response(f'Could not update setting, ')
-
-    profile.save()
-
-    return ok_response(f'Updated settings {" ".join(upd)}')
-
-
-@auth_endpoint(model=StudentProfile)
-def fetch(request):
-    resp = {}
-    profile = StudentProfile.objects.get(user=request.user)
-
-    for prop_key, _ in STUDENT_PROPS:
-        resp[prop_key] = getattr(profile, prop_key)
-
-    # Other fields, in notion
-    resp['school_name'] = profile.school.name
-    resp['ban_names'] = [obj.name for obj in profile.ban]
-    resp['favour_names'] = [obj.name for obj in profile.favour]
-    resp['allergies_names'] = [obj.name for obj in profile.allergies]
-
-    return json_response(resp)
+        return Response({'detail': f'Updated fields {upd}'})
