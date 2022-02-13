@@ -175,16 +175,15 @@ class StudentProfile(models.Model):
         return StudentProfile._valid_option(cls.MEALS, o)
 
     # banning/favouring meal items
-    ban = models.ManyToManyField(to=MealItem, related_name='ban')
-    favour = models.ManyToManyField(to=MealItem, related_name='favour')
-    allergies = models.ManyToManyField(to=Ingredient)
+    ban = models.ManyToManyField(to=MealItem, related_name='ban', blank=True)
+    favour = models.ManyToManyField(to=MealItem, related_name='favour', blank=True)
+    allergies = models.ManyToManyField(to=Ingredient, blank=True)
 
-    def clean_fields(self, exclude=None):
-        super().clean_fields(exclude)
-        if 'meal' not in exclude:
-            for meal in self.meals:
-                if not StudentProfile.valid_meal(meal):
-                    raise ValidationError({'meal': f'Value \'{meal}\' is not a valid choice.'})
+    def clean(self):
+        super().clean()
+        for meal in self.meals:
+            if not StudentProfile.valid_meal(meal):
+                raise ValidationError({'meal': f'Value \'{meal}\' is not a valid choice.'})
 
     def __str__(self):
         return f'{self.name} @ {self.school.name} (Email: {self.user.username})'
