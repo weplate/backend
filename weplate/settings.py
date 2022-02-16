@@ -28,7 +28,7 @@ SECRET_KEY = 'django-insecure-h1#o@85ph_lx=$*pcdfo$=w^m_ayh6tl($9&ceftmzncu+d5fp
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ['mosesxu.ca']
 
 
 # Application definition
@@ -122,7 +122,7 @@ USE_TZ = True
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/4.0/howto/static-files/
 
-STATIC_URL = 'static/'
+STATIC_URL = 'static_weplate/'
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/4.0/ref/settings/#default-auto-field
@@ -131,3 +131,5 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 # Extra stuff
 APPEND_SLASH = False
+
+STATIC_ROOT = '/home/www-data/weplateassets'

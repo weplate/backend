@@ -9,3 +9,7 @@ backend/migrations
 # Python
 *.pyc
 *.pyo
+
+# VIM (for editing on prod)
+.*.swp
+*/.*.swp
