@@ -58,7 +58,9 @@ class MealItem(models.Model):
     station = models.CharField(max_length=64)
     graphic = models.FileField(upload_to=MEAL_ITEM_GRAPHICS, null=True)
 
-    # Ingredients stuff
+    # Ingredients, nutrition, other numbers
+    portion_size = models.FloatField(name='Portion Size (g)')
+    volume = models.FloatField(name='Volume (ml)')
     nutrition = models.ForeignKey(to=NutritionalInfo, on_delete=models.SET_NULL, null=True)
     ingredients = models.ManyToManyField(to=Ingredient)
 

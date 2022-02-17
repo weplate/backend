@@ -1,6 +1,7 @@
 import datetime
+import random
 
-from backend.models import NutritionalInfo, StudentProfile
+from backend.models import NutritionalInfo, StudentProfile, MealItem
 
 DEFAULT_REQS = dict(
     name='Nutritional Requirements',
@@ -49,11 +50,49 @@ def nutritional_info_for(profile: StudentProfile) -> NutritionalInfo:
     c_activity = ACTIVITY_LEVEL_COEFF[profile.activity_level]
     age = (datetime.date.today() - profile.birthdate).days // 365  # Leap years are fake news
     reqs = NutritionalInfo(**DEFAULT_REQS)
-    reqs.calories = (c_base + c_weight * profile.weight + c_height * profile.height - c_age * age) * c_activity * 1.1
 
+    # Set calorie count
+    reqs.calories = (c_base + c_weight * profile.weight + c_height * profile.height - c_age * age) * c_activity * 1.1
     if profile.health_goal == StudentProfile.LOSE_WEIGHT:
         reqs.calories -= 250
     elif profile.health_goal == StudentProfile.BUILD_MUSCLE:
         reqs.calories += 250
 
+    # Set Macros count
+
+
+    # Divide reqs by 3 since these are daily
+    for prop in DEFAULT_REQS.keys():
+        if prop != 'name':  # gotta remove this one!
+            setattr(reqs, prop, getattr(reqs, prop) / 3)
+
     return reqs
+
+
+def classify_item(item: MealItem):
+    pass
+
+
+# Source: https://en.wikipedia.org/wiki/Simulated_annealing#Overview
+def simulated_annealing(big_item: MealItem, small_item_1: MealItem, small_item_2: MealItem, requirements: NutritionalInfo, iterations: int):
+    state = NutritionalInfo()
+
+    def temperature(k):
+        pass
+
+    def neighbour(state, T):
+        pass
+
+    def cost(state):
+        pass
+
+    def accept_probability(state_new, state_old, T):
+        pass
+
+    for k in range(iterations):
+        T = temperature(1 - (k + 1) / iterations)
+        state_new = neighbour(state, T)
+        if accept_probability(state_new, state, T) >= random.random():
+            state = state_new
+
+    return state
