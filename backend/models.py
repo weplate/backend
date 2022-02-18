@@ -27,7 +27,7 @@ class NutritionalInfo(models.Model):
     calories = models.FloatField(verbose_name='Calories (cal)', default=0)
     carbohydrate = models.FloatField(verbose_name='Carbohydrates (g)', default=0)
     protein = models.FloatField(verbose_name='Protein (g)', default=0)
-    unsaturated_fat = models.FloatField(verbose_name='Unsaturated Fat (g)', default=0)
+    total_fat = models.FloatField(verbose_name='Total Fat (g)', default=0)
     saturated_fat = models.FloatField(verbose_name='Saturated Fat (g)', default=0)
     trans_fat = models.FloatField(verbose_name='Trans Fat (g)', default=0)
 
@@ -59,13 +59,17 @@ class MealItem(models.Model):
     graphic = models.FileField(upload_to=MEAL_ITEM_GRAPHICS, null=True)
 
     # Ingredients, nutrition, other numbers
-    portion_size = models.FloatField(name='Portion Size (g)')
-    volume = models.FloatField(name='Volume (ml)')
+    portion_weight = models.FloatField(verbose_name='Portion Weight (g)')
+    portion_volume = models.FloatField(verbose_name='Portion Volume (ml)')
     nutrition = models.ForeignKey(to=NutritionalInfo, on_delete=models.SET_NULL, null=True)
     ingredients = models.ManyToManyField(to=Ingredient)
 
     # School it belongs to
     school = models.ForeignKey(to=School, on_delete=models.CASCADE)
+
+    # Returns in g/ml
+    def density(self):
+        return self.portion_weight / self.portion_volume
 
     def __str__(self):
         return f'{self.name} @ station {self.station} @ {self.school.name}'
@@ -102,14 +106,14 @@ class StudentProfile(models.Model):
     LOSE_WEIGHT = 'lose_weight'
     BUILD_MUSCLE = 'build_muscle'
     ATHLETIC_PERFORMANCE = 'athletic_performance'
-    BODY_RECOMPOSITION = 'body_recomposition'
+    IMPROVE_TONE = 'improve_tone'
     IMPROVE_HEALTH = 'improve_health'
 
     HEALTH_GOALS = [
         (LOSE_WEIGHT, 'Lose Weight'),
         (BUILD_MUSCLE, 'Build Muscle'),
         (ATHLETIC_PERFORMANCE, 'Athletic Performance'),
-        (BODY_RECOMPOSITION, 'Body Recomposition'),
+        (IMPROVE_TONE, 'Improve Body Tone'),
         (IMPROVE_HEALTH, 'Improve Health')
     ]
 

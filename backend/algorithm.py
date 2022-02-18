@@ -9,9 +9,9 @@ DEFAULT_REQS = dict(
     calories=0,
     carbohydrate=0,
     protein=0,
-    trans_fat=0,
+    total_fat=0,
     saturated_fat=0,
-    unsaturated_fat=0,
+    trans_fat=0,
 
     # Micro
     sugar=0,
@@ -34,10 +34,30 @@ ACTIVITY_LEVEL_COEFF = {
     StudentProfile.EXTREME: 1.9
 }
 
-SEX_COEFF = {
+# Base, Weight, Height, Age
+SEX_COEFF = { # 69
     StudentProfile.MALE: (88.362, 13.397, 4.799, 5.677),
     StudentProfile.FEMALE: (447.593, 9.247, 3.098, 4.330)
 }
+
+# Protein, Carb, Fat, Saturated Fat
+MACROS_COEFF = {
+    StudentProfile.BUILD_MUSCLE: (1.6, (6 + 6.6) / 2, (0.3 + 0.35) / 2, 0.1),
+    StudentProfile.ATHLETIC_PERFORMANCE: (1, (6 + 6.6) / 2, 0.3, 0.1),  # Protein: upper range recommended
+    StudentProfile.LOSE_WEIGHT: ((0.8 + 1) / 2, 5, (0.2 + 0.25) / 2, 0.1),
+    StudentProfile.IMPROVE_TONE: ((0.8 + 1) / 2, 6, (0.25 + 0.3) / 2, 0.1),
+    StudentProfile.IMPROVE_HEALTH: ((0.8 + 1) / 2, 5, (0.2 + 0.25) / 2, 0.1)
+}
+
+SUGAR_REQS = {
+    StudentProfile.MALE: 36,
+    StudentProfile.FEMALE: 25
+}
+
+# Max portion sizes and min fill requirement, in ML
+SMALL_PORTION_MAX = 270
+LARGE_PORTION_MAX = 610
+MIN_FILL = 0.5
 
 
 def nutritional_info_for(profile: StudentProfile) -> NutritionalInfo:
@@ -59,7 +79,12 @@ def nutritional_info_for(profile: StudentProfile) -> NutritionalInfo:
         reqs.calories += 250
 
     # Set Macros count
-
+    protein_ratio, carb_ratio, fat_cal_ratio, sat_fat_cal_ratio = MACROS_COEFF[profile.health_goal]
+    reqs.protein = protein_ratio * profile.weight
+    reqs.carbohydrate = carb_ratio * profile.weight
+    reqs.total_fat = fat_cal_ratio * reqs.calories
+    reqs.saturated_fat = sat_fat_cal_ratio * reqs.calories
+    reqs.sugar = SUGAR_REQS[profile.sex]
 
     # Divide reqs by 3 since these are daily
     for prop in DEFAULT_REQS.keys():
