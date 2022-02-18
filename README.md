@@ -55,9 +55,11 @@ Under `api/`:
 
 These are for creating and viewing analytics objects.  All endpoints will be of the form `api/analytics/<endpoint>/`.  Submitting a GET request will return the MAX_LOG_ENTRIES latest log entries for this endpoint (currently MAX_LOG_ENTRIES is set to 20).  Submitting a POST request with the required parameters will add a new log entry.
 
+Some analytics endpoints also require authentication, these will also log the profile that made the entry and the timestamp it was made with.
+
 Endpoints:
 
-- `meal_choice` parameters:
+- `meal_choice` parameters (must be authenticated):
   - `meal`: ID of `MealSelection` object
   - `small1`: ID of `MealItem` object
   - `small2`: ID of `MealItem` object
@@ -65,7 +67,7 @@ Endpoints:
   - `small1_portion`: float
   - `small2_portion`: float
   - `large_portion`: float
-- `meal_item_vote` parameters:
+- `meal_item_vote` parameters (must be authenticated):
   - `meal_item`: ID of `MealItem` object
   - `liked`: boolean
 
