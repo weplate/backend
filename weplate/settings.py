@@ -26,12 +26,12 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = os.environ.get('SECRET_KEY', 'django-insecure-h1#o@85ph_lx=$*pcdfo$=w^m_ayh6tl($9&ceftmzncu+d5fp')
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = os.environ.get('DEBIG', True)
+DEBUG = os.environ.get('DEBUG', 'True') == 'True'
 
 print(f'Using secret key = {SECRET_KEY}')
 print(f'Using debug = {DEBUG}')
 
-ALLOWED_HOSTS = ['mosesxu.ca', '127.0.0.1']
+ALLOWED_HOSTS = ['mosesxu.ca', '127.0.0.1', 'localhost']
 
 
 # Application definition

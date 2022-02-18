@@ -87,7 +87,8 @@ If they are correct, the response will contain a token.
 # TODO
 
 - Add default auth classes so I don't have to list everything
-- /api/settings and /api/register can be refractored I'm sure
+- /api/settings and /api/register can be refractored I'm sure (by using serializers more effectively, see the logging endpoints)
+- Email verification
 
 # Design Paradigms (redundant?)
 
