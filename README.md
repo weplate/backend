@@ -32,24 +32,49 @@ python3 manage.py loaddata test_user.yaml
 
 Under `api/`:
 
-- `schools/`: Lists schools
-- `ingredients/`: Requires auth: lists all ingredients associated with a school
-- `school_items/`: Requires auth: lists all meal items associated with a school
-- `meals/`: Requires auth: lists all meals associated with a school, 5 most recent
+- GET `schools/`: Lists schools
+- GET `ingredients/`: Requires auth: lists all ingredients associated with a school
+- GET `school_items/`: Requires auth: lists all meal items associated with a school
+- GET `meals/`: Requires auth: lists all meals associated with a school, 5 most recent
   - GET query parameter `group=<group>`: Filters by group
   - GET query parameter `date=yyyy-mm-dd`: Filters by day
   - `meals/<meal_id>/`: lists detailed information about a meal
-- `nutritional_requirements/`: Requires auth: returns nutritional requirements for this person
-- `settings/`: Requires auth: lists settings
-  - `settings/update/`: Allows updating of settings
+- GET `nutritional_requirements/`: Requires auth: returns nutritional requirements for this person
+- GET `settings/`: Requires auth: lists settings
+  - POST `settings/update/`: Allows updating of settings
     - Partial updating is supported.  Updated settings should be given in the same format as how they are retrieved in `settings/`, except the fields `ban`, `favour`, `allergies` should be lists of primary keys (IDs) instead of objects
+- `suggest/`: Requires auth: for meal suggestions
+  - GET `suggest/<meal_id>/items/`: Returns a possible selection of meal items that could be selected
+    - SelectionObj (represents the possible selections for a single part of the 'box': `{ "category": "vegetable" | "protein" | "carbohydrate", "items": [ list of MealItem IDs ]`
+    - Response: `{ "large": SelectionObj, "small1": SelectionObj, "small2": SelectionObj }`
+  - GET `suggest/portions/`: Returns a possible set of portion sizes for a given selection of Meal Items, trying to balance it with the authenticated profile's nutritional requirements
+    - Requires GET parameters: `small1`, `small2`, `large`.  Each parameter should be the id (primary key) of a MealItem
+    - Returns an object of the form: `{ "small1": { "volume": <in mL>, "weight": <in g> }, "small2": { ... }, "large": { ... }` (the responses for `small2` and `large` are the same as for `small1`)
+
+### Analytics
+
+These are for creating and viewing analytics objects.  All endpoints will be of the form `api/analytics/<endpoint>/`.  Submitting a GET request will return the MAX_LOG_ENTRIES latest log entries for this endpoint (currently MAX_LOG_ENTRIES is set to 20).  Submitting a POST request with the required parameters will add a new log entry.
+
+Endpoints:
+
+- `meal_choice` parameters:
+  - `meal`: ID of `MealSelection` object
+  - `small1`: ID of `MealItem` object
+  - `small2`: ID of `MealItem` object
+  - `large`: ID of `MealItem` object
+  - `small1_portion`: float
+  - `small2_portion`: float
+  - `large_portion`: float
+- `meal_item_vote` parameters:
+  - `meal_item`: ID of `MealItem` object
+  - `liked`: boolean
 
 ### API Auth and Registration
 
 Also under `api/`:
 
-- `register/`: Registration, field structure is nearly identical to `settings/update/`, except you need the fields `username` and `password` as well
-- `token_auth/`: Token authentication.  See below
+- POST `register/`: Registration, field structure is nearly identical to `settings/update/`, except you need the fields `username` and `password` as well
+- POST `token_auth/`: Token authentication.  See below
 - `auth/`: I have no idea what this is for
 
 ### Authentication
@@ -57,7 +82,12 @@ Also under `api/`:
 POST `api/token_auth` with the username (email) and password fields filled out in the request body.
 If they are correct, the response will contain a token.
 
-# Design Paradigms
+# TODO
+
+- Add default auth classes so I don't have to list everything
+- /api/settings and /api/register can be refractored I'm sure
+
+# Design Paradigms (redundant?)
 
 - Most endpoints should require authentication.  These endpoints
 - Data being sent to the server (basically, anything that 'updates' DBs) should be sent in POST form
@@ -71,9 +101,9 @@ If they are correct, the response will contain a token.
     - message: Any status messages
   - data will contain JSON-encoded object with response objects
     - Response objects will also have associated primary key fields
-    - Reponses are recursive- in general, a response will also return full data of its children (i.e. a Meal selection will return objects containing its associated meal items)
+    - Responses are recursive- in general, a response will also return full data of its children (i.e. a Meal selection will return objects containing its associated meal items)
 
-# Tests we need to do (redundant idk)
+# Tests we need to do (redundant?)
 
 - Login school
 - Login student

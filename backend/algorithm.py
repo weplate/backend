@@ -26,7 +26,7 @@ DEFAULT_REQS = dict(
     vitamin_a=0,
 )
 
-
+# https://www.notion.so/weplate/Mathematical-Calculations-f561b494f2444cfc87023ef615cf2bea#a976edca5f394d26b536704ff6f691ce
 ACTIVITY_LEVEL_COEFF = {
     StudentProfile.MILD: 1.3,
     StudentProfile.MODERATE: 1.5,
@@ -34,12 +34,14 @@ ACTIVITY_LEVEL_COEFF = {
     StudentProfile.EXTREME: 1.9
 }
 
+# https://www.notion.so/weplate/Mathematical-Calculations-f561b494f2444cfc87023ef615cf2bea#a976edca5f394d26b536704ff6f691ce
 # Base, Weight, Height, Age
-SEX_COEFF = { # 69
+SEX_COEFF = {  # 69
     StudentProfile.MALE: (88.362, 13.397, 4.799, 5.677),
     StudentProfile.FEMALE: (447.593, 9.247, 3.098, 4.330)
 }
 
+# https://www.notion.so/weplate/Mathematical-Calculations-f561b494f2444cfc87023ef615cf2bea#72d92545467d40faa8508132432618c8
 # Protein, Carb, Fat, Saturated Fat
 MACROS_COEFF = {
     StudentProfile.BUILD_MUSCLE: (1.6, (6 + 6.6) / 2, (0.3 + 0.35) / 2, 0.1),
@@ -54,10 +56,29 @@ SUGAR_REQS = {
     StudentProfile.FEMALE: 25
 }
 
+# https://www.notion.so/weplate/Mathematical-Calculations-f561b494f2444cfc87023ef615cf2bea#422b95b3b18c47dbbbee6eec642ee779
 # Max portion sizes and min fill requirement, in ML
 SMALL_PORTION_MAX = 270
 LARGE_PORTION_MAX = 610
 MIN_FILL = 0.5
+
+
+# More Stuff
+class ItemType:
+    PROTEIN = 'protein'
+    VEGETABLE = 'vegetable'
+    CARBOHYDRATE = 'carbohydrate'
+
+
+# https://www.notion.so/weplate/Mathematical-Calculations-f561b494f2444cfc87023ef615cf2bea#c137e967c1224678be2079cb5a55a3a6
+# Which section (protein, veg, carb) should have the large portion
+LARGE_PORTION = {
+    StudentProfile.BUILD_MUSCLE: ItemType.PROTEIN,
+    StudentProfile.ATHLETIC_PERFORMANCE: ItemType.CARBOHYDRATE,
+    StudentProfile.LOSE_WEIGHT: ItemType.VEGETABLE,
+    StudentProfile.IMPROVE_TONE: ItemType.PROTEIN,
+    StudentProfile.IMPROVE_HEALTH: ItemType.VEGETABLE
+}
 
 
 def nutritional_info_for(profile: StudentProfile) -> NutritionalInfo:
@@ -99,7 +120,8 @@ def classify_item(item: MealItem):
 
 
 # Source: https://en.wikipedia.org/wiki/Simulated_annealing#Overview
-def simulated_annealing(big_item: MealItem, small_item_1: MealItem, small_item_2: MealItem, requirements: NutritionalInfo, iterations: int):
+def simulated_annealing(big_item: MealItem, small_item_1: MealItem, small_item_2: MealItem,
+                        requirements: NutritionalInfo, iterations: int):
     state = NutritionalInfo()
 
     def temperature(k):

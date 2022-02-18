@@ -22,5 +22,6 @@ urlpatterns = [
     path('auth/', include('rest_framework.urls')),
     path('register/', register_student_view),
 
+    path('analytics/', include('backend.views.api.analytics')),
     path('', include(router.urls)),
 ]

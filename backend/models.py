@@ -202,28 +202,32 @@ class SchoolProfile(models.Model):
 
 
 # Analytics
-class LogMealItemSwitch(models.Model):
-    item_from = models.ForeignKey(to=MealItem, on_delete=models.CASCADE, related_name='item_from')
-    item_to = models.ForeignKey(to=MealItem, on_delete=models.CASCADE, related_name='item_to')
-
-
-# TODO: Make this name better
-class LogMeal(models.Model):
+class LogMealChoice(models.Model):
     # Basic info about who/when
     profile = models.ForeignKey(to=StudentProfile, on_delete=models.CASCADE)
     timestamp = models.DateTimeField()
 
     # what meal/items is this tied to?
     meal = models.ForeignKey(to=MealSelection, on_delete=models.SET_NULL, null=True)
-    meal_items = models.ManyToManyField(to=MealItem)
+    small1 = models.ForeignKey(to=MealItem, on_delete=models.SET_NULL, null=True, related_name='meal_item_small_1')
+    small2 = models.ForeignKey(to=MealItem, on_delete=models.SET_NULL, null=True, related_name='meal_item_small_2')
+    large = models.ForeignKey(to=MealItem, on_delete=models.SET_NULL, null=True, related_name='meal_item_large')
+    small1_portion = models.FloatField(verbose_name='Section A Size (mL)')
+    small2_portion = models.FloatField(verbose_name='Section B Size (mL)')
+    large_portion = models.FloatField(verbose_name='Section C Size (mL)')
 
-    # review of app
-    switches = models.ManyToManyField(to=LogMealItemSwitch)
-    liked = models.BooleanField()
-    used_weplate = models.BooleanField()
+
+class LogMealItemVote(models.Model):
+    # Basic info about who/when
+    profile = models.ForeignKey(to=StudentProfile, on_delete=models.CASCADE)
+    timestamp = models.DateTimeField()
+
+    # Info
+    meal_item = models.ForeignKey(to=MealItem, on_delete=models.SET_NULL, null=True)
+    liked = models.BooleanField(verbose_name='Liked (True/False)')
 
 
-class LogUsageAnalytics(models.Model):
+class LogSurvey(models.Model):
     # Basic info about who/when
     profile = models.ForeignKey(to=StudentProfile, on_delete=models.CASCADE)
     timestamp = models.DateTimeField()  # When was the log reported
