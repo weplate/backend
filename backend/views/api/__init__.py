@@ -18,10 +18,14 @@ router.register(r'nutritional_requirements', NutritionalRequirementsViewSet, bas
 router.register(r'suggest', SuggestViewSet, basename='SuggestViewSet')
 
 urlpatterns = [
+    # Authentication
     path('token_auth/', obtain_auth_token),
     path('auth/', include('rest_framework.urls')),
     path('register/', register_student_view),
 
+    # TODO: Password reset and confirmation
+
+    # Endpoints
     path('analytics/', include('backend.views.api.analytics')),
     path('', include(router.urls)),
 ]

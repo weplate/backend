@@ -1,0 +1,4 @@
+cron:
+- description: 'clear tokens'
+  url: /jobs/clear_tokens
+  schedule: every 24 hours

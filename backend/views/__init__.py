@@ -25,5 +25,8 @@ urlpatterns = [
     # path('login/', view_login, name='login'), # TODO: School admin login/logout, iteration 2
     # path('logout/', view_logout, name='logout'),
 
-    path('api/', include('backend.views.api'))
+    path('api/', include('backend.views.api')),
+
+    # Jobs
+    path('jobs/', include('backend.views.jobs'))
 ]

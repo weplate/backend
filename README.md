@@ -84,35 +84,60 @@ Also under `api/`:
 POST `api/token_auth` with the username (email) and password fields filled out in the request body.
 If they are correct, the response will contain a token.
 
+# Deployment
+
+```
+gcloud auth login
+gcloud app deploy app.yaml cron.yaml
+```
+
 # TODO
 
 - Add default auth classes so I don't have to list everything
 - /api/settings and /api/register can be refractored I'm sure (by using serializers more effectively, see the logging endpoints)
-- Email verification
+- Email verification and password reset
+- Use an external DB
 
-# Design Paradigms (redundant?)
+[comment]: <> (# Design Paradigms &#40;redundant?&#41;)
 
-- Most endpoints should require authentication.  These endpoints
-- Data being sent to the server (basically, anything that 'updates' DBs) should be sent in POST form
-  - Query specifications and whatnot should be in GET form
-  - **This is with the exception of logging in, which will also be done with POST**
-- Returned objects will always have a "pk" field, that denotes the relevant primary key entry in the DB
-- Returned objects will be in JSON form
-  - There will be three fields:
-    - data: the actual data
-    - error: T/F (self-explanatory)
-    - message: Any status messages
-  - data will contain JSON-encoded object with response objects
-    - Response objects will also have associated primary key fields
-    - Responses are recursive- in general, a response will also return full data of its children (i.e. a Meal selection will return objects containing its associated meal items)
+[comment]: <> (- Most endpoints should require authentication.  These endpoints)
 
-# Tests we need to do (redundant?)
+[comment]: <> (- Data being sent to the server &#40;basically, anything that 'updates' DBs&#41; should be sent in POST form)
 
-- Login school
-- Login student
-- Login wrong auth (school, student)
-- Logout
-- Logout wrong auth
+[comment]: <> (  - Query specifications and whatnot should be in GET form)
 
-- Query items
-- Query school
+[comment]: <> (  - **This is with the exception of logging in, which will also be done with POST**)
+
+[comment]: <> (- Returned objects will always have a "pk" field, that denotes the relevant primary key entry in the DB)
+
+[comment]: <> (- Returned objects will be in JSON form)
+
+[comment]: <> (  - There will be three fields:)
+
+[comment]: <> (    - data: the actual data)
+
+[comment]: <> (    - error: T/F &#40;self-explanatory&#41;)
+
+[comment]: <> (    - message: Any status messages)
+
+[comment]: <> (  - data will contain JSON-encoded object with response objects)
+
+[comment]: <> (    - Response objects will also have associated primary key fields)
+
+[comment]: <> (    - Responses are recursive- in general, a response will also return full data of its children &#40;i.e. a Meal selection will return objects containing its associated meal items&#41;)
+
+[comment]: <> (# Tests we need to do &#40;redundant?&#41;)
+
+[comment]: <> (- Login school)
+
+[comment]: <> (- Login student)
+
+[comment]: <> (- Login wrong auth &#40;school, student&#41;)
+
+[comment]: <> (- Logout)
+
+[comment]: <> (- Logout wrong auth)
+
+[comment]: <> (- Query items)
+
+[comment]: <> (- Query school)

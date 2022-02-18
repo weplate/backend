@@ -16,6 +16,8 @@ from pathlib import Path
 
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
+from urllib.parse import urlparse
+
 BASE_DIR = Path(__file__).resolve().parent.parent
 
 
@@ -31,8 +33,17 @@ DEBUG = os.environ.get('DEBUG', 'True') == 'True'
 print(f'Using secret key = {SECRET_KEY}')
 print(f'Using debug = {DEBUG}')
 
-ALLOWED_HOSTS = ['mosesxu.ca', '127.0.0.1', 'localhost']
-
+# Google appengine url stuff
+# ALLOWED_HOSTS = ['mosesxu.ca', '127.0.0.1', 'localhost']
+# APPENGINE_URL = os.environ.get('APPENGINE_URL', None)
+# if APPENGINE_URL:
+#     # Ensure the HTTPS is in the URL before it's used.
+#     APPENGINE_URL = urlparse(APPENGINE_URL, "https").geturl()
+#
+#     ALLOWED_HOSTS.append(APPENGINE_URL)
+#     CSRF_TRUSTED_ORIGINS = [urlparse(APPENGINE_URL).netloc]
+#     SECURE_SSL_REDIRECT = True
+ALLOWED_HOSTS = ['*']  # Bro...
 
 # Application definition
 
@@ -114,13 +125,9 @@ AUTH_PASSWORD_VALIDATORS = [
 
 # Internationalization
 # https://docs.djangoproject.com/en/4.0/topics/i18n/
-
 LANGUAGE_CODE = 'en-us'
-
 TIME_ZONE = 'UTC'
-
 USE_I18N = True
-
 USE_TZ = True
 
 # Default primary key field type
@@ -131,6 +138,6 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/4.0/howto/static-files/
 
-STATIC_URL = 'static_weplate/'
-STATIC_ROOT = '/home/www-data/weplateassets'
+STATIC_ROOT = 'static_weplate/'
+STATIC_URL = '/static_weplate/'
 STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
