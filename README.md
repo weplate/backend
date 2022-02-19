@@ -17,13 +17,20 @@ python3 manage.py migrate
 
 To run the setup server, run `python3 manage.py runserver`
 
-# Setup DB
+## Loading Fixtures
 
 To add some fake data for testing, run the following:
 
 ```bash
 python3 manage.py loaddata test_school.yaml
 python3 manage.py loaddata test_user.yaml
+```
+
+## Deployment to AppEngine
+
+```
+gcloud auth login
+gcloud app deploy app.yaml cron.yaml
 ```
 
 # Endpoints
@@ -83,13 +90,6 @@ Also under `api/`:
 
 POST `api/token_auth` with the username (email) and password fields filled out in the request body.
 If they are correct, the response will contain a token.
-
-# Deployment
-
-```
-gcloud auth login
-gcloud app deploy app.yaml cron.yaml
-```
 
 # TODO
 
