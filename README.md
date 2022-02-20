@@ -1,7 +1,7 @@
 # weplate
 we plate in ur mom
 
-# How to start
+# Testing and Deployment
 
 If you're on Unix based systems, the correct Python command is most likely `python3`.
 
@@ -16,6 +16,18 @@ python3 manage.py migrate
 ```
 
 To run the setup server, run `python3 manage.py runserver`
+
+### Remote DB
+
+To connect to the remote DB, you must first get the Cloud SQL Auth proxy, suing:
+
+- [Windows](https://dl.google.com/cloudsql/cloud_sql_proxy_x64.exe)
+- Linux: run `wget https://dl.google.com/cloudsql/cloud_sql_proxy.linux.amd64 -O cloud_sql_proxy && chmod +x cloud_sql_proxy`
+
+Then, run:
+
+- Windows: `./cloud_sql_proxy_x64.exe -instances="weplate-backend:northamerica-northeast2:db"=tcp:5432`
+- Linux: `./cloud_sql_proxy -instances="weplate-backend:northamerica-northeast2:db"=tcp:5432`
 
 ## Loading Fixtures
 

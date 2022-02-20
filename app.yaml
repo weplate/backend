@@ -20,7 +20,6 @@ runtime: python39
 
 env_variables:
   ENV_FILE: .env_prod
-  APPENGINE_URL: https://we-plate-sus.uc.r.appspot.com
 
 
 handlers:

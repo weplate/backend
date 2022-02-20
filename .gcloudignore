@@ -13,16 +13,19 @@
 .git
 .gitignore
 
-# Python pycache:
+# Intellij
+.idea/
+
+# Python
 __pycache__/
-# Ignored by the build system
+venv/
 /setup.cfg
 
 # Django
 db.sqlite3
+static_weplate/
 
-# Intellij
-.idea/
-
-# More python
-venv/
+# Cloud SQL and Docker Testing
+data/db/*
+cloud_sql_proxy
+cloud_sql_proxy_x64.exe

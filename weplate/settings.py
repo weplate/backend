@@ -35,28 +35,15 @@ environ.Env.read_env(os.path.join(BASE_DIR, env_file))
 # See https://docs.djangoproject.com/en/4.0/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = env('SECRET_KEY')
-
 # SECURITY WARNING: don't run with debug turned on in production!
+SECRET_KEY = env('SECRET_KEY')
 DEBUG = env('DEBUG')
-
 SETTINGS_LOG_MSG.append(('DEBUG', DEBUG))
 SETTINGS_LOG_MSG.append(('SECRET_KEY', SECRET_KEY))
 
-# Google appengine url stuff
-# ALLOWED_HOSTS = ['mosesxu.ca', '127.0.0.1', 'localhost']
-# APPENGINE_URL = os.environ.get('APPENGINE_URL', None)
-# if APPENGINE_URL:
-#     # Ensure the HTTPS is in the URL before it's used.
-#     APPENGINE_URL = urlparse(APPENGINE_URL, "https").geturl()
-#
-#     ALLOWED_HOSTS.append(APPENGINE_URL)
-#     CSRF_TRUSTED_ORIGINS = [urlparse(APPENGINE_URL).netloc]
-#     SECURE_SSL_REDIRECT = True
 ALLOWED_HOSTS = ['*']  # Bro...
 
 # Application definition
-
 INSTALLED_APPS = [
     'backend.apps.BackendConfig',
     'rest_framework',
@@ -105,20 +92,9 @@ WSGI_APPLICATION = 'weplate.wsgi.application'
 # Database
 # https://docs.djangoproject.com/en/4.0/ref/settings/#databases
 
-if os.getenv('SERVER_SOFTWARE', '').startswith('Google App Engine'):
-    DATABASES = {
-        'default': {
-            'ENGINE': 'django.db.backends.mysql',
-            'HOST': '/cloudsql/<your-cloudsql-connection-string>',
-            'NAME': 'polls',
-            'USER': '<your-database-user>',
-            'PASSWORD': '<your-database-password>',
-        }
-    }
-else:
-    DATABASES = {
-        'default': env.db()
-    }
+DATABASES = {
+    'default': env.db()
+}
 
 
 # Password validation
@@ -157,4 +133,3 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 STATIC_ROOT = 'static_weplate/'
 STATIC_URL = '/static_weplate/'
-
