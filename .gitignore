@@ -16,3 +16,7 @@ backend/migrations
 
 # Docker testing fuckery
 data/db/*
+
+static_weplate/
+cloud_sql_proxy
+cloud_sql_proxy_x64.exe
