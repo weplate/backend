@@ -18,3 +18,4 @@ backend/migrations
 static_weplate/
 
 data/db/*
+data/db/*/*
