@@ -4,7 +4,7 @@ from rest_framework.authtoken.views import obtain_auth_token
 
 from .info import SchoolViewSet, IngredientViewSet, MealSelectionViewSet, SchoolMealItemsViewSet
 from .meal_planning import NutritionalRequirementsViewSet, SuggestViewSet
-from .register import register_student_view
+from .register import register_student_view, check_email_view
 from .settings import SettingsViewSet
 
 router = routers.DefaultRouter()
@@ -22,6 +22,7 @@ urlpatterns = [
     path('token_auth/', obtain_auth_token),
     path('auth/', include('rest_framework.urls')),
     path('register/', register_student_view),
+    path('register/check_email/<str:email>/', check_email_view),
 
     # TODO: Password reset and confirmation
 

@@ -6,7 +6,8 @@ from rest_framework.exceptions import APIException
 from rest_framework.response import Response
 
 from backend.models import StudentProfile
-from backend.views.common import update_object
+
+import re
 
 
 class UserSerializer(serializers.ModelSerializer):
@@ -45,3 +46,14 @@ def register_student_view(request):
         raise e
 
     return Response({'detail': f'successfully registered user {new_user.username}'})
+
+
+@api_view(['GET'])
+def check_email_view(_, email):
+    if not re.match(r'^[A-Za-z0-9\.\+_-]+@[A-Za-z0-9\._-]+\.[a-zA-Z]*$', email):
+        return Response({'detail': 'Invalid email'})
+
+    if User.objects.filter(username=email).exists():
+        return Response({'detail': 'Email already taken'})
+
+    return Response({'detail': 'Email ok'})

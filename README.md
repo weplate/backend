@@ -70,6 +70,15 @@ Under `api/`:
     - Requires GET parameters: `small1`, `small2`, `large`.  Each parameter should be the id (primary key) of a MealItem
     - Returns an object of the form: `{ "small1": { "volume": <in mL>, "weight": <in g> }, "small2": { ... }, "large": { ... }` (the responses for `small2` and `large` are the same as for `small1`)
 
+### API Auth and Registration
+
+Also under `api/`:
+
+- POST `register/`: Registration, field structure is nearly identical to `settings/update/`, except you need the fields `username` and `password` as well
+  - GET `register/check_email/<email>`: Returns whether the email was valid (including whether it was taken already or not)
+- POST `token_auth/`: Token authentication.  See below
+- `auth/`: I have no idea what this is for
+
 ### Analytics
 
 These are for creating and viewing analytics objects.  All endpoints will be of the form `api/analytics/<endpoint>/`.  Submitting a GET request will return the MAX_LOG_ENTRIES latest log entries for this endpoint (currently MAX_LOG_ENTRIES is set to 20).  Submitting a POST request with the required parameters will add a new log entry.
@@ -89,14 +98,6 @@ Endpoints:
 - `meal_item_vote` parameters (must be authenticated):
   - `meal_item`: ID of `MealItem` object
   - `liked`: boolean
-
-### API Auth and Registration
-
-Also under `api/`:
-
-- POST `register/`: Registration, field structure is nearly identical to `settings/update/`, except you need the fields `username` and `password` as well
-- POST `token_auth/`: Token authentication.  See below
-- `auth/`: I have no idea what this is for
 
 ### Authentication
 
