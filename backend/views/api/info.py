@@ -29,14 +29,15 @@ class IngredientSerializer(serializers.ModelSerializer):
         fields = '__all__'
 
 
-class IngredientViewSet(viewsets.ReadOnlyModelViewSet):
-    authentication_classes = [SessionAuthentication, TokenAuthentication]
-    permission_classes = [IsAuthenticated, IsStudent]
-    serializer_class = IngredientSerializer
+class IngredientViewSet(viewsets.ViewSet):
+    authentication_classes = []
+    permission_classes = []
 
-    def get_queryset(self):
-        profile = StudentProfile.objects.get(user=self.request.user)
-        return Ingredient.objects.filter(school=profile.school)
+    def list(self, _):
+        return Response({'detail': 'please query items/<school_id>'})
+
+    def retrieve(self, _, pk=None):
+        return Response(IngredientSerializer(Ingredient.objects.filter(school__id=pk), many=True).data)
 
 
 class ReadNutritionalInfoSerializer(serializers.ModelSerializer):

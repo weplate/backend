@@ -52,7 +52,7 @@ gcloud app deploy app.yaml cron.yaml
 Under `api/`:
 
 - GET `schools/`: Lists schools
-- GET `ingredients/`: Requires auth: lists all ingredients associated with a school
+- GET `ingredients/<school_id>/`: Lists all ingredients associated with a school
 - GET `school_items/`: Requires auth: lists all meal items associated with a school
 - GET `meals/`: Requires auth: lists all meals associated with a school, 5 most recent
   - GET query parameter `group=<group>`: Filters by group
