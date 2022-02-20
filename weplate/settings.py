@@ -105,9 +105,20 @@ WSGI_APPLICATION = 'weplate.wsgi.application'
 # Database
 # https://docs.djangoproject.com/en/4.0/ref/settings/#databases
 
-DATABASES = {
-    'default': env.db()
-}
+if os.getenv('SERVER_SOFTWARE', '').startswith('Google App Engine'):
+    DATABASES = {
+        'default': {
+            'ENGINE': 'django.db.backends.mysql',
+            'HOST': '/cloudsql/<your-cloudsql-connection-string>',
+            'NAME': 'polls',
+            'USER': '<your-database-user>',
+            'PASSWORD': '<your-database-password>',
+        }
+    }
+else:
+    DATABASES = {
+        'default': env.db()
+    }
 
 
 # Password validation
