@@ -13,3 +13,6 @@ backend/migrations
 # VIM (for editing on prod)
 .*.swp
 */.*.swp
+
+# Docker testing fuckery
+data/db/*
