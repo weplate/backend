@@ -98,6 +98,8 @@ Endpoints:
 - `meal_item_vote` parameters (must be authenticated):
   - `meal_item`: ID of `MealItem` object
   - `liked`: boolean
+- `text_feedback` parameters (must be authenticated):
+  - `feedback`: str at most 512 chars
 
 ### Authentication
 

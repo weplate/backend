@@ -227,6 +227,11 @@ class LogMealItemVote(models.Model):
     liked = models.BooleanField(verbose_name='Liked (True/False)')
 
 
+class LogTextFeedback(models.Model):
+    timestamp = models.DateTimeField()
+    feedback = models.CharField(max_length=512, verbose_name='Feedback')
+
+
 class LogSurvey(models.Model):
     # Basic info about who/when
     profile = models.ForeignKey(to=StudentProfile, on_delete=models.CASCADE)

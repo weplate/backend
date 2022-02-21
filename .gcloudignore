@@ -23,7 +23,7 @@ venv/
 
 # Django
 db.sqlite3
-static_weplate/
+# static_weplate/ We need this kinda
 
 # Cloud SQL and Docker Testing
 data/db/*
