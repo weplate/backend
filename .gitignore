@@ -22,3 +22,7 @@ data/db/*/*
 
 cloud_sql_proxy
 cloud_sql_proxy_x64.exe
+
+# Parsing babson data
+data/babson/~$*.xlsx
+data/babson/meal_items.json
