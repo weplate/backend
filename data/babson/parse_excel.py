@@ -10,6 +10,8 @@ OUT_FILE_PATH = 'meal_items.json'
 
 SCHOOL_ID = 10
 
+MAX_NAME_LEN = 64
+
 
 def main():
     print(os.getcwd())
@@ -65,7 +67,7 @@ def main():
             portion, p_err = parse_portion(get_col(3))
             if not p_err:
                 meal_items[get_col(0)] = {
-                    'name': get_col(0),
+                    'name': get_col(0)[:MAX_NAME_LEN],
                     'station': cur_station,
                     'portion_weight': num_col(6),
                     'portion_volume': portion,

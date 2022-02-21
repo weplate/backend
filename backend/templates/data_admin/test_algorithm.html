@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Test Algorithm</title>
+</head>
+<body>
+
+<h1>Testing Algorithm</h1>
+<ul>
+    <li><p>User: {{ profile }} (id: {{ profile.id }})</p></li>
+    <li><p>Large Item: {{ large }} (id: {{ large.id }})<p></li>
+    <li><p>Small Item 1: {{ small1 }} (id: {{ small1.id }})</p></li>
+    <li><p>Small Item 2: {{ small2 }} (id: {{ small2.id }})</p></li>
+</ul>
+
+<h2>Overall Stats</h2>
+
+<table>
+    <tr>
+        <th>Nutrient</th>
+        <th>Expected</th>
+        <th>Got</th>
+    </tr>
+    {% for k, v1, v2 in info %}
+        <tr>
+            <td>{{ k }}</td>
+            <td>{{ v1 }}</td>
+            <td>{{ v2 }}</td>
+        </tr>
+    {% endfor %}
+</table>
+
+<ul>
+    <li>Cost: {{ cost }}</li>
+    <li>Runtime: {{ runtime }}s</li>
+</ul>
+
+</body>
+</html>

@@ -21,7 +21,7 @@ class School(models.Model):
 
 
 class NutritionalInfo(models.Model):
-    name = models.CharField(max_length=64, unique=True)
+    name = models.CharField(max_length=64, default='No Name')
 
     # Macronutrients
     calories = models.FloatField(verbose_name='Calories (cal)', default=0)

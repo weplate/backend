@@ -7,7 +7,7 @@ from rest_framework.request import Request
 from rest_framework.response import Response
 
 from backend.algorithm import nutritional_info_for, LARGE_PORTION_MAX, MIN_FILL, SMALL_PORTION_MAX, ItemType, \
-    LARGE_PORTION
+    LARGE_PORTION, simulated_annealing
 from backend.models import StudentProfile, MealItem, MealSelection
 from backend.views.api.info import ReadNutritionalInfoSerializer
 from backend.views.common import IsStudent
@@ -70,27 +70,31 @@ class SuggestViewSet(viewsets.ViewSet):
 
     @action(methods=['get'], detail=False)
     def portions(self, request: Request):
+        profile = StudentProfile.objects.get(user=request.user)
         req_ser = PortionRequestSerializer(data=request.query_params)
         req_ser.is_valid(raise_exception=True)
         small1 = req_ser.validated_data['small1']
         small2 = req_ser.validated_data['small2']
         large = req_ser.validated_data['large']
 
-        tmp_sh = SMALL_PORTION_MAX * MIN_FILL
-        tmp_lh = LARGE_PORTION_MAX * MIN_FILL
+        (large_volume, small1_volume, small2_volume), cost, runtime = \
+            simulated_annealing(large, small1, small2, nutritional_info_for(profile))
 
         return Response({
             'small1': {
-                'volume': tmp_sh,
-                'weight': tmp_sh * small1.density()
+                'volume': small1_volume,
+                'weight': small1_volume * small1.density()
             },
             'small2': {
-                'volume': tmp_sh,
-                'weight': tmp_sh * small2.density()
+                'volume': small2_volume,
+                'weight': small2_volume * small2.density()
             },
             'large': {
-                'volume': tmp_lh,
-                'weight': tmp_lh * large.density()
+                'volume': large_volume,
+                'weight': large_volume * large.density()
             },
-            'quality': 69
+            'quality': {
+                'cost': cost,
+                'runtime': runtime
+            }
         })

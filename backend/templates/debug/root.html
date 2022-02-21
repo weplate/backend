@@ -2,71 +2,21 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>WePlate Debug View</title>
+    <title>Root</title>
 </head>
 <body>
+    <h1>Weplate Root</h1>
 
-<h1>WePlate Debug View</h1>
-
-<h2>Schools</h2>
-
-<div>
     <ul>
-        {% for school in schools %}
-            <li>{{ school }}</li>
-        {% endfor %}
+        <li>
+            <a href="{% url 'da_view_all' %}">View All</a>
+        </li>
+        <li>
+            <a href="{% url 'da_upload_meal_items' %}">Upload Meal Items</a>
+        </li>
+        <li>
+            <a href="{% url 'da_test_algorithm' 10 23 22 27 %}">Test Algorithm (with sample data)</a>
+        </li>
     </ul>
-</div>
-
-<h2>Student Profiles</h2>
-
-<div>
-    <ul>
-        {% for user in student_profiles %}
-            <li>{{ user }}</li>
-        {% endfor %}
-    </ul>
-</div>
-
-<h2>Meals</h2>
-
-<div>
-    <ul>
-        {% for meal in meals %}
-            <li>{{ meal }}</li>
-        {% endfor %}
-    </ul>
-</div>
-
-<h2>Meal Items</h2>
-
-<div>
-    <ul>
-        {% for item in meal_items %}
-            <li>{{ item }}</li>
-        {% endfor %}
-    </ul>
-</div>
-
-<h2>Ingredients</h2>
-
-<div>
-    <ul>
-        {% for ing in ingredients %}
-            <li>{{ ing }}</li>
-        {% endfor %}
-    </ul>
-</div>
-
-<h2>School Accounts</h2>
-
-<div>
-    <ul>
-        {% for acc in school_profiles %}
-            <li>{{ acc }}</li>
-        {% endfor %}
-    </ul>
-</div>
-
 </body>
 </html>
