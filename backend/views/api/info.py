@@ -72,7 +72,7 @@ class MealSelectionViewSet(viewsets.ReadOnlyModelViewSet):
     def get_queryset(self):
         profile = StudentProfile.objects.get(user=self.request.user)
 
-        objects = MealSelection.objects.filter(school=profile.school).order_by('-timestamp')
+        objects = MealSelection.objects.filter(school=profile.school).order_by('timestamp')
         if 'group' in self.request.query_params:
             objects = objects.filter(group=self.request.query_params['group'])
         if 'date' in self.request.query_params:

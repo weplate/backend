@@ -1,12 +1,21 @@
 from django.shortcuts import render
-from django.urls import path, include
+from django.urls import path, include, reverse
 
+from backend.models import MealItem, StudentProfile
 from backend.views.data_admin import data_admin_view
 
 
 @data_admin_view
 def debug_view(request):
-    return render(request, 'debug/root.html')
+    # algorithm_test
+    u = StudentProfile.objects.get(pk=10)
+    l = MealItem.objects.get(name='CHE 21 Brown Rice and Lentils with Arugula')
+    s1 = MealItem.objects.get(name='CHE 18 Mongolian Beef')
+    s2 = MealItem.objects.get(name='CHE 17 Roasted Vegetable Medley')
+
+    return render(request, 'debug/root.html', {
+        'algorithm_test_url': reverse('da_test_algorithm', args=[u.pk, l.pk, s1.pk, s2.pk]),
+    })
 
 
 urlpatterns = [

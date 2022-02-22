@@ -54,7 +54,7 @@ Under `api/`:
 - GET `schools/`: Lists schools
 - GET `ingredients/<school_id>/`: Lists all ingredients associated with a school
 - GET `school_items/`: Requires auth: lists all meal items associated with a school
-- GET `meals/`: Requires auth: lists all meals associated with a school, 5 most recent
+- GET `meals/`: Requires auth: lists all meals associated with a school, 5 earliest in increasing order of timestamp
   - GET query parameter `group=<group>`: Filters by group
   - GET query parameter `date=yyyy-mm-dd`: Filters by day
   - `meals/<meal_id>/`: lists detailed information about a meal

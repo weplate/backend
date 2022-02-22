@@ -6,7 +6,7 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.request import Request
 from rest_framework.response import Response
 
-from backend.algorithm import nutritional_info_for, LARGE_PORTION_MAX, MIN_FILL, SMALL_PORTION_MAX, ItemType, \
+from backend.algorithm import nutritional_info_for, ItemType, \
     LARGE_PORTION, simulated_annealing
 from backend.models import StudentProfile, MealItem, MealSelection
 from backend.views.api.info import ReadNutritionalInfoSerializer
