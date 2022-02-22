@@ -1,6 +1,5 @@
 import functools
-import json
-from json import JSONDecodeError
+import importlib
 
 from django import forms
 from django.conf import settings
@@ -8,10 +7,10 @@ from django.http import HttpResponse
 from django.shortcuts import render, get_object_or_404
 from django.urls import path
 from django.views.generic import FormView
-from rest_framework import serializers
 
-from backend.algorithm import simulated_annealing, nutritional_info_for, fast_combine
-from backend.models import School, StudentProfile, MealSelection, MealItem, Ingredient, SchoolProfile, NutritionalInfo
+from backend.algorithm import simulated_annealing, nutritional_info_for, fast_combine, LARGE_PORTION_MAX, \
+    SMALL_PORTION_MAX
+from backend.models import School, StudentProfile, MealSelection, MealItem, Ingredient, SchoolProfile
 
 
 def data_admin_view(fun):
@@ -40,59 +39,29 @@ def view_all(request):
     })
 
 
-class UploadMealItemsForm(forms.Form):
-    # school = forms.ChoiceField(choices=(), required=True)
-    file = forms.FileField(required=True)
-
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-        # self.fields['school'].choices = tuple(((s.pk, s.name) for s in School.objects.all()))
+class UpdateSchoolDataForm(forms.Form):
+    module = forms.CharField(max_length=256)
 
     def clean(self):
         cleaned_data = super().clean()
 
         try:
-            json_file_data = json.load(cleaned_data['file'])
-            cleaned_data['file'] = json_file_data
-        except JSONDecodeError as e:
-            self.add_error('file', f'File is invalid json.  Error: {e}')
+            cleaned_data['module'] = (module := importlib.import_module(cleaned_data['module']))
+            if not hasattr(module, 'setup'):
+                self.add_error('module', f'Module has no setup function')
+        except ImportError as e:
+            self.add_error('module', f'Error while importing module: {e}')
 
         return cleaned_data
 
 
-class NutritionalInfoSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = NutritionalInfo
-        fields = '__all__'
-
-
-class MealItemSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = MealItem
-        exclude = ['nutrition', 'ingredients']
-
-
-class UploadMealItemsFormView(FormView):
-    template_name = 'data_admin/upload_meal_items.html'
-    form_class = UploadMealItemsForm
+class UpdateSchoolDataFormView(FormView):
+    template_name = 'data_admin/update_school_data.html'
+    form_class = UpdateSchoolDataForm
     success_url = '/'
 
     def form_valid(self, form):
-        file_data = form.cleaned_data['file']
-
-        objs = []
-        for d in file_data.values():
-            ser = NutritionalInfoSerializer(data=d)
-            ser.is_valid(raise_exception=True)
-            objs.append(NutritionalInfo(**ser.validated_data))
-        n_info_list = NutritionalInfo.objects.bulk_create(objs)
-        objs.clear()
-        for m_info, n_info in zip(file_data.values(), n_info_list):
-            ser = MealItemSerializer(data=m_info)
-            ser.is_valid(raise_exception=True)
-            objs.append(MealItem(**ser.validated_data, nutrition=n_info))
-        MealItem.objects.bulk_create(objs)
-
+        form.cleaned_data['module'].setup()
         return super().form_valid(form)
 
 
@@ -106,12 +75,16 @@ def test_algorithm(request, profile, large, small1, small2):
     (lc, s1c, s2c), cost, perf = simulated_annealing(large, small1, small2, want_info)
     got_info = fast_combine(large, small1, small2, lc, s1c, s2c)
 
+    lo_info = fast_combine(large, small1, small2, LARGE_PORTION_MAX / 2, SMALL_PORTION_MAX / 2, SMALL_PORTION_MAX / 2)
+    hi_info = fast_combine(large, small1, small2, LARGE_PORTION_MAX, SMALL_PORTION_MAX, SMALL_PORTION_MAX)
+
     return render(request, 'data_admin/test_algorithm.html', {
         'profile': profile,
         'large': large,
         'small1': small1,
         'small2': small2,
-        'info': [(k, v1, v2) for (k, v1), (_, v2) in zip(want_info.__dict__.items(), got_info.__dict__.items())
+        'info': [(k, v1, v2, v3, v4) for (k, v1), (_, v2), (__, v3), (___, v4) in
+                 zip(want_info.__dict__.items(), got_info.__dict__.items(), lo_info.__dict__.items(), hi_info.__dict__.items())
                  if k != '_state' and k != 'id' and k != 'name'],
         'cost': cost,
         'runtime': perf,
@@ -120,6 +93,6 @@ def test_algorithm(request, profile, large, small1, small2):
 
 urlpatterns = [
     path('view_all/', view_all, name='da_view_all'),
-    path('upload_meal_items/', UploadMealItemsFormView.as_view(), name='da_upload_meal_items'),
+    path('update_school_data/', UpdateSchoolDataFormView.as_view(), name='da_update_school_data'),
     path('test_algorithm/<int:profile>/<int:large>/<int:small1>/<int:small2>/', test_algorithm, name='da_test_algorithm'),
 ]

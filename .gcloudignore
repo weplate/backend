@@ -25,7 +25,8 @@ venv/
 db.sqlite3
 # static_weplate/ We need this kinda
 
-# Cloud SQL and Docker Testing
+# Cloud SQL and Docker Testing and Dat
+data/babson/*
 data/db/*
 cloud_sql_proxy
 cloud_sql_proxy_x64.exe

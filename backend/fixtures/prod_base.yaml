@@ -21,13 +21,13 @@
     user: 10 # Should link to above profile
     school: 10
     name: 'Alex Hu'
-    height: 150
-    weight: 70
+    height: 172
+    weight: 75
     birthdate: 2003-11-24
     meals: ['breakfast', 'lunch', 'dinner']
     meal_length: 45
     sex: 'male'
-    health_goal: 'athletic_performance'
+    health_goal: 'improve_health'
     activity_level: 'moderate'
     grad_year: 2025
     ban: []

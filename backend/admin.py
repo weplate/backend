@@ -7,7 +7,15 @@ admin.site.register(models.SchoolProfile)
 admin.site.register(models.StudentProfile)
 
 admin.site.register(models.MealSelection)
-admin.site.register(models.MealItem)
+
+
+@admin.register(models.MealItem, site=admin.site)
+class MealItemAdmin(admin.ModelAdmin):
+    list_display = ('id', 'name', 'station', 'school')
+    list_display_links = ('name',)
+    list_filter = ('school', 'station')
+
+
 admin.site.register(models.Ingredient)
 admin.site.register(models.NutritionalInfo)
 

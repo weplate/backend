@@ -40,7 +40,7 @@ python3 manage.py loaddata test_user.yaml
 
 ## Deployment to AppEngine
 
-```
+```bash
 gcloud auth login
 gcloud app deploy app.yaml cron.yaml
 ```

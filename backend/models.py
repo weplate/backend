@@ -44,6 +44,9 @@ class NutritionalInfo(models.Model):
     vitamin_c = models.FloatField(verbose_name='Vitamin C (mg)', default=0)
     vitamin_a = models.FloatField(verbose_name='Vitamin A (RE)', default=0)
 
+    def __str__(self):
+        return f'Info {self.name} for {self.mealitem_set.name} (calories: {self.calories})'
+
 
 class Ingredient(models.Model):
     name = models.CharField(max_length=64)

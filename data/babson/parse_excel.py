@@ -1,7 +1,7 @@
-import os
-import re
-from re import Match
 import json
+import re
+import pathlib
+from re import Match
 
 from openpyxl import load_workbook
 from openpyxl.worksheet.worksheet import Worksheet
@@ -12,15 +12,17 @@ SCHOOL_ID = 10
 
 MAX_NAME_LEN = 64
 
+FILE_DIR = pathlib.Path(__file__).resolve().parent
 
-def main():
-    print(os.getcwd())
-    main_sheet: Worksheet = load_workbook('Nutrition_Facts_as_of_Feb_20.xlsx', read_only=True)['Report']
-    micros_sheet: Worksheet = load_workbook('Additional_nutrition_facts_as_of_Feb_20.xlsx', read_only=True)['Report']
+
+def get_meal_items():
+    main_sheet: Worksheet = load_workbook(FILE_DIR / 'Nutrition_Facts_as_of_Feb_20.xlsx', read_only=True)['Report']
+    micros_sheet: Worksheet = load_workbook(FILE_DIR / 'Additional_nutrition_facts_as_of_Feb_20.xlsx', read_only=True)['Report']
 
     meal_items = {}
 
     NUM = r'(([0-9]+)(\/[0-9]+)?)'
+
     def parse_num(matches: Match):
         mat = matches.group(1)
         if '/' in mat:
@@ -30,6 +32,7 @@ def main():
             return float(mat)
 
     bad_units = set()
+
     def parse_portion(value):
         if m := re.search(rf'{NUM} cup', value):
             return parse_num(m) * 236.588, False
@@ -47,7 +50,6 @@ def main():
             bad_units.add(value)
             return -1, True
 
-
     # Read macros
     cur_station = None
     for row in main_sheet.iter_rows(13, 1039):
@@ -56,7 +58,8 @@ def main():
 
         def num_col(col):
             val = get_col(col)
-            if val is None: return 0
+            if val is None:
+                return 0
             else:
                 only_num = re.sub(r'[^0-9.]', '', val)
                 return float(only_num) if only_num else 0
@@ -78,12 +81,13 @@ def main():
                     'protein': num_col(9),
                     'total_fat': num_col(10),
                     'saturated_fat': num_col(11),
-                    'sugar': num_col(12),
-                    'fiber': num_col(14),
-                    'sodium': num_col(16),
-                    'potassium': num_col(17),
-                    'calcium': num_col(18),
-                    'iron': num_col(19),
+                    'carbohydrate': num_col(12),
+                    'sugar': num_col(13),
+                    'fiber': num_col(15),
+                    'sodium': num_col(17),
+                    'potassium': num_col(18),
+                    'calcium': num_col(19),
+                    'iron': num_col(21),
                 }
 
     for row in micros_sheet.iter_rows(13, 1021):
@@ -92,7 +96,8 @@ def main():
 
         def num_col(col):
             val = get_col(col)
-            if val is None: return 0
+            if val is None:
+                return 0
             else:
                 only_num = re.sub(r'[^0-9.]', '', val)
                 return float(only_num) if only_num else 0
@@ -104,6 +109,12 @@ def main():
                 'vitamin_a': num_col(10),
                 'cholesterol': num_col(13),
             }
+
+    return meal_items, bad_units
+
+
+def main():
+    meal_items, bad_units = get_meal_items()
 
     with open(OUT_FILE_PATH, 'w') as f:
         json.dump(meal_items, f)

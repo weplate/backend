@@ -1,4 +1,5 @@
 import datetime
+import os
 import random
 import time
 from math import exp
@@ -8,24 +9,24 @@ from backend.models import NutritionalInfo, StudentProfile, MealItem
 DEFAULT_REQS = dict(
     name='Nutritional Requirements',
     # Macro
-    calories=0,
-    carbohydrate=0,
-    protein=0,
-    total_fat=0,
-    saturated_fat=0,
-    trans_fat=0,
+    calories=-1,       # closest
+    carbohydrate=-1,   # closest
+    protein=-1,        # closest
+    total_fat=-1,      # closest
+    saturated_fat=-1,  # closest
+    trans_fat=0,       # closest
 
     # Micro
-    sugar=0,
-    cholesterol=0,
-    fiber=4,
-    sodium=620,
-    potassium=240,
-    calcium=470,
-    iron=3,
-    vitamin_d=0,
-    vitamin_c=16,
-    vitamin_a=0,
+    sugar=27,          # at most
+    cholesterol=300,   # at most
+    fiber=30,          # at least
+    sodium=4000,       # at most
+    potassium=3000,    # at least
+    calcium=1000,      # at least
+    iron=8,            # at least
+    vitamin_d=600,     # at least
+    vitamin_c=90,      # at least
+    vitamin_a=3000,    # at least
 )
 
 # https://www.notion.so/weplate/Mathematical-Calculations-f561b494f2444cfc87023ef615cf2bea#a976edca5f394d26b536704ff6f691ce
@@ -54,11 +55,6 @@ MACROS_COEFF = {
 }
 
 CALS_IN_FAT = 9
-
-SUGAR_REQS = {
-    StudentProfile.MALE: 36,
-    StudentProfile.FEMALE: 25
-}
 
 # https://www.notion.so/weplate/Mathematical-Calculations-f561b494f2444cfc87023ef615cf2bea#422b95b3b18c47dbbbee6eec642ee779
 # Max portion sizes and min fill requirement, in ML
@@ -109,7 +105,6 @@ def nutritional_info_for(profile: StudentProfile) -> NutritionalInfo:
     reqs.carbohydrate = carb_ratio * profile.weight
     reqs.total_fat = fat_cal_ratio * reqs.calories / CALS_IN_FAT
     reqs.saturated_fat = sat_fat_cal_ratio * reqs.calories / CALS_IN_FAT
-    reqs.sugar = SUGAR_REQS[profile.sex]
 
     # Divide reqs by 3 since these are daily
     for prop in DEFAULT_REQS.keys():
@@ -187,66 +182,68 @@ def fast_combine(m1: MealItem, m2: MealItem, m3: MealItem, c1, c2, c3):
 
 # Source: https://en.wikipedia.org/wiki/Simulated_annealing#Overview
 # https://codeforces.com/blog/entry/94437
+def temperature(_, cur_t, alpha):
+    return cur_t * alpha
+
+
+def neighbour(cur_state, cur_t):
+    l, s1, s2 = cur_state
+    rnd = random.randint(0, 2)
+    if rnd == 0:
+        return move_value(l, cur_t, LARGE_PORTION_MAX / 2, LARGE_PORTION_MAX), s1, s2
+    elif rnd == 1:
+        return l, move_value(s1, cur_t, SMALL_PORTION_MAX / 2, SMALL_PORTION_MAX), s2
+    else:
+        return l, s1, move_value(s2, cur_t, SMALL_PORTION_MAX / 2, SMALL_PORTION_MAX)
+
+
+def cost(cur_state, requirements, big_item, small_item_1, small_item_2):
+    cur_info = fast_combine(big_item, small_item_1, small_item_2, cur_state[0], cur_state[1], cur_state[2])
+    res = 0
+
+    # For macros, the weights are (generally) the amount of calories in each item
+    res += (cur_info.calories - requirements.calories) ** 2
+    res += 4 * (cur_info.calories - requirements.calories) ** 2
+    res += 1.5 * 4 * (cur_info.protein - requirements.protein) ** 2
+    res += 9 * (cur_info.total_fat - requirements.total_fat) ** 2
+    res += 1.2 * 9 * (cur_info.saturated_fat - requirements.saturated_fat) ** 2
+    res += 9 * (cur_info.trans_fat - requirements.trans_fat) ** 2
+
+    # # For the rest... I'm kinda just yoloing this ngl...
+    # res += 3 * (cur_info.sugar - requirements.sugar) ** 2
+    # res += 0.1 * (cur_info.cholesterol - requirements.cholesterol)
+    # res += 4 * (cur_info.fiber - requirements.fiber)
+    # res += 0.2 * (cur_info.sodium - requirements.sodium)
+    # res += 0.1 * (cur_info.potassium - requirements.potassium)
+    # res += 0.15 * (cur_info.calcium - requirements.calcium)
+    # res += 0.5 * (cur_info.iron - requirements.iron)
+    #
+    # # Vitamins!!!
+    # res += 0.1 * max(0., requirements.vitamin_c - cur_info.vitamin_c) ** 2
+    # res += 0.1 * max(0., requirements.vitamin_d - cur_info.vitamin_d) ** 2
+    # res += 0.1 * max(0., requirements.vitamin_a - cur_info.vitamin_a) ** 2
+
+    return res
+
+
+def accept_probability(next_state, cur_state, cur_t, requirements, big_item, small_item_1, small_item_2):
+    c_new = cost(next_state, requirements, big_item, small_item_1, small_item_2)
+    c_old = cost(cur_state, requirements, big_item, small_item_1, small_item_2)
+    return 1 if c_new <= c_old else exp(-(c_new - c_old) / cur_t)
+
 
 def simulated_annealing(big_item: MealItem, small_item_1: MealItem, small_item_2: MealItem,
                         requirements: NutritionalInfo, iterations: int = 10000, alpha: float = 0.999):
     state = (LARGE_PORTION_MAX * 0.75, SMALL_PORTION_MAX * 0.75, SMALL_PORTION_MAX * 0.75)
 
-    def init_temp():
-        return 1
-
-    def temperature(_, cur_t):
-        return cur_t * alpha
-
-    def neighbour(cur_state, cur_t):
-        l, s1, s2 = cur_state
-        rnd = random.randint(0, 2)
-        if rnd == 0:
-            return move_value(l, cur_t, LARGE_PORTION_MAX / 2, LARGE_PORTION_MAX), s1, s2
-        elif rnd == 1:
-            return l, move_value(s1, cur_t, SMALL_PORTION_MAX / 2, SMALL_PORTION_MAX), s2
-        else:
-            return l, s1, move_value(s2, cur_t, SMALL_PORTION_MAX / 2, SMALL_PORTION_MAX)
-
-    def cost(cur_state):
-        cur_info = fast_combine(big_item, small_item_1, small_item_2, cur_state[0], cur_state[1], cur_state[2])
-        res = 0
-
-        # For macros, the weights are (generally) the amount of calories in each item
-        res += (cur_info.calories - requirements.calories) ** 2
-        res += 4 * (cur_info.calories - requirements.calories) ** 2
-        res += 4 * (cur_info.protein - requirements.protein) ** 2
-        res += 9 * (cur_info.total_fat - requirements.total_fat) ** 2
-        res += 1.2 * 9 * (cur_info.saturated_fat - requirements.saturated_fat) ** 2
-        res += 9 * (cur_info.trans_fat - requirements.trans_fat) ** 2
-
-        # For the rest... I'm kinda just yoloing this ngl...
-        res += 3 * (cur_info.sugar - requirements.sugar) ** 2
-        res += 0.1 * (cur_info.cholesterol - requirements.cholesterol)
-        res += 4 * (cur_info.fiber - requirements.fiber)
-        res += 0.2 * (cur_info.sodium - requirements.sodium)
-        res += 0.1 * (cur_info.potassium - requirements.potassium)
-        res += 0.15 * (cur_info.calcium - requirements.calcium)
-        res += 0.5 * (cur_info.iron - requirements.iron)
-
-        # Vitamins!!!
-        res += 0.1 * max(0., requirements.vitamin_c - cur_info.vitamin_c) ** 2
-        res += 0.1 * max(0., requirements.vitamin_d - cur_info.vitamin_d) ** 2
-        res += 0.1 * max(0., requirements.vitamin_a - cur_info.vitamin_a) ** 2
-
-        return res
-
-    def accept_probability(next_state, cur_state, cur_t):
-        c_new = cost(next_state)
-        c_old = cost(cur_state)
-        return 1 if c_new <= c_old else exp(-(c_new - c_old) / cur_t)
+    random.seed(os.urandom(32))
 
     start_time = time.perf_counter()
-    t = init_temp()
+    t = 1  # Initial Temp
     for k in range(iterations):
-        t = temperature(k, t)
+        t = temperature(k, t, alpha)
         state_new = neighbour(state, t)
-        if accept_probability(state_new, state, t) >= random.random():
+        if accept_probability(state_new, state, t, requirements, big_item, small_item_1, small_item_2) >= random.random():
             state = state_new
 
-    return state, cost(state), time.perf_counter() - start_time
+    return state, cost(state, requirements, big_item, small_item_1, small_item_2), time.perf_counter() - start_time
