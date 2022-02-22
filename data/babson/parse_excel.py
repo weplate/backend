@@ -67,8 +67,12 @@ def get_meal_items():
         if get_col(1) is None:
             cur_station = get_col(0)
         else:
-            portion, p_err = parse_portion(get_col(3))
-            if not p_err:
+            portion, err = parse_portion(get_col(3))
+
+            if any((k in cur_station for k in ['FLAME +', 'CUCINA', 'FRESH 52', 'SOUP', 'DELI'])):
+                err = True
+
+            if not err:
                 meal_items[get_col(0)] = {
                     'name': get_col(0)[:MAX_NAME_LEN],
                     'station': cur_station,
