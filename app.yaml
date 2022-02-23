@@ -35,6 +35,3 @@ handlers:
   script: auto
 # [END gaestd_py_django_app_yaml]
 # [END django_app]
-
-manual_scaling:
-  instances: 1

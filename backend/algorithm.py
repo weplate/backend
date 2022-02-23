@@ -68,7 +68,7 @@ MIN_FILL = 0.5
 # Which section (protein, veg, carb) should have the large portion
 LARGE_PORTION = {
     StudentProfile.BUILD_MUSCLE: MealItem.PROTEIN,
-    StudentProfile.ATHLETIC_PERFORMANCE: MealItem.CARBOHYDRATE,
+    StudentProfile.ATHLETIC_PERFORMANCE: MealItem.GRAINS,
     StudentProfile.LOSE_WEIGHT: MealItem.VEGETABLE,
     StudentProfile.IMPROVE_TONE: MealItem.PROTEIN,
     StudentProfile.IMPROVE_HEALTH: MealItem.VEGETABLE

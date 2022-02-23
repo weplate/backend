@@ -1,4 +1,4 @@
-from random import choices
+from random import sample
 
 from rest_framework import viewsets, serializers
 from rest_framework.authentication import SessionAuthentication, TokenAuthentication
@@ -51,20 +51,22 @@ class SuggestViewSet(viewsets.ViewSet):
 
         large_items = meal.items.filter(category=MealItem.PROTEIN)
         small1_items = meal.items.filter(category=MealItem.VEGETABLE)
-        small2_items = meal.items.filter(category=MealItem.CARBOHYDRATE)
+        small2_items = meal.items.filter(category=MealItem.GRAINS)
         large_category = MealItem.PROTEIN
         small1_category = MealItem.VEGETABLE
-        small2_category = MealItem.CARBOHYDRATE
+        small2_category = MealItem.GRAINS
 
         if LARGE_PORTION[profile.health_goal] == MealItem.VEGETABLE:
             large_items, small1_items = small1_items, large_items
             large_category, small1_category = small1_category, large_category
-        elif LARGE_PORTION[profile.health_goal] == MealItem.CARBOHYDRATE:
+        elif LARGE_PORTION[profile.health_goal] == MealItem.GRAINS:
             large_items, small2_items = small2_items, large_items
             large_category, small2_category = small2_category, large_category
 
         num_to_pick = min(TEST_COMBO_TRIES, len(large_items), len(small1_items), len(small2_items))
-        item_choices = list(zip(choices(large_items, k=num_to_pick), choices(small1_items, k=num_to_pick), choices(small2_items, k=num_to_pick)))
+        item_choices = list(zip(sample(list(large_items.all()), k=num_to_pick),
+                                sample(list(small1_items.all()), k=num_to_pick),
+                                sample(list(small2_items.all()), k=num_to_pick)))
 
         result_choices = {
             'large': {

@@ -63,11 +63,11 @@ class MealItem(models.Model):
 
     VEGETABLE = 'vegetable'
     PROTEIN = 'protein'
-    CARBOHYDRATE = 'carbohydrate'
+    GRAINS = 'grain'
     CATEGORIES = (
         (VEGETABLE, 'Vegetable'),
         (PROTEIN, 'Protein'),
-        (CARBOHYDRATE, 'Carbohydrate')
+        (GRAINS, 'Grains')
     )
 
     category = models.CharField(max_length=32, choices=CATEGORIES, null=True, blank=True)
