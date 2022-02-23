@@ -57,7 +57,7 @@ class Ingredient(models.Model):
 
 
 class MealItem(models.Model):
-    name = models.CharField(max_length=64, unique=True)
+    name = models.CharField(max_length=64)
     station = models.CharField(max_length=64)
     graphic = models.FileField(upload_to=MEAL_ITEM_GRAPHICS, null=True)
 
@@ -79,7 +79,7 @@ class MealItem(models.Model):
 
 
 class MealSelection(models.Model):
-    name = models.CharField(max_length=64, unique=True)
+    name = models.CharField(max_length=64)
     group = models.CharField(max_length=64, default='default')
     timestamp = models.DateTimeField()
     items = models.ManyToManyField(to=MealItem)

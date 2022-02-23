@@ -7,14 +7,22 @@ from backend.views.data_admin import data_admin_view
 
 @data_admin_view
 def debug_view(request):
+    messages = []
+
     # algorithm_test
-    u = StudentProfile.objects.get(pk=10)
-    l = MealItem.objects.get(name='CHE 21 Brown Rice and Lentils with Arugula')
-    s1 = MealItem.objects.get(name='CHE 18 Mongolian Beef')
-    s2 = MealItem.objects.get(name='CHE 17 Roasted Vegetable Medley')
+    try:
+        u = StudentProfile.objects.get(pk=10)
+        l = MealItem.objects.get(name__iexact='Cilantro Rice')
+        s1 = MealItem.objects.get(name__iexact='Chicken Ratatouille')
+        s2 = MealItem.objects.get(name__iexact='Chopped Kale Salad with Beets')
+        algo_test_url = reverse('da_test_algorithm', args=[u.pk, l.pk, s1.pk, s2.pk])
+    except MealItem.DoesNotExist as e:
+        algo_test_url = reverse('da_test_algorithm', args=[1, 1, 1, 1])
+        messages.append(f'Could not retrieve object for algorithm test: {e}')
 
     return render(request, 'debug/root.html', {
-        'algorithm_test_url': reverse('da_test_algorithm', args=[u.pk, l.pk, s1.pk, s2.pk]),
+        'algorithm_test_url': algo_test_url,
+        'messages': messages,
     })
 
 

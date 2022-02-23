@@ -1,4 +1,5 @@
 import json
+import logging
 import re
 import pathlib
 from re import Match
@@ -69,13 +70,16 @@ def get_meal_items():
         else:
             portion, err = parse_portion(get_col(3))
 
-            if any((k in cur_station for k in ['FLAME +', 'CUCINA', 'FRESH 52', 'SOUP', 'DELI'])):
+            if not any((k in cur_station.lower() for k in ['homestyle', 'rooted', 'fyul', 'flame', '500 degrees', 'carved and crafted'])):
                 err = True
 
             if not err:
+                station_meal, station_name = cur_station.split(' - ', 1)
+                station_meal = station_meal.lower()
+
                 meal_items[get_col(0)] = {
-                    'name': get_col(0)[:MAX_NAME_LEN],
-                    'station': cur_station,
+                    'name': re.sub(r'CHE( (\d+))? ', '', get_col(0), count=1)[:MAX_NAME_LEN],
+                    'station': station_name,
                     'portion_weight': num_col(6),
                     'portion_volume': portion,
                     'ingredients': [],
@@ -92,6 +96,9 @@ def get_meal_items():
                     'potassium': num_col(18),
                     'calcium': num_col(19),
                     'iron': num_col(21),
+
+                    # Extra property for other parsers
+                    'meal': station_meal,
                 }
 
     for row in micros_sheet.iter_rows(13, 1021):
@@ -113,6 +120,8 @@ def get_meal_items():
                 'vitamin_a': num_col(10),
                 'cholesterol': num_col(13),
             }
+
+    print(f'Parsed {len(meal_items)} meal items')
 
     return meal_items, bad_units
 

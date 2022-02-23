@@ -1,7 +1,7 @@
 import datetime
-import pytz
 from collections import defaultdict
 
+import pytz
 from rest_framework import serializers
 
 from backend.models import Ingredient, MealItem, MealSelection, NutritionalInfo, School
@@ -31,6 +31,7 @@ def add_meal_items():
             exclude = ['nutrition', 'ingredients']
 
     objs = []
+    meals = []
     for d in meal_items.values():
         ser = NutritionalInfoSerializer(data=d)
         ser.is_valid(raise_exception=True)
@@ -41,14 +42,16 @@ def add_meal_items():
         ser = MealItemSerializer(data=m_info)
         ser.is_valid(raise_exception=True)
         objs.append(MealItem(**ser.validated_data, nutrition=n_info))
+        meals.append(str(m_info['meal']))
 
-    return MealItem.objects.bulk_create(objs)
+    return list(zip(MealItem.objects.bulk_create(objs), meals))
 
 
 MEAL_TIMES = (
-    ('Breakfast', datetime.time(hour=7, minute=30)),
-    ('Lunch', datetime.time(hour=11)),
-    ('Dinner', datetime.time(hour=16, minute=30)),
+    ('breakfast', datetime.time(hour=7, minute=30)),
+    ('lunch', datetime.time(hour=11)),
+    ('afterlunch', datetime.time(hour=14, minute=30)),
+    ('dinner', datetime.time(hour=16, minute=30)),
 )
 
 MEAL_KEYS = tuple(map(lambda x: x[0], MEAL_TIMES))
@@ -56,13 +59,10 @@ MEAL_KEYS = tuple(map(lambda x: x[0], MEAL_TIMES))
 NUM_DAYS = 50
 
 
-def add_meals(meal_items: list[MealItem]):
+def add_meals(meal_items: list[tuple[MealItem, str]]):
     items_by_meal = defaultdict(list)
-    for item in meal_items:
-        for key in MEAL_KEYS:
-            if key in item.station:
-                items_by_meal[key].append(item)
-                break
+    for item, meal in meal_items:
+        items_by_meal[meal].append(item)
 
     meals: list[MealSelection] = []
     items = []
@@ -72,19 +72,26 @@ def add_meals(meal_items: list[MealItem]):
             day = datetime.date.today() + datetime.timedelta(days=i)
             dt = datetime.datetime.combine(day, t,
                                            pytz.timezone('America/Toronto'))  # The Waterloo student did this one
-            meals.append(MealSelection(name=f'{k} on {day.strftime("%A, %B")} {day.day}, {day.year}',
-                                       group=k.lower(),
+            meals.append(MealSelection(name=f'{k.title()} on {day.strftime("%A, %B")} {day.day}, {day.year}',
+                                       group=k,
                                        timestamp=dt,
                                        school=babson))
             items.append(items_by_meal[k])
 
     meals = MealSelection.objects.bulk_create(meals)
-    for m, i in zip(meals, items):
+    print(f'Created {len(meals)} meal objects')
+    for idx, (m, i) in enumerate(zip(meals, items), start=1):
         m.items.set(i)
         m.save()
+
+        if idx % 40 == 0:
+            print(f'Updated `items` field for {idx} meal objects')
 
 
 def setup():
     clean_old()
+    print('Cleaned old data')
     meal_items = add_meal_items()
+    print(f'Added {len(meal_items)} meal items to DB')
     add_meals(meal_items)
+    print('Setup complete!')

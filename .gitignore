@@ -4,7 +4,6 @@ venv/
 
 # Django
 db.sqlite3
-backend/migrations
 
 # Python
 *.pyc
