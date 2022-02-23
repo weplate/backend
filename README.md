@@ -23,6 +23,7 @@ To connect to the remote DB, you must first get the Cloud SQL Auth proxy, suing:
 
 - [Windows](https://dl.google.com/cloudsql/cloud_sql_proxy_x64.exe)
 - Linux: run `wget https://dl.google.com/cloudsql/cloud_sql_proxy.linux.amd64 -O cloud_sql_proxy && chmod +x cloud_sql_proxy`
+  - You can also do `gcloud component add cloud_sql_proxy` and you will no longer need the `./`
 
 Then, run:
 

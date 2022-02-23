@@ -64,10 +64,13 @@ def add_meals(meal_items: list[tuple[MealItem, str]]):
     for item, meal in meal_items:
         items_by_meal[meal].append(item)
 
+    items_by_meal['afterlunch'] = \
+        list(filter(lambda x: x.station in ['FLAME', '500 Degrees', 'Carved and Crafted'], items_by_meal['lunch']))
+
     meals: list[MealSelection] = []
     items = []
     babson = School.objects.get(pk=SCHOOL_ID)
-    for i in range(NUM_DAYS):
+    for i in range(-1, NUM_DAYS):
         for k, t in MEAL_TIMES:
             day = datetime.date.today() + datetime.timedelta(days=i)
             dt = datetime.datetime.combine(day, t,

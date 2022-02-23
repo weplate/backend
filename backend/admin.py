@@ -11,9 +11,10 @@ admin.site.register(models.MealSelection)
 
 @admin.register(models.MealItem, site=admin.site)
 class MealItemAdmin(admin.ModelAdmin):
-    list_display = ('id', 'name', 'station', 'school')
+    list_display = ('id', 'name', 'station', 'category', 'school')
     list_display_links = ('name',)
     list_filter = ('school', 'station')
+    ordering = ('name', 'station')
 
 
 admin.site.register(models.Ingredient)

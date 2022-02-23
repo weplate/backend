@@ -1,3 +1,5 @@
+from random import choices
+
 from rest_framework import viewsets, serializers
 from rest_framework.authentication import SessionAuthentication, TokenAuthentication
 from rest_framework.decorators import action
@@ -6,7 +8,7 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.request import Request
 from rest_framework.response import Response
 
-from backend.algorithm import nutritional_info_for, ItemType, \
+from backend.algorithm import nutritional_info_for, \
     LARGE_PORTION, simulated_annealing
 from backend.models import StudentProfile, MealItem, MealSelection
 from backend.views.api.info import ReadNutritionalInfoSerializer
@@ -28,12 +30,16 @@ class PortionRequestSerializer(serializers.Serializer):
     large = serializers.PrimaryKeyRelatedField(queryset=MealItem.objects.all())
 
 
+TEST_COMBO_TRIES = 50
+COMBOS_NEEDED = 3
+
+
 class SuggestViewSet(viewsets.ViewSet):
     authentication_classes = [SessionAuthentication, TokenAuthentication]
     permission_classes = [IsAuthenticated, IsStudent]
 
     def list(self, _):
-        return Response({'detail': 'page either suggest/items or suggest/portions!'})
+        return Response({'detail': 'page either suggest/<meal_id>/items or suggest/portions!'})
 
     def retrieve(self, _, pk=None):
         return Response({'detail': 'You\'re paging the detail=True endpoint, please page suggest/items'})
@@ -43,28 +49,44 @@ class SuggestViewSet(viewsets.ViewSet):
         meal = get_object_or_404(MealSelection, pk=pk)
         profile = StudentProfile.objects.get(user=request.user)
 
-        from random import choices
-        options = {
-            ItemType.PROTEIN: choices(meal.items.all(), k=3),
-            ItemType.VEGETABLE: choices(meal.items.all(), k=3),
-            ItemType.CARBOHYDRATE: choices(meal.items.all(), k=3)
+        large_items = meal.items.filter(category=MealItem.PROTEIN)
+        small1_items = meal.items.filter(category=MealItem.VEGETABLE)
+        small2_items = meal.items.filter(category=MealItem.CARBOHYDRATE)
+        large_category = MealItem.PROTEIN
+        small1_category = MealItem.VEGETABLE
+        small2_category = MealItem.CARBOHYDRATE
+
+        if LARGE_PORTION[profile.health_goal] == MealItem.VEGETABLE:
+            large_items, small1_items = small1_items, large_items
+            large_category, small1_category = small1_category, large_category
+        elif LARGE_PORTION[profile.health_goal] == MealItem.CARBOHYDRATE:
+            large_items, small2_items = small2_items, large_items
+            large_category, small2_category = small2_category, large_category
+
+        num_to_pick = min(TEST_COMBO_TRIES, len(large_items), len(small1_items), len(small2_items))
+        item_choices = list(zip(choices(large_items, k=num_to_pick), choices(small1_items, k=num_to_pick), choices(small2_items, k=num_to_pick)))
+
+        result_choices = {
+            'large': {
+                'items': [],
+                'category': large_category
+            },
+            'small1': {
+                'items': [],
+                'category': small1_category
+            },
+            'small2': {
+                'items': [],
+                'category': small2_category
+            },
         }
 
-        # Build actual result (divvying up plates correctly)
-        def to_pk(item_list):
-            return list(map(lambda x: x.pk, item_list))
-
-        result_choices = {}
-        large_choice = LARGE_PORTION[profile.health_goal]
-        result_choices['large'] = {
-            'category': large_choice,
-            'items': to_pk(options.pop(large_choice))
-        }
-        for plate_section, (category, items) in zip(('small1', 'small2'), options.items()):
-            result_choices[plate_section] = {
-                'category': category,
-                'items': to_pk(items)
-            }
+        for l, s1, s2 in sorted(item_choices,
+                           key=lambda c: simulated_annealing(c[0], c[1], c[2],
+                                                             nutritional_info_for(profile), 0.99, 0.01))[:COMBOS_NEEDED]:
+            result_choices['large']['items'].append(l.pk)
+            result_choices['small1']['items'].append(s1.pk)
+            result_choices['small2']['items'].append(s2.pk)
 
         return Response(result_choices)
 

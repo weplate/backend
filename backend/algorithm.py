@@ -31,10 +31,11 @@ DEFAULT_REQS = dict(
 
 # https://www.notion.so/weplate/Mathematical-Calculations-f561b494f2444cfc87023ef615cf2bea#a976edca5f394d26b536704ff6f691ce
 ACTIVITY_LEVEL_COEFF = {
+    StudentProfile.SEDENTARY: 1.2,
     StudentProfile.MILD: 1.3,
     StudentProfile.MODERATE: 1.5,
     StudentProfile.HEAVY: 1.7,
-    StudentProfile.EXTREME: 1.9
+    StudentProfile.EXTREME: 1.9,
 }
 
 # https://www.notion.so/weplate/Mathematical-Calculations-f561b494f2444cfc87023ef615cf2bea#a976edca5f394d26b536704ff6f691ce
@@ -63,21 +64,14 @@ LARGE_PORTION_MAX = 610
 MIN_FILL = 0.5
 
 
-# More Stuff
-class ItemType:
-    PROTEIN = 'protein'
-    VEGETABLE = 'vegetable'
-    CARBOHYDRATE = 'carbohydrate'
-
-
 # https://www.notion.so/weplate/Mathematical-Calculations-f561b494f2444cfc87023ef615cf2bea#c137e967c1224678be2079cb5a55a3a6
 # Which section (protein, veg, carb) should have the large portion
 LARGE_PORTION = {
-    StudentProfile.BUILD_MUSCLE: ItemType.PROTEIN,
-    StudentProfile.ATHLETIC_PERFORMANCE: ItemType.CARBOHYDRATE,
-    StudentProfile.LOSE_WEIGHT: ItemType.VEGETABLE,
-    StudentProfile.IMPROVE_TONE: ItemType.PROTEIN,
-    StudentProfile.IMPROVE_HEALTH: ItemType.VEGETABLE
+    StudentProfile.BUILD_MUSCLE: MealItem.PROTEIN,
+    StudentProfile.ATHLETIC_PERFORMANCE: MealItem.CARBOHYDRATE,
+    StudentProfile.LOSE_WEIGHT: MealItem.VEGETABLE,
+    StudentProfile.IMPROVE_TONE: MealItem.PROTEIN,
+    StudentProfile.IMPROVE_HEALTH: MealItem.VEGETABLE
 }
 
 
@@ -182,10 +176,6 @@ def fast_combine(m1: MealItem, m2: MealItem, m3: MealItem, c1, c2, c3):
 
 # Source: https://en.wikipedia.org/wiki/Simulated_annealing#Overview
 # https://codeforces.com/blog/entry/94437
-def temperature(_, cur_t, alpha):
-    return cur_t * alpha
-
-
 def neighbour(cur_state, cur_t):
     l, s1, s2 = cur_state
     rnd = random.randint(0, 2)
@@ -233,15 +223,15 @@ def accept_probability(next_state, cur_state, cur_t, requirements, big_item, sma
 
 
 def simulated_annealing(big_item: MealItem, small_item_1: MealItem, small_item_2: MealItem,
-                        requirements: NutritionalInfo, iterations: int = 10000, alpha: float = 0.999):
+                        requirements: NutritionalInfo, alpha: float = 0.999, smallest_temp: float = 0.0001):
     state = (LARGE_PORTION_MAX * 0.75, SMALL_PORTION_MAX * 0.75, SMALL_PORTION_MAX * 0.75)
 
     random.seed(os.urandom(32))
 
     start_time = time.perf_counter()
-    t = 1  # Initial Temp
-    for k in range(iterations):
-        t = temperature(k, t, alpha)
+    t = 1 / alpha  # Initial Temp
+    while t >= smallest_temp:
+        t *= alpha
         state_new = neighbour(state, t)
         if accept_probability(state_new, state, t, requirements, big_item, small_item_1, small_item_2) >= random.random():
             state = state_new

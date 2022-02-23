@@ -59,13 +59,24 @@ class Ingredient(models.Model):
 class MealItem(models.Model):
     name = models.CharField(max_length=64)
     station = models.CharField(max_length=64)
-    graphic = models.FileField(upload_to=MEAL_ITEM_GRAPHICS, null=True)
+    graphic = models.FileField(upload_to=MEAL_ITEM_GRAPHICS, null=True, blank=True)
+
+    VEGETABLE = 'vegetable'
+    PROTEIN = 'protein'
+    CARBOHYDRATE = 'carbohydrate'
+    CATEGORIES = (
+        (VEGETABLE, 'Vegetable'),
+        (PROTEIN, 'Protein'),
+        (CARBOHYDRATE, 'Carbohydrate')
+    )
+
+    category = models.CharField(max_length=32, choices=CATEGORIES, null=True, blank=True)
 
     # Ingredients, nutrition, other numbers
     portion_weight = models.FloatField(verbose_name='Portion Weight (g)')
     portion_volume = models.FloatField(verbose_name='Portion Volume (ml)')
     nutrition = models.ForeignKey(to=NutritionalInfo, on_delete=models.SET_NULL, null=True)
-    ingredients = models.ManyToManyField(to=Ingredient)
+    ingredients = models.ManyToManyField(to=Ingredient, blank=True)
 
     # School it belongs to
     school = models.ForeignKey(to=School, on_delete=models.CASCADE)
@@ -128,12 +139,14 @@ class StudentProfile(models.Model):
         (FEMALE, 'Female')
     ]
 
+    SEDENTARY = 'sedentary'
     MILD = 'mild'
     MODERATE = 'moderate'
     HEAVY = 'heavy'
     EXTREME = 'extreme'
 
     ACTIVITY_LEVELS = [
+        (SEDENTARY, 'Sedentary'),
         (MILD, 'Mild Activity'),
         (MODERATE, 'Moderate Activity'),
         (HEAVY, 'Heavy or Labour Intensive Activity'),

@@ -131,5 +131,5 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/4.0/howto/static-files/
 
-STATIC_ROOT = 'static_weplate/'
+STATIC_ROOT = 'static_weplate'
 STATIC_URL = '/static_weplate/'

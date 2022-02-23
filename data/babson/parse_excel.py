@@ -70,15 +70,15 @@ def get_meal_items():
         else:
             portion, err = parse_portion(get_col(3))
 
-            if not any((k in cur_station.lower() for k in ['homestyle', 'rooted', 'fyul', 'flame', '500 degrees', 'carved and crafted'])):
+            station_meal, station_name = cur_station.split(' - ', 1)
+            station_meal = station_meal.lower()
+
+            if station_name.lower() not in ['homestyle', 'rooted', 'fyul', 'flame', '500 degrees', 'carved and crafted']:
                 err = True
 
             if not err:
-                station_meal, station_name = cur_station.split(' - ', 1)
-                station_meal = station_meal.lower()
-
                 meal_items[get_col(0)] = {
-                    'name': re.sub(r'CHE( (\d+))? ', '', get_col(0), count=1)[:MAX_NAME_LEN],
+                    'name': re.sub(r'CHE( (\d+))? (- )?', '', get_col(0), count=1)[:MAX_NAME_LEN],
                     'station': station_name,
                     'portion_weight': num_col(6),
                     'portion_volume': portion,

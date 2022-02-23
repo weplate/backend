@@ -16,8 +16,8 @@ from backend.models import School, StudentProfile, MealSelection, MealItem, Ingr
 def data_admin_view(fun):
     @functools.wraps(fun)
     def wrapper(request, *args, **kwargs):
-        if not settings.DEBUG:
-            return HttpResponse('Debug mode not enabled.  This is a debug-only page')
+        # if not settings.DEBUG:
+        #     return HttpResponse('Debug mode not enabled.  This is a debug-only page')
 
         if not request.user.is_superuser:
             return HttpResponse('Only superusers may use this.')

@@ -26,7 +26,7 @@ handlers:
 # This configures Google App Engine to serve the files in the app's static
 # directory.
 - url: /static_weplate
-  static_dir: static_weplate/
+  static_dir: static_weplate
 
 # This handler routes all requests not caught above to your main app. It is
 # required when static routes are defined, but can be omitted (along with
