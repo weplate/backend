@@ -131,6 +131,10 @@ def move_value(x, c, l, r):
     return clamp(x + c * (r - l) * s, l, r)
 
 
+def scale_tuple(t, c):
+    return tuple(x * c for x in t)
+
+
 def fast_combine(m1: MealItem, m2: MealItem, m3: MealItem, c1, c2, c3):
     """
     Sums the nutritional information of three meal items together when given portion sizes (in mL).  Dicts are slow
@@ -216,24 +220,29 @@ def cost(cur_state, requirements, big_item, small_item_1, small_item_2):
     return res
 
 
-def accept_probability(next_state, cur_state, cur_t, requirements, big_item, small_item_1, small_item_2):
+def accept_probability(next_state, cur_state, cur_t, requirements, big_item, small_item_1, small_item_2, scale_coeff):
     c_new = cost(next_state, requirements, big_item, small_item_1, small_item_2)
     c_old = cost(cur_state, requirements, big_item, small_item_1, small_item_2)
-    return 1 if c_new <= c_old else exp(-(c_new - c_old) / cur_t)
+    return 1 if c_new <= c_old else exp(-(c_new - c_old) * scale_coeff / cur_t)
 
 
 def simulated_annealing(big_item: MealItem, small_item_1: MealItem, small_item_2: MealItem,
-                        requirements: NutritionalInfo, alpha: float = 0.999, smallest_temp: float = 0.0001):
+                        requirements: NutritionalInfo, alpha: float = 0.999, smallest_temp: float = 0.0005):
     state = (LARGE_PORTION_MAX * 0.75, SMALL_PORTION_MAX * 0.75, SMALL_PORTION_MAX * 0.75)
+    cost_bound = max(cost(scale_tuple(state, 4 / 3), requirements, big_item, small_item_1, small_item_2),
+                     cost(scale_tuple(state, 2 / 3), requirements, big_item, small_item_1, small_item_2))
+    scale_cost_by = 750 / cost_bound
 
     random.seed(os.urandom(32))
 
     start_time = time.perf_counter()
-    t = 1 / alpha  # Initial Temp
+    t = 0.6  # Initial Temp
     while t >= smallest_temp:
         t *= alpha
         state_new = neighbour(state, t)
-        if accept_probability(state_new, state, t, requirements, big_item, small_item_1, small_item_2) >= random.random():
+        if accept_probability(state_new, state, t, requirements, big_item, small_item_1, small_item_2, scale_cost_by) >= random.random():
             state = state_new
+
+        # print(state, t, accept_probability(state_new, state, t, requirements, big_item, small_item_1, small_item_2, scale_cost_by))
 
     return state, cost(state, requirements, big_item, small_item_1, small_item_2), time.perf_counter() - start_time
