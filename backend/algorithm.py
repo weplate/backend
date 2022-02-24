@@ -197,11 +197,11 @@ def cost(cur_state, requirements, big_item, small_item_1, small_item_2):
 
     # For macros, the weights are (generally) the amount of calories in each item
     res += (cur_info.calories - requirements.calories) ** 2
-    res += 4 * (cur_info.calories - requirements.calories) ** 2
-    res += 1.5 * 4 * (cur_info.protein - requirements.protein) ** 2
-    res += 9 * (cur_info.total_fat - requirements.total_fat) ** 2
-    res += 1.2 * 9 * (cur_info.saturated_fat - requirements.saturated_fat) ** 2
-    res += 9 * (cur_info.trans_fat - requirements.trans_fat) ** 2
+    res += 8 * (cur_info.carbohydrate - requirements.carbohydrate) ** 2
+    res += 20 * (cur_info.protein - requirements.protein) ** 2
+    res += 50 * (cur_info.total_fat - requirements.total_fat) ** 2
+    res += 1.5 * 50 * (cur_info.saturated_fat - requirements.saturated_fat) ** 2
+    res += 50 * (cur_info.trans_fat - requirements.trans_fat) ** 2
 
     # # For the rest... I'm kinda just yoloing this ngl...
     # res += 3 * (cur_info.sugar - requirements.sugar) ** 2
@@ -231,7 +231,7 @@ def simulated_annealing(big_item: MealItem, small_item_1: MealItem, small_item_2
     state = (LARGE_PORTION_MAX * 0.75, SMALL_PORTION_MAX * 0.75, SMALL_PORTION_MAX * 0.75)
     cost_bound = max(cost(scale_tuple(state, 4 / 3), requirements, big_item, small_item_1, small_item_2),
                      cost(scale_tuple(state, 2 / 3), requirements, big_item, small_item_1, small_item_2))
-    scale_cost_by = 750 / cost_bound
+    scale_cost_by = 60 / cost_bound
 
     random.seed(os.urandom(32))
 
@@ -244,5 +244,6 @@ def simulated_annealing(big_item: MealItem, small_item_1: MealItem, small_item_2
             state = state_new
 
         # print(state, t, accept_probability(state_new, state, t, requirements, big_item, small_item_1, small_item_2, scale_cost_by))
+        print(accept_probability(state_new, state, t, requirements, big_item, small_item_1, small_item_2, scale_cost_by))
 
     return state, cost(state, requirements, big_item, small_item_1, small_item_2), time.perf_counter() - start_time

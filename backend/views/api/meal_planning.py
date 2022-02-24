@@ -30,7 +30,7 @@ class PortionRequestSerializer(serializers.Serializer):
     large = serializers.PrimaryKeyRelatedField(queryset=MealItem.objects.all())
 
 
-TEST_COMBO_TRIES = 50
+TEST_COMBO_TRIES = 100
 COMBOS_NEEDED = 3
 
 

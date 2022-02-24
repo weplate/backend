@@ -88,6 +88,9 @@ def test_algorithm(request, profile, large, small1, small2):
                  if k != '_state' and k != 'id' and k != 'name'],
         'cost': cost,
         'runtime': perf,
+        'large_size': lc,
+        'small1_size': s1c,
+        'small2_size': s2c,
     })
 
 
