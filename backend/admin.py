@@ -52,7 +52,22 @@ class MealItemAdmin(admin.ModelAdmin):
 admin.site.register(models.Ingredient)
 admin.site.register(models.NutritionalInfo)
 
-admin.site.register(models.LogMealChoice)
+
+@admin.register(models.LogMealChoice, site=admin.site)
+class LogMealChoiceAdmin(admin.ModelAdmin):
+    list_display = ('id', 'profile_name', 'profile_email', 'meal', 'timestamp')
+    list_display_links = ('profile_email',)
+    list_filter = ('meal',)
+    ordering = ('meal',)
+    search_fields = ('profile_name', 'profile_email', 'meal')
+
+    def profile_name(self, obj):
+        return obj.profile.name
+
+    def profile_email(self, obj):
+        return obj.profile.user.username
+
+
 admin.site.register(models.LogMealItemVote)
 admin.site.register(models.LogSurvey)
 

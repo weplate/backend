@@ -1,24 +1,23 @@
 import json
-import logging
-import re
 import pathlib
+import re
 from re import Match
 
 from openpyxl import load_workbook
 from openpyxl.worksheet.worksheet import Worksheet
 
 OUT_FILE_PATH = 'meal_items.json'
-
 SCHOOL_ID = 10
-
 MAX_NAME_LEN = 64
-
+VERSION = 0
 FILE_DIR = pathlib.Path(__file__).resolve().parent
 
 
 def get_meal_items():
     main_sheet: Worksheet = load_workbook(FILE_DIR / 'Nutrition_Facts_as_of_Feb_20.xlsx', read_only=True)['Report']
     micros_sheet: Worksheet = load_workbook(FILE_DIR / 'Additional_nutrition_facts_as_of_Feb_20.xlsx', read_only=True)['Report']
+    with open(FILE_DIR / 'meal_categories.json') as f:
+        meal_categories = json.load(f)
 
     meal_items = {}
 
@@ -77,14 +76,22 @@ def get_meal_items():
                 err = True
 
             if not err:
+                name = re.sub(r'(CHE( (\d+))? (- )?)|(HC )|([\w+]+: )',
+                               '', get_col(0), count=1)[:MAX_NAME_LEN]
                 meal_items[get_col(0)] = {
-                    'name': re.sub(r'CHE( (\d+))? (- )?', '', get_col(0), count=1)[:MAX_NAME_LEN],
+                    # basic info
+                    'name': name,
+                    'school': SCHOOL_ID,
+                    'version': VERSION,
                     'station': station_name,
+
+                    # basic nutritional/number info
                     'portion_weight': num_col(6),
                     'portion_volume': portion,
                     'ingredients': [],
-                    'school': SCHOOL_ID,
+                    'category': meal_categories.get(name, None),
 
+                    # sheet 1 nutrients
                     'calories': num_col(7),
                     'protein': num_col(9),
                     'total_fat': num_col(10),

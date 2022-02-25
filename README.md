@@ -10,8 +10,10 @@ Run the following commands:
 ```bash
 python3 install -r requirements.txt
 python3 manage.py createsuperuser
+python3 manage.py makemigrations
 python3 manage.py makemigrations backend
 python3 manage.py makemigrations authtoken
+python3 manage.py createcachetable
 python3 manage.py migrate
 ```
 
@@ -37,6 +39,12 @@ To add some fake data for testing, run the following:
 ```bash
 python3 manage.py loaddata test_school.yaml
 python3 manage.py loaddata test_user.yaml
+```
+
+Here is also some base user info for the prod DB.
+
+```bash
+python3 manage.py loaddata prod_base.yaml
 ```
 
 ## Deployment to AppEngine

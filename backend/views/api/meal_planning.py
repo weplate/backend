@@ -1,5 +1,7 @@
+import datetime
 from random import sample
 
+from django.core.cache import cache
 from rest_framework import viewsets, serializers
 from rest_framework.authentication import SessionAuthentication, TokenAuthentication
 from rest_framework.decorators import action
@@ -32,6 +34,7 @@ class PortionRequestSerializer(serializers.Serializer):
 
 TEST_COMBO_TRIES = 100
 COMBOS_NEEDED = 3
+CACHE_TIMEOUT = datetime.timedelta(hours=6).total_seconds()
 
 
 class SuggestViewSet(viewsets.ViewSet):
@@ -48,6 +51,9 @@ class SuggestViewSet(viewsets.ViewSet):
     def items(self, request: Request, pk=None):
         meal = get_object_or_404(MealSelection, pk=pk)
         profile = StudentProfile.objects.get(user=request.user)
+        cache_key = f'weplate_suggest_items_meal{meal.id}_profile{profile.id}'
+        if _cache_res := cache.get(cache_key):
+            return Response(_cache_res)
 
         large_items = meal.items.filter(category=MealItem.PROTEIN)
         small1_items = meal.items.filter(category=MealItem.VEGETABLE)
@@ -83,13 +89,15 @@ class SuggestViewSet(viewsets.ViewSet):
             },
         }
 
+        requirements = nutritional_info_for(profile)
         for l, s1, s2 in sorted(item_choices,
                            key=lambda c: simulated_annealing(c[0], c[1], c[2],
-                                                             nutritional_info_for(profile), 0.99, 0.01))[:COMBOS_NEEDED]:
+                                                             requirements, 0.99, 0.01)[1])[:COMBOS_NEEDED]:
             result_choices['large']['items'].append(l.pk)
             result_choices['small1']['items'].append(s1.pk)
             result_choices['small2']['items'].append(s2.pk)
 
+        cache.set(cache_key, result_choices, CACHE_TIMEOUT)
         return Response(result_choices)
 
     @action(methods=['get'], detail=False)

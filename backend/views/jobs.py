@@ -1,5 +1,6 @@
 import functools
 
+from django.core.cache import cache
 from django.http import HttpResponse
 from django.urls import path
 from rest_framework.authtoken.models import Token
@@ -24,6 +25,13 @@ def clear_tokens(_):
     return HttpResponse(f'Removed {count} tokens')
 
 
+@appengine_job
+def clear_cache(_):
+    cache.clear()
+    return HttpResponse('Cleared Cache')
+
+
 urlpatterns = [
-    path('clear_tokens/', clear_tokens, name='clear_tokens')
+    path('clear_tokens/', clear_tokens, name='clear_tokens'),
+    path('clear_cache/', clear_cache, name='clear cache'),
 ]

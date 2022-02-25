@@ -22,6 +22,7 @@ class School(models.Model):
 
 class NutritionalInfo(models.Model):
     name = models.CharField(max_length=64, default='No Name')
+    version = models.IntegerField(verbose_name='Object Version', default=0)
 
     # Macronutrients
     calories = models.FloatField(verbose_name='Calories (cal)', default=0)
@@ -50,6 +51,7 @@ class NutritionalInfo(models.Model):
 
 class Ingredient(models.Model):
     name = models.CharField(max_length=64)
+    version = models.IntegerField(verbose_name='Object Version')
     school = models.ForeignKey(to=School, on_delete=models.CASCADE)
 
     def __str__(self):
@@ -58,6 +60,7 @@ class Ingredient(models.Model):
 
 class MealItem(models.Model):
     name = models.CharField(max_length=64)
+    version = models.IntegerField(verbose_name='Object Version')
     station = models.CharField(max_length=64)
     graphic = models.FileField(upload_to=MEAL_ITEM_GRAPHICS, null=True, blank=True)
 
@@ -91,6 +94,7 @@ class MealItem(models.Model):
 
 class MealSelection(models.Model):
     name = models.CharField(max_length=64)
+    version = models.IntegerField(verbose_name='Object Version')
     group = models.CharField(max_length=64, default='default')
     timestamp = models.DateTimeField()
     items = models.ManyToManyField(to=MealItem)
@@ -99,7 +103,7 @@ class MealSelection(models.Model):
     school = models.ForeignKey(to=School, on_delete=models.CASCADE)
 
     def __str__(self):
-        return f'{self.name} (group: {self.group}) @ {self.timestamp.isoformat()} @ {self.school.name}'
+        return self.name
 
 
 class StudentProfile(models.Model):

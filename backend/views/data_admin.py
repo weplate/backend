@@ -2,7 +2,7 @@ import functools
 import importlib
 
 from django import forms
-from django.conf import settings
+from django.core.cache import cache
 from django.http import HttpResponse
 from django.shortcuts import render, get_object_or_404
 from django.urls import path
@@ -19,8 +19,8 @@ def data_admin_view(fun):
         # if not settings.DEBUG:
         #     return HttpResponse('Debug mode not enabled.  This is a debug-only page')
 
-        if not request.user.is_superuser:
-            return HttpResponse('Only superusers may use this.')
+        # if not request.user.is_superuser:
+        #     return HttpResponse('Only superusers may use this.')
 
         return fun(request, *args, **kwargs)
 
@@ -65,6 +65,7 @@ class UpdateSchoolDataFormView(FormView):
         return super().form_valid(form)
 
 
+@data_admin_view
 def test_algorithm(request, profile, large, small1, small2):
     profile = get_object_or_404(StudentProfile, pk=profile)
     large = get_object_or_404(MealItem, pk=large)
@@ -94,8 +95,15 @@ def test_algorithm(request, profile, large, small1, small2):
     })
 
 
+@data_admin_view
+def clear_cache(_):
+    cache.clear()
+    return HttpResponse('Cleared cache')
+
+
 urlpatterns = [
     path('view_all/', view_all, name='da_view_all'),
-    path('update_school_data/', UpdateSchoolDataFormView.as_view(), name='da_update_school_data'),
+    path('update_school_data/', data_admin_view(UpdateSchoolDataFormView.as_view()), name='da_update_school_data'),
     path('test_algorithm/<int:profile>/<int:large>/<int:small1>/<int:small2>/', test_algorithm, name='da_test_algorithm'),
+    path('clear_cache/', clear_cache, name='da_clear_cache'),
 ]

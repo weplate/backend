@@ -244,6 +244,6 @@ def simulated_annealing(big_item: MealItem, small_item_1: MealItem, small_item_2
             state = state_new
 
         # print(state, t, accept_probability(state_new, state, t, requirements, big_item, small_item_1, small_item_2, scale_cost_by))
-        print(accept_probability(state_new, state, t, requirements, big_item, small_item_1, small_item_2, scale_cost_by))
+        # print(accept_probability(state_new, state, t, requirements, big_item, small_item_1, small_item_2, scale_cost_by))
 
     return state, cost(state, requirements, big_item, small_item_1, small_item_2), time.perf_counter() - start_time
