@@ -90,6 +90,7 @@ def get_meal_items():
                     'portion_volume': portion,
                     'ingredients': [],
                     'category': meal_categories.get(name, None),
+                    'trim_id': get_col(1),
 
                     # sheet 1 nutrients
                     'calories': num_col(7),

@@ -19,8 +19,8 @@ def data_admin_view(fun):
         # if not settings.DEBUG:
         #     return HttpResponse('Debug mode not enabled.  This is a debug-only page')
 
-        # if not request.user.is_superuser:
-        #     return HttpResponse('Only superusers may use this.')
+        if not request.user.is_superuser:
+            return HttpResponse('Only superusers may use this.')
 
         return fun(request, *args, **kwargs)
 

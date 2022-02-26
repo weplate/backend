@@ -2,3 +2,6 @@ cron:
 - description: 'clear tokens'
   url: /jobs/clear_tokens
   schedule: every 24 hours
+- description: 'clear cache'
+  url: /jobs/clear_cache
+  schedule: every 24 hours
