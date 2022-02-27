@@ -52,6 +52,7 @@ def get_meal_items():
 
     # Read macros
     cur_station = None
+    unparseable = 0
     for row in main_sheet.iter_rows(13, 1039):
         def get_col(col):
             return row[col].value
@@ -74,6 +75,9 @@ def get_meal_items():
 
             if station_name.lower() not in ['homestyle', 'rooted', 'fyul', 'flame', '500 degrees', 'carved and crafted']:
                 err = True
+            else:
+                if err:
+                    unparseable += 1
 
             if not err:
                 name = re.sub(r'(CHE( (\d+))? (- )?)|(HC )|([\w+]+: )',
@@ -130,6 +134,7 @@ def get_meal_items():
             }
 
     print(f'Parsed {len(meal_items)} meal items')
+    print(f'Got {unparseable} items with correct stations but otherwise unreadable')
 
     return meal_items, bad_units
 

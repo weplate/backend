@@ -27,12 +27,23 @@ MEAL_TIMES_DICT = dict(MEAL_TIMES)
 MEAL_KEYS = tuple(map(lambda x: x[0], MEAL_TIMES))
 MEAL_SELECTION_COLS = [0, 1, 4, 5, 6, 7, 10]
 
+ALLERGY_INGREDIENTS = ['peanuts', 'tree_nuts', 'eggs', 'soy', 'wheat', 'fish', 'shellfish', 'corn', 'gelatin']
+
 
 def clean_old():
     MealSelection.objects.filter(school__id=SCHOOL_ID, version=0).delete()
     NutritionalInfo.objects.filter(mealitem__school__id=SCHOOL_ID, version=0).delete()
     MealItem.objects.filter(school__id=SCHOOL_ID, version=0).delete()
     Ingredient.objects.filter(school__id=SCHOOL_ID, version=0).delete()
+
+
+def add_ingredients():
+    babson = School.objects.get(pk=SCHOOL_ID)
+    objs = []
+    for name in ALLERGY_INGREDIENTS:
+        objs.append(Ingredient(name=name, school=babson, version=VERSION))
+    objs = Ingredient.objects.bulk_create(objs)
+    return {obj.name: obj for obj in objs}
 
 
 def add_meal_items():
@@ -141,6 +152,8 @@ def add_meals(meal_items: list[tuple[MealItem, str, str]]):
 def setup():
     clean_old()
     print('Cleaned old data')
+    _ = add_ingredients()
+    print(f'Added {len(_)} ingredients')
     meal_items = add_meal_items()
     print(f'Added {len(meal_items)} meal items to DB')
     add_meals(meal_items)

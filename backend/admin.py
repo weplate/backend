@@ -33,7 +33,7 @@ class MealSelectionAdmin(admin.ModelAdmin):
     list_display = ('id', 'name', 'group', 'timestamp', 'item_count', 'school')
     list_display_links = ('name',)
     list_filter = ('school', 'group')
-    ordering = ('name', 'timestamp')
+    ordering = ('timestamp',)
     search_fields = ('name', 'group')
 
     def item_count(self, obj):
@@ -45,7 +45,7 @@ class MealItemAdmin(admin.ModelAdmin):
     list_display = ('id', 'name', 'station', 'category', 'school')
     list_display_links = ('name',)
     list_filter = ('school', 'station', 'category')
-    ordering = ('name', 'station')
+    ordering = ('station', 'name')
     search_fields = ('name', 'station')
 
 
