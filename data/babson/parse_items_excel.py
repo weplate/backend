@@ -14,10 +14,10 @@ FILE_DIR = pathlib.Path(__file__).resolve().parent
 
 
 def get_meal_items():
-    main_sheet: Worksheet = load_workbook(FILE_DIR / 'Nutrition_Facts_as_of_Feb_20.xlsx', read_only=True)['Report']
+    main_sheet: Worksheet = load_workbook(FILE_DIR / 'Nutrition_Facts_as_of_Feb_20_1.xlsx', read_only=True)['Report']
     micros_sheet: Worksheet = load_workbook(FILE_DIR / 'Additional_nutrition_facts_as_of_Feb_20.xlsx', read_only=True)['Report']
-    with open(FILE_DIR / 'meal_categories.json') as f:
-        meal_categories = json.load(f)
+    # with open(FILE_DIR / 'meal_categories.json') as f:
+    #     meal_categories = json.load(f)
 
     meal_items = {}
 
@@ -65,10 +65,10 @@ def get_meal_items():
                 only_num = re.sub(r'[^0-9.]', '', val)
                 return float(only_num) if only_num else 0
 
-        if get_col(1) is None:
+        if get_col(2) is None:
             cur_station = get_col(0)
         else:
-            portion, err = parse_portion(get_col(3))
+            portion, err = parse_portion(get_col(4))
 
             station_meal, station_name = cur_station.split(' - ', 1)
             station_meal = station_meal.lower()
@@ -90,24 +90,24 @@ def get_meal_items():
                     'station': station_name,
 
                     # basic nutritional/number info
-                    'portion_weight': num_col(6),
+                    'portion_weight': num_col(7),
                     'portion_volume': portion,
                     'ingredients': [],
-                    'category': meal_categories.get(name, None),
-                    'trim_id': get_col(1),
+                    'category': c.lower() if (c := get_col(1)) else None,
+                    'trim_id': get_col(2),
 
                     # sheet 1 nutrients
-                    'calories': num_col(7),
-                    'protein': num_col(9),
-                    'total_fat': num_col(10),
-                    'saturated_fat': num_col(11),
-                    'carbohydrate': num_col(12),
-                    'sugar': num_col(13),
-                    'fiber': num_col(15),
-                    'sodium': num_col(17),
-                    'potassium': num_col(18),
-                    'calcium': num_col(19),
-                    'iron': num_col(21),
+                    'calories': num_col(8),
+                    'protein': num_col(10),
+                    'total_fat': num_col(11),
+                    'saturated_fat': num_col(12),
+                    'carbohydrate': num_col(13),
+                    'sugar': num_col(14),
+                    'fiber': num_col(16),
+                    'sodium': num_col(18),
+                    'potassium': num_col(19),
+                    'calcium': num_col(20),
+                    'iron': num_col(22),
 
                     # Extra property for other parsers
                     'meal': station_meal,
