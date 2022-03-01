@@ -6,7 +6,7 @@ from rest_framework.authentication import SessionAuthentication, TokenAuthentica
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 
-from backend.models import School, StudentProfile, Ingredient, MealSelection, MealItem, NutritionalInfo
+from backend.models import School, StudentProfile, Ingredient, MealSelection, MealItem
 from backend.views.common import IsStudent
 
 MAX_MEALS = 5
@@ -40,18 +40,10 @@ class IngredientViewSet(viewsets.ViewSet):
         return Response(IngredientSerializer(Ingredient.objects.filter(school__id=pk), many=True).data)
 
 
-class ReadNutritionalInfoSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = NutritionalInfo
-        exclude = ['name', 'id']
-
-
 class ReadMealItemSerializer(serializers.ModelSerializer):
     class Meta:
         model = MealItem
         exclude = ['school']
-
-    nutrition = ReadNutritionalInfoSerializer()
 
 
 class MealSelectionSerializer(serializers.ModelSerializer):

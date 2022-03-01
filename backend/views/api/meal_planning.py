@@ -1,4 +1,5 @@
 import datetime
+from dataclasses import asdict
 from random import sample
 
 from django.core.cache import cache
@@ -10,10 +11,9 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.request import Request
 from rest_framework.response import Response
 
-from backend.algorithm import nutritional_info_for, \
-    LARGE_PORTION, simulated_annealing
+from backend.algorithm.portion import SimulatedAnnealing
+from backend.algorithm.requirements import nutritional_info_for
 from backend.models import StudentProfile, MealItem, MealSelection
-from backend.views.api.info import ReadNutritionalInfoSerializer
 from backend.views.common import IsStudent
 
 
@@ -23,7 +23,7 @@ class NutritionalRequirementsViewSet(viewsets.ViewSet):
 
     def list(self, request):
         profile = StudentProfile.objects.get(user=request.user)
-        return Response(ReadNutritionalInfoSerializer(nutritional_info_for(profile)).data)
+        return Response(asdict(nutritional_info_for(profile)))
 
 
 class PortionRequestSerializer(serializers.Serializer):
@@ -109,24 +109,24 @@ class SuggestViewSet(viewsets.ViewSet):
         small2 = req_ser.validated_data['small2']
         large = req_ser.validated_data['large']
 
-        (large_volume, small1_volume, small2_volume), cost, runtime = \
-            simulated_annealing(large, small1, small2, nutritional_info_for(profile))
+        algo = SimulatedAnnealing(profile, large, small1, small2)
+        algo.run_simulated_annealing()
 
         return Response({
             'small1': {
-                'volume': small1_volume,
-                'weight': small1_volume * small1.density()
+                'volume': algo.small1_volume,
+                'weight': algo.small1_volume * small1.density()
             },
             'small2': {
-                'volume': small2_volume,
-                'weight': small2_volume * small2.density()
+                'volume': algo.small2_volume,
+                'weight': algo.small2_volume * small2.density()
             },
             'large': {
-                'volume': large_volume,
-                'weight': large_volume * large.density()
+                'volume': algo.large_volume,
+                'weight': algo.large_volume * large.density()
             },
             'quality': {
-                'cost': cost,
-                'runtime': runtime
+                'cost': algo.final_cost,
+                'runtime': algo.runtime
             }
         })
