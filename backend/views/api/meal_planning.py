@@ -3,10 +3,8 @@ from random import sample
 
 from django.core.cache import cache
 from rest_framework import viewsets, serializers
-from rest_framework.authentication import SessionAuthentication, TokenAuthentication
 from rest_framework.decorators import action
 from rest_framework.generics import get_object_or_404
-from rest_framework.permissions import IsAuthenticated
 from rest_framework.request import Request
 from rest_framework.response import Response
 
@@ -14,13 +12,9 @@ from backend.algorithm import nutritional_info_for, \
     LARGE_PORTION, simulated_annealing
 from backend.models import StudentProfile, MealItem, MealSelection
 from backend.views.api.info import ReadNutritionalInfoSerializer
-from backend.views.common import IsStudent
 
 
 class NutritionalRequirementsViewSet(viewsets.ViewSet):
-    authentication_classes = [SessionAuthentication, TokenAuthentication]
-    permission_classes = [IsAuthenticated, IsStudent]
-
     def list(self, request):
         profile = StudentProfile.objects.get(user=request.user)
         return Response(ReadNutritionalInfoSerializer(nutritional_info_for(profile)).data)
@@ -38,9 +32,6 @@ CACHE_TIMEOUT = datetime.timedelta(hours=6).total_seconds()
 
 
 class SuggestViewSet(viewsets.ViewSet):
-    authentication_classes = [SessionAuthentication, TokenAuthentication]
-    permission_classes = [IsAuthenticated, IsStudent]
-
     def list(self, _):
         return Response({'detail': 'page either suggest/<meal_id>/items or suggest/portions!'})
 

@@ -44,6 +44,7 @@ def auth_endpoint(model):
                     return err_response('Not authenticated')
             else:
                 return err_response('Not authenticated')
+
         return wrapper
 
     return decorator
@@ -72,9 +73,9 @@ def process_post_dict(model, post_dict, listify=[]):
     @param listify List of parameters to convert into lists if they're not already lists
     """
     return dict((
-            ((k, v) if type(v) == list or k not in listify else (k, [v]))
-            for k, v in post_dict.items() if k in model.__dict__
-        ))
+        ((k, v) if type(v) == list or k not in listify else (k, [v]))
+        for k, v in post_dict.items() if k in model.__dict__
+    ))
 
 
 def apply_conversions(dict_obj: dict, conv_dict: dict) -> dict:
@@ -104,6 +105,14 @@ class IsStudent(permissions.BasePermission):
         return StudentProfile.objects.filter(user=request.user).exists()
 
 
+class IsVerified(permissions.BasePermission):
+    message = 'Must have verified email'
+
+    def has_permission(self, request, view):
+        profile = StudentProfile.objects.get(user=request.user)
+        return profile and profile.is_verified
+
+
 def update_object(serializer: serializers.ModelSerializer, obj: models.Model) -> list:
     # Update model object
     upd = []
@@ -122,3 +131,5 @@ def update_object(serializer: serializers.ModelSerializer, obj: models.Model) ->
         raise APIException(str(e))
 
     return upd
+
+
