@@ -37,9 +37,6 @@ class UpdateSettingsSerializer(serializers.ModelSerializer):
 
 
 class SettingsViewSet(viewsets.ViewSet):
-    authentication_classes = [SessionAuthentication, TokenAuthentication]
-    permission_classes = [IsAuthenticated, IsStudent]
-
     # We don't actually want to list anything- we want one object
     def list(self, request):
         profile = StudentProfile.objects.get(user=request.user)

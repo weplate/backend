@@ -1,14 +1,10 @@
 import datetime
 
 from rest_framework import viewsets, serializers
-from rest_framework.authentication import SessionAuthentication, TokenAuthentication
-from rest_framework.permissions import IsAuthenticated
 from rest_framework.request import Request
 from rest_framework.response import Response
 
 from backend.models import StudentProfile
-from backend.views.common import IsStudent
-
 
 MAX_LOG_ENTRIES = 20
 
@@ -22,8 +18,6 @@ def create_user_log_viewset(model_class):
         timestamp = serializers.DateTimeField(read_only=True)
 
     class LogModelViewSet(viewsets.ReadOnlyModelViewSet):
-        authentication_classes = [SessionAuthentication, TokenAuthentication]
-        permission_classes = [IsAuthenticated, IsStudent]
         serializer_class = LogModelSerializer
 
         def get_queryset(self):

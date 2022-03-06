@@ -5,7 +5,7 @@ from django import forms
 from django.core.cache import cache
 from django.http import HttpResponse
 from django.shortcuts import render, get_object_or_404
-from django.urls import path
+from django.urls import path, reverse
 from django.views.generic import FormView
 
 from backend.algorithm.portion import SimulatedAnnealing
@@ -105,3 +105,24 @@ urlpatterns = [
     path('test_algorithm/<int:profile>/<int:large>/<int:small1>/<int:small2>/', test_algorithm, name='da_test_algorithm'),
     path('clear_cache/', clear_cache, name='da_clear_cache'),
 ]
+
+
+@data_admin_view
+def debug_view(request):
+    messages = []
+
+    # algorithm_test
+    try:
+        u = StudentProfile.objects.get(pk=10)
+        l = MealItem.objects.get(name__iexact='Cilantro Rice')
+        s1 = MealItem.objects.get(name__iexact='Chicken Ratatouille')
+        s2 = MealItem.objects.get(name__iexact='Chopped Kale Salad with Beets')
+        algo_test_url = reverse('da_test_algorithm', args=[u.pk, l.pk, s1.pk, s2.pk])
+    except MealItem.DoesNotExist as e:
+        algo_test_url = reverse('da_test_algorithm', args=[1, 1, 1, 1])
+        messages.append(f'Could not retrieve object for algorithm test: {e}')
+
+    return render(request, 'debug/root.html', {
+        'algorithm_test_url': algo_test_url,
+        'messages': messages,
+    })
