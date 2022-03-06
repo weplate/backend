@@ -27,6 +27,14 @@ class IsStudent(permissions.BasePermission):
         return StudentProfile.objects.filter(user=request.user).exists()
 
 
+class IsVerified(permissions.BasePermission):
+    message = 'Must have verified email'
+
+    def has_permission(self, request, view):
+        profile = StudentProfile.objects.get(user=request.user)
+        return profile.is_verified
+
+
 def update_object(serializer: serializers.ModelSerializer, obj: models.Model) -> list:
     # Update model object
     upd = []

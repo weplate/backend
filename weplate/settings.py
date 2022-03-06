@@ -143,8 +143,8 @@ EMAIL_HOST_PASSWORD = 'Cn>h3TQX'
 REST_FRAMEWORK = {
     'DEFAULT_PERMISSION_CLASSES': [
         'rest_framework.permissions.IsAuthenticated',
-        'backend.views.common.IsStudent',
-        'backend.views.common.IsVerified'
+        'backend.utils.IsStudent',
+        'backend.utils.IsVerified'
     ],
     'DEFAULT_AUTHENTICATION_CLASSES': [
         'rest_framework.authentication.SessionAuthentication',

@@ -8,6 +8,7 @@ from backend.models.meal import School, MealItem, Ingredient
 class StudentProfile(models.Model):
     user = models.ForeignKey(to=User, on_delete=models.CASCADE)
     school = models.ForeignKey(to=School, on_delete=models.CASCADE)
+    is_verified = models.BooleanField()
 
     # Personal details/preferences
     name = models.CharField(max_length=256)

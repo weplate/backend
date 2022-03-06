@@ -2,10 +2,10 @@ from django.urls import path, include
 from rest_framework import routers
 from rest_framework.authtoken.views import obtain_auth_token
 
-from .auth import verify_email_get, verify_email_post, reset_password_get, reset_password_post
 from .info import SchoolViewSet, IngredientViewSet, MealSelectionViewSet, SchoolMealItemsViewSet
 from .meal_planning import NutritionalRequirementsViewSet, SuggestViewSet
-from .register import register_student_view, check_email_view
+from .auth import register_student_view, check_email_view, verify_email_post, verify_email_get, reset_password_post, \
+    reset_password_get
 from .settings import SettingsViewSet
 
 router = routers.DefaultRouter()
