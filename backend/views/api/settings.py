@@ -6,7 +6,7 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 
 from backend.models import StudentProfile, MealItem, Ingredient
-from backend.views.common import IsStudent, update_object
+from backend.utils import IsStudent, update_object
 
 
 class ReadSettingsSerializer(serializers.ModelSerializer):

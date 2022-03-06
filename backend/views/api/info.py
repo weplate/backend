@@ -7,7 +7,7 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 
 from backend.models import School, StudentProfile, Ingredient, MealSelection, MealItem
-from backend.views.common import IsStudent
+from backend.utils import IsStudent
 
 MAX_MEALS = 5
 

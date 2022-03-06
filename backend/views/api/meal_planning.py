@@ -13,7 +13,7 @@ from backend.algorithm.item_choice import MealItemSelector
 from backend.algorithm.portion import SimulatedAnnealing
 from backend.algorithm.requirements import nutritional_info_for
 from backend.models import StudentProfile, MealItem, MealSelection
-from backend.views.common import IsStudent
+from backend.utils import IsStudent
 
 
 class NutritionalRequirementsViewSet(viewsets.ViewSet):

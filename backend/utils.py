@@ -6,6 +6,20 @@ from rest_framework.exceptions import APIException
 from backend.models import StudentProfile
 
 
+def fetch_or_apiexcept(model, message, **kwargs):
+    try:
+        return model.objects.get(**kwargs)
+    except model.DoesNotExist:
+        raise APIException(message)
+
+
+def fetch_or_none(model, **kwargs):
+    try:
+        return model.objects.get(**kwargs)
+    except model.DoesNotExist:
+        return None
+
+
 class IsStudent(permissions.BasePermission):
     message = 'Must be authenticated as student user'
 

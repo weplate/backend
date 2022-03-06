@@ -4,7 +4,7 @@ from django.contrib.auth.models import User
 from django.db import models
 from django.utils.crypto import get_random_string
 
-from backend.common import fetch_or_none
+from backend.utils import fetch_or_none
 
 
 class TokenManager(models.Manager):

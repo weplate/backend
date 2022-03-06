@@ -8,7 +8,7 @@ from rest_framework.request import Request
 from rest_framework.response import Response
 
 from backend.models import EmailVerificationToken, StudentProfile
-from backend.views.common import IsStudent
+from backend.utils import IsStudent
 
 
 class ResetPasswordPostSerializer(serializers.Serializer):
