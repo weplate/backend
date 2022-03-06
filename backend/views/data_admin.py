@@ -8,8 +8,7 @@ from django.shortcuts import render, get_object_or_404
 from django.urls import path
 from django.views.generic import FormView
 
-from backend.algorithm import simulated_annealing, nutritional_info_for, fast_combine, LARGE_PORTION_MAX, \
-    SMALL_PORTION_MAX
+from backend.algorithm.portion import SimulatedAnnealing
 from backend.models import School, StudentProfile, MealSelection, MealItem, Ingredient, SchoolProfile
 
 
@@ -72,12 +71,11 @@ def test_algorithm(request, profile, large, small1, small2):
     small1 = get_object_or_404(MealItem, pk=small1)
     small2 = get_object_or_404(MealItem, pk=small2)
 
-    want_info = nutritional_info_for(profile)
-    (lc, s1c, s2c), cost, perf = simulated_annealing(large, small1, small2, want_info)
-    got_info = fast_combine(large, small1, small2, lc, s1c, s2c)
-
-    lo_info = fast_combine(large, small1, small2, LARGE_PORTION_MAX / 2, SMALL_PORTION_MAX / 2, SMALL_PORTION_MAX / 2)
-    hi_info = fast_combine(large, small1, small2, LARGE_PORTION_MAX, SMALL_PORTION_MAX, SMALL_PORTION_MAX)
+    sa = SimulatedAnnealing(profile, large, small1, small2)
+    sa.run_algorithm()
+    got_info = sa.nutrition_of(sa.state)
+    lo_info = sa.nutrition_of(sa.lo_state())
+    hi_info = sa.nutrition_of(sa.hi_state())
 
     return render(request, 'data_admin/test_algorithm.html', {
         'profile': profile,
@@ -85,13 +83,13 @@ def test_algorithm(request, profile, large, small1, small2):
         'small1': small1,
         'small2': small2,
         'info': [(k, v1, v2, v3, v4) for (k, v1), (_, v2), (__, v3), (___, v4) in
-                 zip(want_info.__dict__.items(), got_info.__dict__.items(), lo_info.__dict__.items(), hi_info.__dict__.items())
+                 zip(sa.req.as_dict().items(), got_info.as_dict().items(), lo_info.as_dict().items(), hi_info.as_dict().items())
                  if k != '_state' and k != 'id' and k != 'name'],
-        'cost': cost,
-        'runtime': perf,
-        'large_size': lc,
-        'small1_size': s1c,
-        'small2_size': s2c,
+        'cost': sa.final_cost,
+        'runtime': sa.runtime,
+        'large_size': sa.large_volume,
+        'small1_size': sa.small1_volume,
+        'small2_size': sa.small2_volume,
     })
 
 

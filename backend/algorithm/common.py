@@ -1,4 +1,4 @@
-from dataclasses import dataclass, fields
+from dataclasses import dataclass, fields, asdict
 
 from backend.models import MealItem
 
@@ -25,12 +25,18 @@ class Nutrition:
     vitamin_c: float = 0.
     vitamin_d: float = 0.
 
-    def __init__(self, meal_item: MealItem):
+    @classmethod
+    def from_meal_item(cls, meal_item):
+        field_dict = {}
         for prop in fields(Nutrition):
-            setattr(self, prop, getattr(meal_item, prop))
+            field_dict[prop.name] = getattr(meal_item, prop.name)
+        return cls(**field_dict)
 
     def as_meal_item(self):
-        return MealItem(**{prop: getattr(self, prop) for prop in fields(Nutrition)})
+        return MealItem(**{prop: getattr(self, prop.name) for prop in fields(Nutrition)})
+
+    def as_dict(self):
+        return asdict(self)
 
     # speed?
     # this is bad coding I know
@@ -55,6 +61,8 @@ class Nutrition:
         self.vitamin_c += other.vitamin_c
         self.vitamin_d += other.vitamin_d
 
+        return self
+
     def __isub__(self, other):
         self.calories -= other.calories
         self.carbohydrate -= other.carbohydrate
@@ -74,6 +82,8 @@ class Nutrition:
         self.vitamin_a -= other.vitamin_a
         self.vitamin_c -= other.vitamin_c
         self.vitamin_d -= other.vitamin_d
+
+        return self
 
     def __imul__(self, c):
         self.calories *= c
@@ -95,7 +105,9 @@ class Nutrition:
         self.vitamin_c *= c
         self.vitamin_d *= c
 
-    def __idiv__(self, c):
+        return self
+
+    def __itruediv__(self, c):
         self.calories /= c
         self.carbohydrate /= c
         self.protein /= c
@@ -114,6 +126,8 @@ class Nutrition:
         self.vitamin_a /= c
         self.vitamin_c /= c
         self.vitamin_d /= c
+
+        return self
 
     def copy(self):
         return Nutrition(calories=self.calories,
@@ -148,7 +162,7 @@ class Nutrition:
         ret *= c
         return ret
 
-    def __div__(self, c):
+    def __truediv__(self, c):
         ret = self.copy()
         ret /= c
         return ret

@@ -1,7 +1,7 @@
 import datetime
 
 from backend.algorithm.common import Nutrition
-from backend.models import StudentProfile, MealItem
+from backend.models import StudentProfile
 
 # https://www.notion.so/weplate/Mathematical-Calculations-f561b494f2444cfc87023ef615cf2bea#a976edca5f394d26b536704ff6f691ce
 DEFAULT_REQS = dict(
@@ -58,16 +58,6 @@ CALS_IN_FAT = 9
 SMALL_PORTION_MAX = 270
 LARGE_PORTION_MAX = 610
 MIN_FILL = 0.5
-
-# https://www.notion.so/weplate/Mathematical-Calculations-f561b494f2444cfc87023ef615cf2bea#c137e967c1224678be2079cb5a55a3a6
-# Which section (protein, veg, carb) should have the large portion
-LARGE_PORTION = {
-    StudentProfile.BUILD_MUSCLE: MealItem.PROTEIN,
-    StudentProfile.ATHLETIC_PERFORMANCE: MealItem.GRAINS,
-    StudentProfile.LOSE_WEIGHT: MealItem.VEGETABLE,
-    StudentProfile.IMPROVE_TONE: MealItem.PROTEIN,
-    StudentProfile.IMPROVE_HEALTH: MealItem.VEGETABLE
-}
 
 
 def nutritional_info_for(profile: StudentProfile) -> Nutrition:

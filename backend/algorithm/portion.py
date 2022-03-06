@@ -30,15 +30,15 @@ def move_value(x, c, l, r):
     return clamp(x + c * (r - l) * s, l, r)
 
 
-def neighbour(self, state):
+def neighbour(state, t):
     l, s1, s2 = state
     rnd = random.randint(0, 2)
     if rnd == 0:
-        return move_value(l, self.t, LARGE_PORTION_MAX / 2, LARGE_PORTION_MAX), s1, s2
+        return move_value(l, t, LARGE_PORTION_MAX / 2, LARGE_PORTION_MAX), s1, s2
     elif rnd == 1:
-        return l, move_value(s1, self.t, SMALL_PORTION_MAX / 2, SMALL_PORTION_MAX), s2
+        return l, move_value(s1, t, SMALL_PORTION_MAX / 2, SMALL_PORTION_MAX), s2
     else:
-        return l, s1, move_value(s2, self.t, SMALL_PORTION_MAX / 2, SMALL_PORTION_MAX)
+        return l, s1, move_value(s2, t, SMALL_PORTION_MAX / 2, SMALL_PORTION_MAX)
 
 
 # Source: https://en.wikipedia.org/wiki/Simulated_annealing#Overview
@@ -49,9 +49,9 @@ class SimulatedAnnealing:
                  alpha: float = 0.999, smallest_temp: float = 0.0005):
         # Info properties
         self.req = nutritional_info_for(profile)
-        self.l_nut = Nutrition(large) / large.portion_volume
-        self.s1_nut = Nutrition(small1) / small1.portion_volume
-        self.s2_nut = Nutrition(small2) / small2.portion_volume
+        self.l_nut = Nutrition.from_meal_item(large) / large.portion_volume
+        self.s1_nut = Nutrition.from_meal_item(small1) / small1.portion_volume
+        self.s2_nut = Nutrition.from_meal_item(small2) / small2.portion_volume
 
         # Parameter properties
         self.alpha = alpha
@@ -66,23 +66,23 @@ class SimulatedAnnealing:
         self.final_cost = -1
         self.runtime = -1
 
-    def set_mid(self):
+    def mid_state(self):
         """
         Forces the state to be in the middle value
         """
-        self.state = (0.75 * LARGE_PORTION_MAX, 0.75 * SMALL_PORTION_MAX, 0.75 * SMALL_PORTION_MAX)
+        return 0.75 * LARGE_PORTION_MAX, 0.75 * SMALL_PORTION_MAX, 0.75 * SMALL_PORTION_MAX
 
-    def set_lo(self):
+    def lo_state(self):
         """
-        Forces the state to be in the minimum possible value
+        Returns the minimum possible state
         """
-        self.state = (LARGE_PORTION_MAX / 2, SMALL_PORTION_MAX / 2, SMALL_PORTION_MAX / 2)
+        return LARGE_PORTION_MAX / 2, SMALL_PORTION_MAX / 2, SMALL_PORTION_MAX / 2
 
-    def set_hi(self):
+    def hi_state(self):
         """
-        Forces the state to be in the maximum possible value
+        Returns the maximum possible state
         """
-        self.state = (LARGE_PORTION_MAX, SMALL_PORTION_MAX, SMALL_PORTION_MAX)
+        return LARGE_PORTION_MAX, SMALL_PORTION_MAX, SMALL_PORTION_MAX
 
     def nutrition_of(self, state: tuple[float, float, float]):
         ret = Nutrition()
@@ -124,15 +124,11 @@ class SimulatedAnnealing:
         c_old = self.cost_of(cur_state)
         return 1 if c_new <= c_old else exp(-(c_new - c_old) * scale_coeff / self.t)
 
-    def run_simulated_annealing(self):
+    def run_algorithm(self):
         # Initialization
-        self.set_lo()
-        _lo_cost = self.cost_of(self.state)
-        self.set_hi()
-        _hi_cost = self.cost_of(self.state)
-        cost_bound = max(_lo_cost, _hi_cost)
+        cost_bound = max(self.cost_of(self.lo_state()), self.cost_of(self.hi_state()))
         scale_cost_by = 60 / cost_bound
-        self.set_mid()
+        self.state = self.mid_state()
 
         # Run algorithm
         start_time = time.perf_counter()
