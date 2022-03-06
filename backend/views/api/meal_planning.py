@@ -1,23 +1,28 @@
 import datetime
-from random import sample
 
 from django.core.cache import cache
 from rest_framework import viewsets, serializers
+from rest_framework.authentication import SessionAuthentication, TokenAuthentication
 from rest_framework.decorators import action
 from rest_framework.generics import get_object_or_404
+from rest_framework.permissions import IsAuthenticated
 from rest_framework.request import Request
 from rest_framework.response import Response
 
-from backend.algorithm import nutritional_info_for, \
-    LARGE_PORTION, simulated_annealing
+from backend.algorithm.item_choice import MealItemSelector
+from backend.algorithm.portion import SimulatedAnnealing
+from backend.algorithm.requirements import nutritional_info_for
 from backend.models import StudentProfile, MealItem, MealSelection
-from backend.views.api.info import ReadNutritionalInfoSerializer
+from backend.views.common import IsStudent
 
 
 class NutritionalRequirementsViewSet(viewsets.ViewSet):
+    authentication_classes = [SessionAuthentication, TokenAuthentication]
+    permission_classes = [IsAuthenticated, IsStudent]
+
     def list(self, request):
         profile = StudentProfile.objects.get(user=request.user)
-        return Response(ReadNutritionalInfoSerializer(nutritional_info_for(profile)).data)
+        return Response(nutritional_info_for(profile).as_dict())
 
 
 class PortionRequestSerializer(serializers.Serializer):
@@ -32,6 +37,9 @@ CACHE_TIMEOUT = datetime.timedelta(hours=6).total_seconds()
 
 
 class SuggestViewSet(viewsets.ViewSet):
+    authentication_classes = [SessionAuthentication, TokenAuthentication]
+    permission_classes = [IsAuthenticated, IsStudent]
+
     def list(self, _):
         return Response({'detail': 'page either suggest/<meal_id>/items or suggest/portions!'})
 
@@ -46,50 +54,11 @@ class SuggestViewSet(viewsets.ViewSet):
         if _cache_res := cache.get(cache_key):
             return Response(_cache_res)
 
-        large_items = meal.items.filter(category=MealItem.PROTEIN)
-        small1_items = meal.items.filter(category=MealItem.VEGETABLE)
-        small2_items = meal.items.filter(category=MealItem.GRAINS)
-        large_category = MealItem.PROTEIN
-        small1_category = MealItem.VEGETABLE
-        small2_category = MealItem.GRAINS
+        alg = MealItemSelector(meal, profile)
+        alg.run_algorithm()
 
-        if LARGE_PORTION[profile.health_goal] == MealItem.VEGETABLE:
-            large_items, small1_items = small1_items, large_items
-            large_category, small1_category = small1_category, large_category
-        elif LARGE_PORTION[profile.health_goal] == MealItem.GRAINS:
-            large_items, small2_items = small2_items, large_items
-            large_category, small2_category = small2_category, large_category
-
-        num_to_pick = min(TEST_COMBO_TRIES, len(large_items), len(small1_items), len(small2_items))
-        item_choices = list(zip(sample(list(large_items.all()), k=num_to_pick),
-                                sample(list(small1_items.all()), k=num_to_pick),
-                                sample(list(small2_items.all()), k=num_to_pick)))
-
-        result_choices = {
-            'large': {
-                'items': [],
-                'category': large_category
-            },
-            'small1': {
-                'items': [],
-                'category': small1_category
-            },
-            'small2': {
-                'items': [],
-                'category': small2_category
-            },
-        }
-
-        requirements = nutritional_info_for(profile)
-        for l, s1, s2 in sorted(item_choices,
-                           key=lambda c: simulated_annealing(c[0], c[1], c[2],
-                                                             requirements, 0.99, 0.01)[1])[:COMBOS_NEEDED]:
-            result_choices['large']['items'].append(l.pk)
-            result_choices['small1']['items'].append(s1.pk)
-            result_choices['small2']['items'].append(s2.pk)
-
-        cache.set(cache_key, result_choices, CACHE_TIMEOUT)
-        return Response(result_choices)
+        cache.set(cache_key, alg.result_dict, CACHE_TIMEOUT)
+        return Response(alg.result_dict)
 
     @action(methods=['get'], detail=False)
     def portions(self, request: Request):
@@ -100,24 +69,24 @@ class SuggestViewSet(viewsets.ViewSet):
         small2 = req_ser.validated_data['small2']
         large = req_ser.validated_data['large']
 
-        (large_volume, small1_volume, small2_volume), cost, runtime = \
-            simulated_annealing(large, small1, small2, nutritional_info_for(profile))
+        algo = SimulatedAnnealing(profile, large, small1, small2)
+        algo.run_algorithm()
 
         return Response({
             'small1': {
-                'volume': small1_volume,
-                'weight': small1_volume * small1.density()
+                'volume': algo.small1_volume,
+                'weight': algo.small1_volume * small1.density()
             },
             'small2': {
-                'volume': small2_volume,
-                'weight': small2_volume * small2.density()
+                'volume': algo.small2_volume,
+                'weight': algo.small2_volume * small2.density()
             },
             'large': {
-                'volume': large_volume,
-                'weight': large_volume * large.density()
+                'volume': algo.large_volume,
+                'weight': algo.large_volume * large.density()
             },
             'quality': {
-                'cost': cost,
-                'runtime': runtime
+                'cost': algo.final_cost,
+                'runtime': algo.runtime
             }
         })

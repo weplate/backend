@@ -1,11 +1,12 @@
 from django.contrib import admin
 
-from . import models
+from .models import LogTextFeedback, LogSurvey, LogMealItemVote, LogMealChoice, Ingredient, MealItem, School, \
+    SchoolProfile, StudentProfile, MealSelection
 
 
 # Register your models here.
 
-@admin.register(models.School, site=admin.site)
+@admin.register(School, site=admin.site)
 class SchoolAdmin(admin.ModelAdmin):
     list_display = ('id', 'name')
     list_display_links = ('name',)
@@ -13,10 +14,10 @@ class SchoolAdmin(admin.ModelAdmin):
     search_fields = ('name',)
 
 
-admin.site.register(models.SchoolProfile)
+admin.site.register(SchoolProfile)
 
 
-@admin.register(models.StudentProfile, site=admin.site)
+@admin.register(StudentProfile, site=admin.site)
 class StudentProfileAdmin(admin.ModelAdmin):
     list_display = ('id', 'user_id', 'name', 'school')
     list_display_links = ('name',)
@@ -28,7 +29,7 @@ class StudentProfileAdmin(admin.ModelAdmin):
         return obj.user.id
 
 
-@admin.register(models.MealSelection, site=admin.site)
+@admin.register(MealSelection, site=admin.site)
 class MealSelectionAdmin(admin.ModelAdmin):
     list_display = ('id', 'name', 'group', 'timestamp', 'item_count', 'school')
     list_display_links = ('name',)
@@ -40,7 +41,7 @@ class MealSelectionAdmin(admin.ModelAdmin):
         return obj.items.count()
 
 
-@admin.register(models.MealItem, site=admin.site)
+@admin.register(MealItem, site=admin.site)
 class MealItemAdmin(admin.ModelAdmin):
     list_display = ('id', 'name', 'station', 'category', 'school')
     list_display_links = ('name',)
@@ -49,11 +50,10 @@ class MealItemAdmin(admin.ModelAdmin):
     search_fields = ('name', 'station')
 
 
-admin.site.register(models.Ingredient)
-admin.site.register(models.NutritionalInfo)
+admin.site.register(Ingredient)
 
 
-@admin.register(models.LogMealChoice, site=admin.site)
+@admin.register(LogMealChoice, site=admin.site)
 class LogMealChoiceAdmin(admin.ModelAdmin):
     list_display = ('id', 'profile_name', 'profile_email', 'meal', 'timestamp')
     list_display_links = ('profile_email',)
@@ -68,11 +68,11 @@ class LogMealChoiceAdmin(admin.ModelAdmin):
         return obj.profile.user.username
 
 
-admin.site.register(models.LogMealItemVote)
-admin.site.register(models.LogSurvey)
+admin.site.register(LogMealItemVote)
+admin.site.register(LogSurvey)
 
 
-@admin.register(models.LogTextFeedback, site=admin.site)
+@admin.register(LogTextFeedback, site=admin.site)
 class LogTextFeedbackAdmin(admin.ModelAdmin):
     list_display = ('timestamp', 'feedback_short')
 

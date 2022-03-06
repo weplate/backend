@@ -29,7 +29,7 @@ env = environ.Env(
 )
 env_file = os.environ.get('ENV_FILE', '.env')
 SETTINGS_LOG_MSG.append(('.env file', env_file))
-environ.Env.read_env(os.path.join(BASE_DIR, env_file))
+environ.Env.read_env(BASE_DIR / env_file)
 
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/4.0/howto/deployment/checklist/

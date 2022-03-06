@@ -2,9 +2,12 @@ import datetime
 
 from django.shortcuts import get_object_or_404
 from rest_framework import viewsets, serializers
+from rest_framework.authentication import SessionAuthentication, TokenAuthentication
+from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 
-from backend.models import School, StudentProfile, Ingredient, MealSelection, MealItem, NutritionalInfo
+from backend.models import School, StudentProfile, Ingredient, MealSelection, MealItem
+from backend.views.common import IsStudent
 
 MAX_MEALS = 5
 
@@ -16,8 +19,6 @@ class SchoolSerializer(serializers.ModelSerializer):
 
 
 class SchoolViewSet(viewsets.ReadOnlyModelViewSet):
-    authentication_classes = []
-    permission_classes = []
     queryset = School.objects.all()
     serializer_class = SchoolSerializer
 
@@ -39,18 +40,10 @@ class IngredientViewSet(viewsets.ViewSet):
         return Response(IngredientSerializer(Ingredient.objects.filter(school__id=pk), many=True).data)
 
 
-class ReadNutritionalInfoSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = NutritionalInfo
-        exclude = ['name', 'id']
-
-
 class ReadMealItemSerializer(serializers.ModelSerializer):
     class Meta:
         model = MealItem
         exclude = ['school']
-
-    nutrition = ReadNutritionalInfoSerializer()
 
 
 class MealSelectionSerializer(serializers.ModelSerializer):
@@ -64,6 +57,8 @@ class DetailMealSelectionSerializer(MealSelectionSerializer):
 
 
 class MealSelectionViewSet(viewsets.ReadOnlyModelViewSet):
+    authentication_classes = [SessionAuthentication, TokenAuthentication]
+    permission_classes = [IsAuthenticated, IsStudent]
     serializer_class = MealSelectionSerializer
 
     def get_queryset(self):
@@ -84,6 +79,8 @@ class MealSelectionViewSet(viewsets.ReadOnlyModelViewSet):
 
 
 class SchoolMealItemsViewSet(viewsets.ReadOnlyModelViewSet):
+    authentication_classes = [SessionAuthentication, TokenAuthentication]
+    permission_classes = [IsAuthenticated, IsStudent]
     serializer_class = ReadMealItemSerializer
 
     def get_queryset(self):

@@ -1,14 +1,12 @@
 # List of properties to write
-from django.core.exceptions import ValidationError
 from rest_framework import serializers, viewsets
 from rest_framework.authentication import SessionAuthentication, TokenAuthentication
 from rest_framework.decorators import action
-from rest_framework.exceptions import APIException
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 
-from backend.models import StudentProfile, School, MealItem, Ingredient
-from backend.views.common import auth_endpoint, err_response, ok_response, json_response, IsStudent, update_object
+from backend.models import StudentProfile, MealItem, Ingredient
+from backend.views.common import IsStudent, update_object
 
 
 class ReadSettingsSerializer(serializers.ModelSerializer):
