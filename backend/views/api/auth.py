@@ -45,7 +45,7 @@ def register_student_view(request):
         raise APIException(str(e))
 
     try:
-        profile_data = ProfileSerializer(data=request.data | {'user': new_user.id})
+        profile_data = ProfileSerializer(data=request.data | {'user': new_user.id, 'is_verified': False})
         profile_data.is_valid(raise_exception=True)
         profile_data.save()
     except Exception as e:

@@ -43,6 +43,7 @@ class MealItem(models.Model):
     )
 
     category = models.CharField(max_length=32, choices=CATEGORIES, null=True, blank=True)
+    cafeteria_id = models.CharField(max_length=32, null=True, blank=True)
 
     # Ingredients, nutrition, other numbers
     portion_weight = models.FloatField(verbose_name='Portion Weight (g)')

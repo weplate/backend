@@ -144,7 +144,7 @@ REST_FRAMEWORK = {
     'DEFAULT_PERMISSION_CLASSES': [
         'rest_framework.permissions.IsAuthenticated',
         'backend.utils.IsStudent',
-        'backend.utils.IsVerified'
+        # 'backend.utils.IsVerified'  TODO: Implement email verification
     ],
     'DEFAULT_AUTHENTICATION_CLASSES': [
         'rest_framework.authentication.SessionAuthentication',

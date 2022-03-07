@@ -3,6 +3,8 @@ we plate in ur mom
 
 # Testing and Deployment
 
+## Setup
+
 If you're on Unix based systems, the correct Python command is most likely `python3`.
 
 Run the following commands:
@@ -19,7 +21,7 @@ python3 manage.py migrate
 
 To run the setup server, run `python3 manage.py runserver`
 
-### Remote DB
+## Remote DB
 
 To connect to the remote DB, you must first get the Cloud SQL Auth proxy, suing:
 
@@ -31,6 +33,16 @@ Then, run:
 
 - Windows: `./cloud_sql_proxy_x64.exe -instances="weplate-backend:northamerica-northeast2:db"=tcp:5432`
 - Linux: `./cloud_sql_proxy -instances="weplate-backend:northamerica-northeast2:db"=tcp:5432`
+  - Or `cloud_sql_proxy -instances="weplate-backend:northamerica-northeast2:db"=tcp:5432` if installed using `gcloud component add`
+
+## Deployment to AppEngine
+
+```bash
+gcloud auth login
+gcloud app deploy app.yaml cron.yaml
+```
+
+# Database 
 
 ## Loading Fixtures
 
@@ -47,12 +59,20 @@ Here is also some base user info for the prod DB.
 python3 manage.py loaddata prod_base.yaml
 ```
 
-## Deployment to AppEngine
+## Loading the Correct Database
 
-```bash
-gcloud auth login
-gcloud app deploy app.yaml cron.yaml
-```
+Use `.env_prod_remote` when modifying DB on the remote, use `.env` (default) otherwise.
+
+## Loading Meal Information
+
+Paging `/data_admin/update_school_data/` allows to launch scripts for the automatic addition of meal data.
+
+You must specify a module to load from.
+
+### Babson
+
+- `data.babson.v0`: Feb 27 - March 5, also contains ingredients and item list.  **Must be loaded before any other version**
+- `data.babson.v1`: March 7 - Now
 
 # Endpoints
 

@@ -5,19 +5,19 @@ from re import Match
 
 from openpyxl import load_workbook
 from openpyxl.worksheet.worksheet import Worksheet
+from rest_framework import serializers
+
+from backend.models import MealItem
 
 OUT_FILE_PATH = 'meal_items.json'
 SCHOOL_ID = 10
 MAX_NAME_LEN = 64
-VERSION = 0
 FILE_DIR = pathlib.Path(__file__).resolve().parent
 
 
-def get_meal_items():
+def parse_meal_items(version):
     main_sheet: Worksheet = load_workbook(FILE_DIR / 'Nutrition_Facts_as_of_Feb_20_1.xlsx', read_only=True)['Report']
     micros_sheet: Worksheet = load_workbook(FILE_DIR / 'Additional_nutrition_facts_as_of_Feb_20.xlsx', read_only=True)['Report']
-    # with open(FILE_DIR / 'meal_categories.json') as f:
-    #     meal_categories = json.load(f)
 
     meal_items = {}
 
@@ -86,7 +86,7 @@ def get_meal_items():
                     # basic info
                     'name': name,
                     'school': SCHOOL_ID,
-                    'version': VERSION,
+                    'version': version,
                     'station': station_name,
 
                     # basic nutritional/number info
@@ -94,7 +94,7 @@ def get_meal_items():
                     'portion_volume': portion,
                     'ingredients': [],
                     'category': c.lower() if (c := get_col(1)) else None,
-                    'trim_id': get_col(2),
+                    'cafeteria_id': get_col(2),
 
                     # sheet 1 nutrients
                     'calories': num_col(8),
@@ -139,8 +139,29 @@ def get_meal_items():
     return meal_items, bad_units
 
 
+def add_meal_items(version):
+    meal_items, _ = parse_meal_items(version)
+
+    class MealItemSerializer(serializers.ModelSerializer):
+        class Meta:
+            model = MealItem
+            exclude = ['ingredients']
+
+    meals = []
+    trim_ids = []
+    objs = []
+    for m_info in meal_items.values():
+        ser = MealItemSerializer(data=m_info)
+        ser.is_valid(raise_exception=True)
+        objs.append(MealItem(**ser.validated_data))
+        meals.append(str(m_info['meal']))
+        trim_ids.append(str(m_info['cafeteria_id']))
+
+    return list(zip(MealItem.objects.bulk_create(objs), meals, trim_ids))
+
+
 def main():
-    meal_items, bad_units = get_meal_items()
+    meal_items, bad_units = parse_meal_items(-1)
 
     with open(OUT_FILE_PATH, 'w') as f:
         json.dump(meal_items, f)
