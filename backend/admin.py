@@ -47,7 +47,7 @@ class MealItemAdmin(admin.ModelAdmin):
     list_display_links = ('name',)
     list_filter = ('school', 'station', 'category')
     ordering = ('station', 'name')
-    search_fields = ('name', 'station')
+    search_fields = ('name', 'station', 'cafeteria_id')
 
 
 admin.site.register(Ingredient)

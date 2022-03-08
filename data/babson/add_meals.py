@@ -40,6 +40,8 @@ def add_meals(meal_items: list[tuple[MealItem, str, str]], menu_path, version):
         item_name = None
         for row in meal_sheet.iter_rows(13, meal_sheet.max_row):
             val = row[col].value
+            # if meal_day == datetime.date(year=2022, month=3, day=7):
+            #     print(val, val in items_by_id)
             if val is None:
                 continue
             elif m := re.match(r'\w+ \((\d+)/(\d+)/(\d+)\)', val):

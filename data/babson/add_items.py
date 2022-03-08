@@ -16,8 +16,8 @@ FILE_DIR = pathlib.Path(__file__).resolve().parent
 
 
 def parse_meal_items(version):
-    main_sheet: Worksheet = load_workbook(FILE_DIR / 'Nutrition_Facts_as_of_Feb_20_1.xlsx', read_only=True)['Report']
-    micros_sheet: Worksheet = load_workbook(FILE_DIR / 'Additional_nutrition_facts_as_of_Feb_20.xlsx', read_only=True)['Report']
+    main_sheet: Worksheet = load_workbook(FILE_DIR / 'MenuWorks_FDA_Menu_Main.xlsx', read_only=True)['Report']
+    micros_sheet: Worksheet = load_workbook(FILE_DIR / 'MenuWorks_FDA_Menu_Alt.xlsx', read_only=True)['Report']
 
     meal_items = {}
 
@@ -34,7 +34,7 @@ def parse_meal_items(version):
     bad_units = set()
 
     def parse_portion(value):
-        if m := re.search(rf'{NUM} cup', value):
+        if m := re.search(rf'{NUM} [cx]up', value):
             return parse_num(m) * 236.588, False
         elif m := re.search(rf'{NUM} pint', value):
             return parse_num(m) * 473, False
@@ -53,7 +53,7 @@ def parse_meal_items(version):
     # Read macros
     cur_station = None
     unparseable = 0
-    for row in main_sheet.iter_rows(13, 1039):
+    for row in main_sheet.iter_rows(13):
         def get_col(col):
             return row[col].value
 
@@ -65,7 +65,7 @@ def parse_meal_items(version):
                 only_num = re.sub(r'[^0-9.]', '', val)
                 return float(only_num) if only_num else 0
 
-        if get_col(2) is None:
+        if get_col(1) is None:
             cur_station = get_col(0)
         else:
             portion, err = parse_portion(get_col(4))
@@ -90,11 +90,11 @@ def parse_meal_items(version):
                     'station': station_name,
 
                     # basic nutritional/number info
+                    'category': c.lower() if (c := get_col(3)) else None,
+                    'cafeteria_id': get_col(1),
                     'portion_weight': num_col(7),
                     'portion_volume': portion,
                     'ingredients': [],
-                    'category': c.lower() if (c := get_col(1)) else None,
-                    'cafeteria_id': get_col(2),
 
                     # sheet 1 nutrients
                     'calories': num_col(8),
@@ -113,7 +113,7 @@ def parse_meal_items(version):
                     'meal': station_meal,
                 }
 
-    for row in micros_sheet.iter_rows(13, 1021):
+    for row in micros_sheet.iter_rows(13):
         def get_col(col):
             return row[col].value
 

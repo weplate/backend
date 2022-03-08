@@ -1,3 +1,5 @@
+import re
+
 from django.contrib.auth.models import User
 from django.core.mail import send_mail
 from django.db import IntegrityError
@@ -6,15 +8,11 @@ from rest_framework import serializers
 from rest_framework.authtoken.admin import User
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.exceptions import APIException
-from rest_framework.permissions import IsAuthenticated
 from rest_framework.request import Request
 from rest_framework.response import Response
 
 from backend.models import StudentProfile
-
-import re
-
-from backend.utils import IsStudent
+from backend.models.token import EmailVerificationToken
 
 
 class UserSerializer(serializers.ModelSerializer):
@@ -32,6 +30,7 @@ class ProfileSerializer(serializers.ModelSerializer):
 
 
 @api_view(['POST'])
+@permission_classes([])
 def register_student_view(request):
     user_data = UserSerializer(data=request.data)
     user_data.is_valid(raise_exception=True)
@@ -56,6 +55,7 @@ def register_student_view(request):
 
 
 @api_view(['GET'])
+@permission_classes([])
 def check_email_view(_, email):
     if not re.match(r'^[A-Za-z0-9\.\+_-]+@[A-Za-z0-9\._-]+\.[a-zA-Z]*$', email):
         return Response({'detail': 'Invalid email'})
@@ -71,7 +71,7 @@ class ResetPasswordPostSerializer(serializers.Serializer):
 
 
 @api_view(['post'])
-@permission_classes([IsAuthenticated, IsStudent])
+@permission_classes([])
 def verify_email_post(request: Request):
     token_obj = EmailVerificationToken.objects.create_token(request.user)
     verify_url = request.build_absolute_uri(reverse('verify_email_get', args=(request.user.id, token_obj.token)))
@@ -86,6 +86,7 @@ def verify_email_post(request: Request):
 
 
 @api_view(['get'])
+@permission_classes([])
 def verify_email_get(request: Request, user_id: int, token: str):
     user = User.objects.get(id=user_id)
     if not user:
@@ -108,10 +109,12 @@ def verify_email_get(request: Request, user_id: int, token: str):
 
 
 @api_view(['post'])
+@permission_classes([])
 def reset_password_post(request: Request):
     pass
 
 
 @api_view(['get'])
+@permission_classes([])
 def reset_password_get(request: Request, user_id: int, token: str):
     pass
