@@ -8,69 +8,69 @@
   fields:
     name: 'apple'
     school: 1
+    version: 0
 - model: backend.Ingredient
   pk: 2
   fields:
     name: 'orange'
     school: 1
+    version: 0
 - model: backend.Ingredient
   pk: 3
   fields:
     name: 'fish'
     school: 1
+    version: 0
 - model: backend.Ingredient
   pk: 4
   fields:
     name: 'dough'
     school: 1
+    version: 0
 - model: backend.Ingredient
   pk: 5
   fields:
     name: 'tomato'
     school: 1
-
-- model: backend.NutritionalInfo
-  pk: 1
-  fields:
-    name: 'No Info'
+    version: 0
 
 - model: backend.MealItem
   pk: 1
   fields:
+    version: 0
     name: 'apple pie'
     station: 'dessert'
     school: 1
-    nutrition: 1
     ingredients: [1]
     portion_weight: 200
     portion_volume: 150
 - model: backend.MealItem
   pk: 2
   fields:
+    version: 0
     name: 'anchovy'
     station: 'meal'
     school: 1
-    nutrition: 1
     ingredients: [3]
     portion_weight: 50
     portion_volume: 25
 - model: backend.MealItem
   pk: 3
   fields:
+    version: 0
     name: 'pizza'
     station: 'meal'
     school: 1
-    nutrition: 1
     ingredients: [4, 5]
     portion_weight: 250
     portion_volume: 250
 - model: backend.MealItem
   pk: 4
   fields:
+    version: 0
     name: 'orange slice'
     station: 'AMD PAYS MINIMUM WAGE'
     school: 1
-    nutrition: 1
     ingredients: [2]
     portion_weight: 25
     portion_volume: 25
@@ -78,6 +78,7 @@
 - model: backend.MealSelection
   pk: 1
   fields:
+    version: 0
     name: Lunch in Sloth's Pit, Winsconsin
     group: 'lunch'
     timestamp: 2030-02-14 12:00:00Z

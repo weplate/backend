@@ -50,7 +50,9 @@ class AuthTestCase(UserTestCase):
     def test_register_valid(self):
         c = Client()
 
-        res_json = c.post('/register/', self.pdict_alex_hu).json()
+        print(repr(self.pdict_alex_hu))
+
+        res_json = c.post('/api/register/', self.pdict_alex_hu).json()
         self.assertFalse(res_json['error'], msg=f'Got error "{res_json["message"]}"')
 
     def test_register_invalid(self):
