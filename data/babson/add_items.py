@@ -2,6 +2,7 @@ import json
 import pathlib
 import re
 from re import Match
+from typing import Union
 
 from openpyxl import load_workbook
 from openpyxl.worksheet.worksheet import Worksheet
@@ -54,10 +55,15 @@ def parse_meal_items(version):
     cur_station = None
     unparseable = 0
     for row in main_sheet.iter_rows(13):
-        def get_col(col):
-            return row[col].value
+        def get_col(col: Union[int, str]):
+            if isinstance(col, int):
+                return row[col].value
+            elif isinstance(col, str) and len(col) == 1:
+                return row[ord(col) - 65].value
+            else:
+                raise ValueError(f'Unreadable column {col}')
 
-        def num_col(col):
+        def num_col(col: Union[int, str]):
             val = get_col(col)
             if val is None:
                 return 0
@@ -81,7 +87,7 @@ def parse_meal_items(version):
 
             if not err:
                 name = re.sub(r'(CHE( (\d+))? (- )?)|(HC )|([\w+]+: )',
-                               '', get_col(0), count=1)[:MAX_NAME_LEN]
+                               '', get_col('A'), count=1)[:MAX_NAME_LEN]
                 meal_items[get_col(0)] = {
                     # basic info
                     'name': name,
@@ -91,33 +97,36 @@ def parse_meal_items(version):
 
                     # basic nutritional/number info
                     'category': c.lower() if (c := get_col(3)) else None,
-                    'cafeteria_id': get_col(1),
-                    'portion_weight': num_col(7),
+                    'cafeteria_id': get_col('B'),
+                    'portion_weight': num_col('H'),
                     'portion_volume': portion,
                     'ingredients': [],
 
                     # sheet 1 nutrients
-                    'calories': num_col(8),
-                    'protein': num_col(10),
-                    'total_fat': num_col(11),
-                    'saturated_fat': num_col(12),
-                    'carbohydrate': num_col(13),
-                    'sugar': num_col(14),
-                    'fiber': num_col(16),
-                    'sodium': num_col(18),
-                    'potassium': num_col(19),
-                    'calcium': num_col(20),
-                    'iron': num_col(22),
+                    'calories': num_col('I'),
+                    'protein': num_col('K'),
+                    'total_fat': num_col('L'),
+                    'carbohydrate': num_col('M'),
+                    'fiber': num_col('N'),
+                    'saturated_fat': num_col('O'),
+                    'potassium': num_col('Q'),
+                    'sodium': num_col('T'),
+                    'sugar': num_col('W'),
 
                     # Extra property for other parsers
                     'meal': station_meal,
                 }
 
     for row in micros_sheet.iter_rows(13):
-        def get_col(col):
-            return row[col].value
+        def get_col(col: Union[int, str]):
+            if isinstance(col, int):
+                return row[col].value
+            elif isinstance(col, str) and len(col) == 1:
+                return row[ord(col) - 65].value
+            else:
+                raise ValueError(f'Unreadable column {col}')
 
-        def num_col(col):
+        def num_col(col: Union[int, str]):
             val = get_col(col)
             if val is None:
                 return 0
@@ -127,10 +136,12 @@ def parse_meal_items(version):
 
         if get_col(0) in meal_items:
             meal_items[get_col(0)] |= {
-                'vitamin_d': num_col(7),
-                'vitamin_c': num_col(9),
-                'vitamin_a': num_col(10),
-                'cholesterol': num_col(13),
+                'cholesterol': num_col('H'),
+                'calcium': num_col('J'),
+                'iron': num_col('K'),
+                'vitamin_d': num_col('L'),
+                'vitamin_c': num_col('O'),
+                'vitamin_a': num_col('P'),
             }
 
     print(f'Parsed {len(meal_items)} meal items')
