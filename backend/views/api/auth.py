@@ -1,10 +1,11 @@
 import re
+import urllib.parse
 
 from django.contrib.auth.models import User
 from django.core.mail import send_mail
 from django.db import IntegrityError
 from django.urls import reverse
-from rest_framework import serializers
+from rest_framework import serializers, viewsets
 from rest_framework.authtoken.admin import User
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.exceptions import APIException
@@ -12,7 +13,7 @@ from rest_framework.request import Request
 from rest_framework.response import Response
 
 from backend.models import StudentProfile
-from backend.models.token import EmailVerificationToken
+from backend.models.token import EmailVerificationToken, PasswordResetToken
 
 
 class UserSerializer(serializers.ModelSerializer):
@@ -66,55 +67,78 @@ def check_email_view(_, email):
     return Response({'detail': 'Email ok'})
 
 
-class ResetPasswordPostSerializer(serializers.Serializer):
-    password = serializers.CharField(max_length=256)
+def user_from_email(email):
+    if email is None:
+        raise APIException('No email specified')
+    if (user := User.objects.filter(username=email).first()) is None:
+        raise APIException('Email does not correspond to user')
+    return user
 
 
-@api_view(['post'])
-@permission_classes([])
-def verify_email_post(request: Request):
-    token_obj = EmailVerificationToken.objects.create_token(request.user)
-    verify_url = request.build_absolute_uri(reverse('verify_email_get', args=(request.user.id, token_obj.token)))
-    send_mail(
-        subject=f'WePlate Email Verification',
-        message='',
-        html_message=f'Visit <a href="{verify_url}">this link</a> to verify your email!',
-        from_email=None,
-        recipient_list=[request.user.email],
-    )
-    return Response({'detail': 'ok'})
+class VerifyEmailViewSet(viewsets.ViewSet):
+    permission_classes = []
+
+    def create(self, request: Request):
+        user = user_from_email(request.data.get('email'))
+        token_obj = EmailVerificationToken.objects.create_token(user)
+        verify_url = request.build_absolute_uri(reverse('VerifyEmail') + '?' + urllib.parse.urlencode({
+            'email': user.email,
+            'token': token_obj.token
+        }))
+        send_mail(
+            subject=f'WePlate Email Verification',
+            message='',
+            html_message=f'Visit <a href="{verify_url}">this link</a> to verify your email!',
+            from_email=None,
+            recipient_list=[request.user.email],
+        )
+        return Response({'detail': 'ok'})
+
+    def list(self, request: Request):
+        user = user_from_email(request.GET.get('email'))
+        token = request.GET.get('token')
+        if (profile := StudentProfile.objects.filter(user=user).first()) is None:
+            raise APIException('User is not a student')
+        if (token_obj := EmailVerificationToken.objects.get_token(user)) is None:
+            raise APIException('No token found')
+        if token_obj != token:
+            raise APIException('Incorrect Token')
+
+        profile.is_verified = True
+        profile.save()
+        return Response(f'Email verified for user {user.username}! You may now login using the app!')
 
 
-@api_view(['get'])
-@permission_classes([])
-def verify_email_get(request: Request, user_id: int, token: str):
-    user = User.objects.get(id=user_id)
-    if not user:
-        return Response('User not found')
-    else:
-        profile = StudentProfile.objects.get(user=user)
-        if profile:
-            token_obj = EmailVerificationToken.objects.get_token(user)
-            if token_obj:
-                if token_obj.token != token:
-                    return Response('Incorrect token')
-                else:
-                    user.is_active = True
-                    user.save()
-                    return Response(f'Email verified for user {user.username}! You may now login using the app!')
-            else:
-                return Response('No token found')
-        else:
-            return Response('User is not a student')
+class ResetPasswordViewSet(viewsets.ViewSet):
+    permission_classes = []
 
+    def create(self, request: Request):
+        if (password := request.data.get('password')) is None:
+            raise APIException('No password was specified')
+        user = user_from_email(request.data.get('email'))
+        token_obj = PasswordResetToken.objects.create_token(user, new_password=password)
 
-@api_view(['post'])
-@permission_classes([])
-def reset_password_post(request: Request):
-    pass
+        reset_url = request.build_absolute_uri(reverse('ResetPassword') + '?' + urllib.parse.urlencode({
+            'email': user.email,
+            'token': token_obj.token
+        }))
+        send_mail(
+            subject=f'WePlate Password Reset',
+            message='',
+            html_message=f'Visit <a href="{reset_url}">this link</a> to reset your password!',
+            from_email=None,
+            recipient_list=[request.user.email],
+        )
+        return Response({'detail': 'ok'})
 
+    def list(self, request: Request):
+        user = user_from_email(request.GET.get('email'))
+        token = request.GET.get('token')
+        if (token_obj := PasswordResetToken.objects.get_token(user)) is None:
+            raise APIException('No token found')
+        if token_obj != token:
+            raise APIException('Incorrect Token')
 
-@api_view(['get'])
-@permission_classes([])
-def reset_password_get(request: Request, user_id: int, token: str):
-    pass
+        user.set_password(token_obj.new_password)
+        user.save()
+        return Response(f'Password reset for user {user.username}!')

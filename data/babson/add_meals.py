@@ -44,7 +44,7 @@ def add_meals(meal_items: list[tuple[MealItem, str, str]], menu_path, version):
             elif val in items_by_id:
                 item = items_by_id[val]
                 item_ids_by_day[meal_day].append((item, meal))
-                if item.station in ['FLAME', '500 Degrees', 'Carved and Crafted']:
+                if item.station in ['FLAME', '500 DEGREES', 'CARVED AND CRAFTED']:
                     item_ids_by_day[meal_day].append((item, 'afterlunch'))
                 item.name = item_name
                 items_to_update.append(item)

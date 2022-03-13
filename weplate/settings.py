@@ -138,7 +138,7 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 # Finally some app specific settings
 EMAIL_HOST_USER = 'mosesxu@efaglobal.org'
-EMAIL_HOST_PASSWORD = 'Cn>h3TQX'
+EMAIL_HOST_PASSWORD = 'vrNhwQ9LJSA4Zyh'
 
 REST_FRAMEWORK = {
     'DEFAULT_PERMISSION_CLASSES': [

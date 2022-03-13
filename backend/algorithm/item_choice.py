@@ -101,7 +101,6 @@ class MealItemSelector:
                 'category': small2_category
             },
         }
-        print(self.result_dict)
         self.result_cost = best_cost
         self.runtime = time.perf_counter() - start_time
         self.done = True
