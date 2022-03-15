@@ -1,0 +1,3 @@
+[submodule "backend_data_parsing"]
+	path = backend_data_parsing
+	url = https://github.com/weplate/backend_data_parsing.git
