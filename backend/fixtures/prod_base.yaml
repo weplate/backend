@@ -18,6 +18,7 @@
 - model: backend.StudentProfile
   pk: 10
   fields:
+    is_verified: false
     user: 10 # Should link to above profile
     school: 10
     name: 'Alex Hu'
@@ -30,6 +31,39 @@
     health_goal: 'improve_health'
     activity_level: 'moderate'
     grad_year: 2025
+    ban: []
+    favour: []
+    allergies: []
+
+- model: auth.User
+  pk: 3
+  fields:
+    password: 'pbkdf2_sha256$320000$CUWD8FxFtJ5BHaRWuqQqWd$9a/rSoSpm4NlPqeLExTt9tKTPsZIWWd+Qq6y2ZIzL0s=' # pass: Kq6BWbauFtUKzjm
+    last_login: 2000-1-01 00:00:00Z
+    is_superuser: true # Admin account
+    username: 'moses@mosesxu.net'
+    first_name: 'Moses'
+    last_name: 'Xu'
+    email: 'moses@mosesxu.net'
+    is_staff: True
+    is_active: True
+    date_joined: 2022-2-11 11:23:10Z
+- model: backend.StudentProfile
+  pk: 3
+  fields:
+    is_verified: false
+    user: 3 # Should link to above profile
+    school: 10
+    name: 'Moses Xu'
+    height: 177
+    weight: 82
+    birthdate: 2003-05-24
+    meals: ['breakfast', 'lunch', 'dinner']
+    meal_length: 45
+    sex: 'male'
+    health_goal: 'improve_health'
+    activity_level: 'moderate'
+    grad_year: 2026
     ban: []
     favour: []
     allergies: []

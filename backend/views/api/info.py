@@ -19,6 +19,8 @@ class SchoolSerializer(serializers.ModelSerializer):
 
 
 class SchoolViewSet(viewsets.ReadOnlyModelViewSet):
+    permission_classes = []
+
     queryset = School.objects.all()
     serializer_class = SchoolSerializer
 
@@ -30,11 +32,10 @@ class IngredientSerializer(serializers.ModelSerializer):
 
 
 class IngredientViewSet(viewsets.ViewSet):
-    authentication_classes = []
     permission_classes = []
 
     def list(self, _):
-        return Response({'detail': 'please query items/<school_id>'})
+        return Response({'detail': 'please query ingredients/<school_id>'})
 
     def retrieve(self, _, pk=None):
         return Response(IngredientSerializer(Ingredient.objects.filter(school__id=pk), many=True).data)
@@ -57,8 +58,6 @@ class DetailMealSelectionSerializer(MealSelectionSerializer):
 
 
 class MealSelectionViewSet(viewsets.ReadOnlyModelViewSet):
-    authentication_classes = [SessionAuthentication, TokenAuthentication]
-    permission_classes = [IsAuthenticated, IsStudent]
     serializer_class = MealSelectionSerializer
 
     def get_queryset(self):
@@ -79,8 +78,6 @@ class MealSelectionViewSet(viewsets.ReadOnlyModelViewSet):
 
 
 class SchoolMealItemsViewSet(viewsets.ReadOnlyModelViewSet):
-    authentication_classes = [SessionAuthentication, TokenAuthentication]
-    permission_classes = [IsAuthenticated, IsStudent]
     serializer_class = ReadMealItemSerializer
 
     def get_queryset(self):

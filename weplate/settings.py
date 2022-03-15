@@ -137,6 +137,10 @@ USE_TZ = True
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 # Finally some app specific settings
+EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+EMAIL_HOST = 'smtp.gmail.com'
+EMAIL_USE_TLS = True
+EMAIL_PORT = 587
 EMAIL_HOST_USER = 'mosesxu@efaglobal.org'
 EMAIL_HOST_PASSWORD = 'vrNhwQ9LJSA4Zyh'
 
@@ -144,7 +148,7 @@ REST_FRAMEWORK = {
     'DEFAULT_PERMISSION_CLASSES': [
         'rest_framework.permissions.IsAuthenticated',
         'backend.utils.IsStudent',
-        # 'backend.utils.IsVerified'  TODO: Implement email verification
+        'backend.utils.IsVerified'
     ],
     'DEFAULT_AUTHENTICATION_CLASSES': [
         'rest_framework.authentication.SessionAuthentication',

@@ -4,8 +4,7 @@ from rest_framework.authtoken.views import obtain_auth_token
 
 from .info import SchoolViewSet, IngredientViewSet, MealSelectionViewSet, SchoolMealItemsViewSet
 from .meal_planning import NutritionalRequirementsViewSet, SuggestViewSet
-from .auth import register_student_view, check_email_view, verify_email_post, verify_email_get, reset_password_post, \
-    reset_password_get, VerifyEmailViewSet, ResetPasswordViewSet
+from .auth import register_student_view, check_email_view, VerifyEmailViewSet, ResetPasswordViewSet
 from .settings import SettingsViewSet
 
 router = routers.DefaultRouter()
@@ -21,7 +20,7 @@ router.register(r'suggest', SuggestViewSet, basename='SuggestViewSet')
 router.register(r'verify_email', VerifyEmailViewSet, basename='VerifyEmail')
 router.register(r'reset_password', ResetPasswordViewSet, basename='ResetPassword')
 
-print(router.get_urls())
+# print(router.get_urls())
 
 urlpatterns = [
     # Authentication

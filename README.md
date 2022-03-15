@@ -61,7 +61,10 @@ python3 manage.py loaddata prod_base.yaml
 
 ## Loading the Correct Database
 
-Use `.env_prod_remote` when modifying DB on the remote, use `.env` (default) otherwise.
+Use `.env_prod_remote` when modifying DB on the remote, use `.env` (default) otherwise.  This can be done with
+
+* Unix Systems: `export ENV_FILE=.env_prod_remote`
+* Windows: `$Env:ENV_FILE=".env_prod_remote"`
 
 ## Loading Meal Information
 
@@ -99,7 +102,7 @@ Under `api/`:
     - Requires GET parameters: `small1`, `small2`, `large`.  Each parameter should be the id (primary key) of a MealItem
     - Returns an object of the form: `{ "small1": { "volume": <in mL>, "weight": <in g> }, "small2": { ... }, "large": { ... }` (the responses for `small2` and `large` are the same as for `small1`)
 
-### API Auth and Registration
+### Authentication Related
 
 Also under `api/`:
 
@@ -108,7 +111,20 @@ Also under `api/`:
 - POST `token_auth/`: Token authentication.  See below
 - `auth/`: I have no idea what this is for
 
+- POST `/api/verify_email/`: Sends a verification email with an expiring token
+  - JSON request body structure: `{"email": <email>}`
+- GET `/api/verify_email`: Receives verification requests
+  - **Should not be used by frontend**
+  - GET parameters: `?email=<email>&token=<token>`
+- POST `/api/reset_password/`: Sends a password reset email with an expiring token
+  - JSON request body structure: `{"email": <email>, "password": <new password>}`
+- GET `/api/reset_password`: Receives password reset requests
+  - **Should not be used by frontend**
+  - GET parameters: `?email=<email>&token=<token>`
+
 ### Analytics
+
+Under `api/analytics/`:
 
 These are for creating and viewing analytics objects.  All endpoints will be of the form `api/analytics/<endpoint>/`.  Submitting a GET request will return the MAX_LOG_ENTRIES latest log entries for this endpoint (currently MAX_LOG_ENTRIES is set to 20).  Submitting a POST request with the required parameters will add a new log entry.
 
@@ -135,12 +151,11 @@ Endpoints:
 POST `api/token_auth` with the username (email) and password fields filled out in the request body.
 If they are correct, the response will contain a token.
 
+To authenticate using the token, add `Authorization: Token <token>` to your request headers.
+
 # TODO
 
-- Add default auth classes so I don't have to list everything
 - /api/settings and /api/register can be refractored I'm sure (by using serializers more effectively, see the logging endpoints)
-- Email verification and password reset
-- Use an external DB
 
 [comment]: <> (# Design Paradigms &#40;redundant?&#41;)
 

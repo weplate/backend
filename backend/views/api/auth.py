@@ -81,31 +81,29 @@ class VerifyEmailViewSet(viewsets.ViewSet):
     def create(self, request: Request):
         user = user_from_email(request.data.get('email'))
         token_obj = EmailVerificationToken.objects.create_token(user)
-        verify_url = request.build_absolute_uri(reverse('VerifyEmail') + '?' + urllib.parse.urlencode({
+        verify_url = request.build_absolute_uri(reverse('VerifyEmail-list') + '?' + urllib.parse.urlencode({
             'email': user.email,
             'token': token_obj.token
         }))
         send_mail(
             subject=f'WePlate Email Verification',
             message='',
-            html_message=f'Visit <a href="{verify_url}">this link</a> to verify your email!',
+            html_message=f'Hi {user.email},'
+                         f'<br><br>Visit <a href="{verify_url}">this link</a> to verify your email!'
+                         f'<br><br>Cheers, The WePlate Team',
             from_email=None,
-            recipient_list=[request.user.email],
+            recipient_list=[user.email],
         )
         return Response({'detail': 'ok'})
 
     def list(self, request: Request):
         user = user_from_email(request.GET.get('email'))
-        token = request.GET.get('token')
         if (profile := StudentProfile.objects.filter(user=user).first()) is None:
             raise APIException('User is not a student')
-        if (token_obj := EmailVerificationToken.objects.get_token(user)) is None:
-            raise APIException('No token found')
-        if token_obj != token:
-            raise APIException('Incorrect Token')
-
+        EmailVerificationToken.objects.process_token(user, request.GET.get('token'))
         profile.is_verified = True
         profile.save()
+
         return Response(f'Email verified for user {user.username}! You may now login using the app!')
 
 
@@ -118,14 +116,16 @@ class ResetPasswordViewSet(viewsets.ViewSet):
         user = user_from_email(request.data.get('email'))
         token_obj = PasswordResetToken.objects.create_token(user, new_password=password)
 
-        reset_url = request.build_absolute_uri(reverse('ResetPassword') + '?' + urllib.parse.urlencode({
+        reset_url = request.build_absolute_uri(reverse('ResetPassword-list') + '?' + urllib.parse.urlencode({
             'email': user.email,
             'token': token_obj.token
         }))
         send_mail(
             subject=f'WePlate Password Reset',
             message='',
-            html_message=f'Visit <a href="{reset_url}">this link</a> to reset your password!',
+            html_message=f'Hi {user.email},'
+                         f'<br><br>Visit <a href="{reset_url}">this link</a> to reset your password!'
+                         f'<br><br>Cheers, The WePlate Team',
             from_email=None,
             recipient_list=[request.user.email],
         )
@@ -133,12 +133,8 @@ class ResetPasswordViewSet(viewsets.ViewSet):
 
     def list(self, request: Request):
         user = user_from_email(request.GET.get('email'))
-        token = request.GET.get('token')
-        if (token_obj := PasswordResetToken.objects.get_token(user)) is None:
-            raise APIException('No token found')
-        if token_obj != token:
-            raise APIException('Incorrect Token')
-
+        token_obj = PasswordResetToken.objects.process_token(user, request.GET.get('token'))
         user.set_password(token_obj.new_password)
         user.save()
+
         return Response(f'Password reset for user {user.username}!')
