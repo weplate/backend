@@ -1,8 +1,13 @@
 import functools
-import importlib
+import itertools
+import os
+from pathlib import Path
 
 from django import forms
 from django.core.cache import cache
+from django.conf import settings
+from django.core.management import call_command
+from django.db import transaction
 from django.http import HttpResponse
 from django.shortcuts import render, get_object_or_404
 from django.urls import path, reverse
@@ -10,6 +15,9 @@ from django.views.generic import FormView
 
 from backend.algorithm.portion import SimulatedAnnealing
 from backend.models import School, StudentProfile, MealSelection, MealItem, Ingredient, SchoolProfile
+
+DATA_FIXTURE_PATH = settings.BASE_DIR / 'backend_data_parsing'
+SCHOOLS = ('babson',)
 
 
 def data_admin_view(fun):
@@ -39,19 +47,16 @@ def view_all(request):
 
 
 class UpdateSchoolDataForm(forms.Form):
-    module = forms.CharField(max_length=256)
+    files: list[Path] = list(itertools.chain(*(
+        (DATA_FIXTURE_PATH / school / file
+         for file in os.listdir(DATA_FIXTURE_PATH / school) if file.endswith('.json'))
+        for school in SCHOOLS)))
 
-    def clean(self):
-        cleaned_data = super().clean()
-
-        try:
-            cleaned_data['module'] = (module := importlib.import_module(cleaned_data['module']))
-            if not hasattr(module, 'setup'):
-                self.add_error('module', f'Module has no setup function')
-        except ImportError as e:
-            self.add_error('module', f'Error while importing module: {e}')
-
-        return cleaned_data
+    fixtures = forms.MultipleChoiceField(
+        required=False,
+        widget=forms.CheckboxSelectMultiple,
+        choices=[(str(file), str(file.relative_to(file.parent.parent))) for file in files],
+    )
 
 
 class UpdateSchoolDataFormView(FormView):
@@ -60,7 +65,12 @@ class UpdateSchoolDataFormView(FormView):
     success_url = '/'
 
     def form_valid(self, form):
-        form.cleaned_data['module'].setup()
+        # print(form.cleaned_data['fixtures'])
+        with transaction.atomic():
+            for fixture_path in form.cleaned_data['fixtures']:
+                print(f'Loading fixture path {fixture_path}')
+                call_command('loaddata', fixture_path)
+
         return super().form_valid(form)
 
 

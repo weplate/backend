@@ -79,6 +79,11 @@ You must specify a module to load from.
 
 # Endpoints
 
+## Visual
+
+- `/`: Administrative/Root
+  - Contains a set of tools/administrative endpoints that require a custom UI.  Requires superuser access.
+
 ## API
 
 Under `api/`:
