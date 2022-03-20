@@ -11,6 +11,10 @@ class PlateSection:
     SMALL1 = 'small1'
     SMALL2 = 'small2'
 
+    @classmethod
+    def all(cls):
+        return [cls.LARGE, cls.SMALL1, cls.SMALL2]
+
 
 # https://www.notion.so/weplate/Mathematical-Calculations-f561b494f2444cfc87023ef615cf2bea#c137e967c1224678be2079cb5a55a3a6
 # Which section (protein, veg, carb) should have the large portion

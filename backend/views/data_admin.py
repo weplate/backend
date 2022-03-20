@@ -6,6 +6,7 @@ from pathlib import Path
 from django import forms
 from django.core.cache import cache
 from django.conf import settings
+from django.core.exceptions import ValidationError
 from django.core.management import call_command
 from django.db import transaction
 from django.http import HttpResponse
@@ -13,6 +14,7 @@ from django.shortcuts import render, get_object_or_404
 from django.urls import path, reverse
 from django.views.generic import FormView
 
+from backend.algorithm.item_choice import PlateSection
 from backend.algorithm.portion import SimulatedAnnealing
 from backend.models import School, StudentProfile, MealSelection, MealItem, Ingredient, SchoolProfile
 
@@ -74,8 +76,90 @@ class UpdateSchoolDataFormView(FormView):
         return super().form_valid(form)
 
 
+def resolve_form_id(model, cleaned_data, field):
+    if field_id := cleaned_data.get(field):
+        try:
+            cleaned_data[field] = model.objects.get(pk=field_id)
+        except model.DoesNotExist as e:
+            raise ValidationError(str(e))
+
+
+class AlgorithmTestChoicesForm(forms.Form):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+
+        self.fields['profile'] = forms.ChoiceField(
+            label='Profile (only pk <= 20)',
+            choices=tuple(
+                (profile.user.id, str(profile)) for profile in StudentProfile.objects.filter(user_id__lte=20).order_by('user_id')
+            ),
+            required=True
+        )
+        self.fields['meal'] = forms.ChoiceField(
+            label='Meal',
+            choices=tuple(
+                (meal.id, f'{meal.name} - {meal.school}') for meal in MealSelection.objects.all().order_by('id')
+            ),
+            required=True
+        )
+
+    def clean(self):
+        cleaned_data = super().clean()
+        resolve_form_id(StudentProfile, cleaned_data, 'profile')
+        resolve_form_id(MealSelection, cleaned_data, 'meal')
+
+        return cleaned_data
+
+
+class AlgorithmTestPortionsForm(forms.Form):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+
+        result = kwargs.pop('result')
+        profile = kwargs.pop('profile')
+
+        self.fields['profile'] = forms.IntegerField(
+            label='Profile (ID)',
+            initial=profile.id,
+            disabled=True,
+            required=True
+        )
+        for section in PlateSection.all():
+            self.fields[section] = forms.ChoiceField(
+                choices=tuple(
+                    (item.id, item.name) for item in result[section]['items']
+                ),
+                required=True
+            )
+
+    def clean(self):
+        cleaned_data = super().clean()
+        resolve_form_id(StudentProfile, cleaned_data, 'profile')
+        for section in PlateSection.all():
+            resolve_form_id(MealItem, cleaned_data, section)
+
+        return cleaned_data
+
+
 @data_admin_view
-def test_algorithm(request, profile, large, small1, small2):
+def test_algorithm_choices(request):
+    if request.method == 'POST':
+        form = AlgorithmTestChoicesForm(request.POST)
+        if form.is_valid():
+            # TODO: add in other form
+            # Add in processing
+
+            return render(request, 'data_admin/test_algorithm_portions.html', {
+                'choices_form': form
+            })
+    else:
+        return render(request, 'data_admin/test_algorithm_portions.html', {
+            'choices_form': AlgorithmTestChoicesForm()
+        })
+
+
+@data_admin_view
+def test_algorithm_portions(request):
     profile = get_object_or_404(StudentProfile, pk=profile)
     large = get_object_or_404(MealItem, pk=large)
     small1 = get_object_or_404(MealItem, pk=small1)
@@ -87,7 +171,9 @@ def test_algorithm(request, profile, large, small1, small2):
     lo_info = sa.nutrition_of(sa.lo_state())
     hi_info = sa.nutrition_of(sa.hi_state())
 
-    return render(request, 'data_admin/test_algorithm.html', {
+    # TODO: rewrite_this
+
+    return render(request, 'data_admin/test_algorithm_portions.html', {
         'profile': profile,
         'large': large,
         'small1': small1,
@@ -112,7 +198,8 @@ def clear_cache(_):
 urlpatterns = [
     path('view_all/', view_all, name='da_view_all'),
     path('update_school_data/', data_admin_view(UpdateSchoolDataFormView.as_view()), name='da_update_school_data'),
-    path('test_algorithm/<int:profile>/<int:large>/<int:small1>/<int:small2>/', test_algorithm, name='da_test_algorithm'),
+    path('test_algorithm_portions/', test_algorithm_portions, name='da_test_algorithm_portions'),
+    path('test_algorithm_choices/', test_algorithm_choices, name='da_test_algorithm_choices'),
     path('clear_cache/', clear_cache, name='da_clear_cache'),
 ]
 
@@ -121,18 +208,6 @@ urlpatterns = [
 def debug_view(request):
     messages = []
 
-    # algorithm_test
-    try:
-        u = StudentProfile.objects.get(pk=10)
-        l = MealItem.objects.get(name__iexact='Cilantro Rice')
-        s1 = MealItem.objects.get(name__iexact='Chicken Ratatouille')
-        s2 = MealItem.objects.get(name__iexact='Chopped Kale Salad with Beets')
-        algo_test_url = reverse('da_test_algorithm', args=[u.pk, l.pk, s1.pk, s2.pk])
-    except MealItem.DoesNotExist as e:
-        algo_test_url = reverse('da_test_algorithm', args=[1, 1, 1, 1])
-        messages.append(f'Could not retrieve object for algorithm test: {e}')
-
     return render(request, 'debug/root.html', {
-        'algorithm_test_url': algo_test_url,
         'messages': messages,
     })
