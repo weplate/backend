@@ -10,7 +10,7 @@ If you're on Unix based systems, the correct Python command is most likely `pyth
 Run the following commands:
 
 ```bash
-python3 install -r requirements.txt
+pip3 install -r requirements.txt
 python3 manage.py createsuperuser
 python3 manage.py makemigrations
 python3 manage.py makemigrations backend
