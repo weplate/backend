@@ -37,6 +37,8 @@ Then, run:
 
 ## Deployment to AppEngine
 
+Install the Google Cloud console, and then:
+
 ```bash
 gcloud auth login
 gcloud app deploy app.yaml cron.yaml
