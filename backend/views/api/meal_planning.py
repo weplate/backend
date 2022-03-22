@@ -50,14 +50,10 @@ class SuggestViewSet(viewsets.ViewSet):
     def items(self, request: Request, pk=None):
         meal = get_object_or_404(MealSelection, pk=pk)
         profile = StudentProfile.objects.get(user=request.user)
-        cache_key = f'weplate_suggest_items_meal{meal.id}_profile{profile.id}'
-        if _cache_res := cache.get(cache_key):
-            return Response(_cache_res)
 
         alg = MealItemSelector(meal, profile)
         alg.run_algorithm()
 
-        cache.set(cache_key, alg.result_dict, CACHE_TIMEOUT)
         return Response(alg.result_dict)
 
     @action(methods=['get'], detail=False)

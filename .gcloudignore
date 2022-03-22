@@ -29,3 +29,5 @@ data/babson/*
 data/db/*
 cloud_sql_proxy
 cloud_sql_proxy_x64.exe
+
+backend_data_parsing/
