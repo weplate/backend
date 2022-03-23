@@ -25,9 +25,6 @@ venv/
 db.sqlite3
 
 # Cloud SQL and Docker Testing and Dat
-data/babson/*
-data/db/*
+backend_data_parsing/
 cloud_sql_proxy
 cloud_sql_proxy_x64.exe
-
-backend_data_parsing/

@@ -18,7 +18,7 @@
 - model: backend.StudentProfile
   pk: 10
   fields:
-    is_verified: false
+    is_verified: true
     user: 10 # Should link to above profile
     school: 10
     name: 'Alex Hu'
