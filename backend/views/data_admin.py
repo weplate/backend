@@ -49,16 +49,31 @@ def view_all(request):
 
 
 class UpdateSchoolDataForm(forms.Form):
-    files: list[Path] = list(itertools.chain(*(
-        (DATA_FIXTURE_PATH / school / file
-         for file in os.listdir(DATA_FIXTURE_PATH / school) if file.endswith('.json'))
-        for school in SCHOOLS)))
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
 
-    fixtures = forms.MultipleChoiceField(
-        required=False,
-        widget=forms.CheckboxSelectMultiple,
-        choices=[(str(file), str(file.relative_to(file.parent.parent))) for file in files],
-    )
+        if Path(DATA_FIXTURE_PATH).exists():
+            files: list[Path] = list(itertools.chain(*(
+                (DATA_FIXTURE_PATH / school / file
+                 for file in os.listdir(DATA_FIXTURE_PATH / school) if file.endswith('.json'))
+                for school in SCHOOLS)))
+            self.not_found = False
+        else:
+            files: list[Path] = []
+            self.not_found = True
+
+        self.fields['fixtures'] = forms.MultipleChoiceField(
+            required=False,
+            widget=forms.CheckboxSelectMultiple,
+            choices=[(str(file), str(file.relative_to(file.parent.parent))) for file in files],
+        )
+
+    def clean(self):
+        cleaned_data = super().clean()
+        if self.not_found:
+            self.add_error('fixtures', f'Directory {DATA_FIXTURE_PATH} was not found.  No fixtures can be loaded.  '
+                                       f'Maybe you are working on prod? (the submodule is not copied over)')
+        return cleaned_data
 
 
 class UpdateSchoolDataFormView(FormView):
