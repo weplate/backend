@@ -10,7 +10,7 @@ from rest_framework.authtoken.models import Token
 def appengine_job(view_fun):
     @functools.wraps(view_fun)
     def wrapper(request, *args, **kwargs):
-        if settings.DEBUG or request.headers.get('X-Appengine-Cron', None) == 'true':
+        if not settings.PROD or request.headers.get('X-Appengine-Cron', None) == 'true':
             return view_fun(request, *args, **kwargs)
         else:
             return HttpResponse('Job access denied')

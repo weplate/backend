@@ -2,6 +2,8 @@ import random
 import time
 from math import exp
 
+from django.conf import settings
+
 from backend.algorithm.common import Nutrition
 from backend.algorithm.requirements import SMALL_PORTION_MAX, LARGE_PORTION_MAX, nutritional_info_for
 from backend.models import MealItem, StudentProfile
@@ -125,6 +127,10 @@ class SimulatedAnnealing:
         return 1 if c_new <= c_old else exp(-(c_new - c_old) * scale_coeff / self.t)
 
     def run_algorithm(self):
+        # set RNG
+        if settings.PROD:
+            random.seed(20210226)
+
         # Initialization
         cost_bound = max(self.cost_of(self.lo_state()), self.cost_of(self.hi_state()))
         scale_cost_by = 60 / cost_bound

@@ -25,7 +25,8 @@ SETTINGS_LOG_MSG = []
 
 env = environ.Env(
     DEBUG=(bool, True),
-    SECRET_KEY=(str, 'django-insecure-h1#o@85ph_lx=$*pcdfo$=w^m_ayh6tl($9&ceftmzncu+d5fp')
+    SECRET_KEY=(str, 'django-insecure-h1#o@85ph_lx=$*pcdfo$=w^m_ayh6tl($9&ceftmzncu+d5fp'),
+    PROD=(bool, False),
 )
 env_file = os.environ.get('ENV_FILE', '.env')
 SETTINGS_LOG_MSG.append(('.env file', env_file))
@@ -38,8 +39,10 @@ environ.Env.read_env(BASE_DIR / env_file)
 # SECURITY WARNING: don't run with debug turned on in production!
 SECRET_KEY = env('SECRET_KEY')
 DEBUG = env('DEBUG')
+PROD = env('PROD')
 SETTINGS_LOG_MSG.append(('DEBUG', DEBUG))
 SETTINGS_LOG_MSG.append(('SECRET_KEY', SECRET_KEY))
+SETTINGS_LOG_MSG.append(('prod', PROD))
 
 ALLOWED_HOSTS = ['*']  # Bro...
 

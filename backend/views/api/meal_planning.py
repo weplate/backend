@@ -1,6 +1,5 @@
 import datetime
 
-from django.core.cache import cache
 from rest_framework import viewsets, serializers
 from rest_framework.authentication import SessionAuthentication, TokenAuthentication
 from rest_framework.decorators import action
