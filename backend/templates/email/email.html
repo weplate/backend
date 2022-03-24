@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <link href="https://fonts.googleapis.com/css?family=Avenir&display=swap" rel="stylesheet"/>
+</head>
+<body>
+<div class="box">
+    <div class="logo">
+        {% load static %}
+        <img src="{% static 'backend/logo.png' %}" alt="weplate-logo">
+    </div>
+    <h1 class="heading">{{ action }}</h1>
+    <p class="body">You recently requested to {{ action_verb }} for your WePlate account.  To complete the action, click
+        <a href="{{ url }}">this link</a>.</p>
+    <p>The {{ action|lower }} link is only valid for 10 minutes.</p>
+    <p class="warning">If you did not request a {{ action|lower }}, please ignore this email.</p>
+    <p class="end_greeting">Cheers, <br>The WePlate Team</p>
+</div>
+</body>
+</html>
+<style>
+    .logo {
+        margin: auto;
+    }
+
+    .logo img {
+        margin: auto;
+        display: block;
+        width: 20%;
+    }
+
+    .box {
+        margin: auto;
+        width: 50%;
+        font-size: 14pt;
+    }
+
+    .warning {
+        font-weight: bold;
+    }
+
+    body {
+        font-family: Avenir;
+    }
+</style>

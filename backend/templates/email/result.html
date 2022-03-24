@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <link href="https://fonts.googleapis.com/css?family=Avenir&display=swap" rel="stylesheet"/>
+</head>
+<body>
+<div class="box">
+    <div class="logo">
+        {% load static %}
+        <img src="{% static 'backend/logo.png' %}" alt="weplate-logo">
+    </div>
+    <div class="inner-box">
+        <h1 class="heading">{{ action }} for {{ email }}</h1>
+        {% if error %}
+            <p class="body">Unfortunately, there was an error and your request could not be completed:</p>
+            <p class="error">{{ error }}</p>
+        {% else %}
+            <p class="body">Your {{ action_verb }}.  You may now login using the app.</p>
+            <p class="end_greeting">Cheers, <br>The WePlate Team</p>
+        {% endif %}
+    </div>
+</div>
+</body>
+</html>
+<style>
+    .error {
+        font-weight: bold;
+    }
+
+    body {
+        font-family: Avenir;
+        background: rgba(245, 245, 245, 1);
+    }
+
+    .logo {
+        margin: auto;
+    }
+
+    .logo img {
+        margin: auto;
+        display: block;
+        width: 20%;
+    }
+
+    .box {
+        margin: auto;
+        width: 50%;
+        font-size: 14pt;
+        text-align: center;
+
+        position: absolute;
+        left: 50%;
+        top: 30%;
+        transform: translate(-50%, -50%);
+    }
+
+    .inner-box {
+        margin-top: 15pt;
+        padding: 25pt;
+        border-radius: 15pt;
+        background: white;
+    }
+</style>

@@ -4,6 +4,8 @@ import urllib.parse
 from django.contrib.auth.models import User
 from django.core.mail import send_mail
 from django.db import IntegrityError
+from django.shortcuts import render
+from django.template import loader
 from django.urls import reverse
 from rest_framework import serializers, viewsets
 from rest_framework.authtoken.admin import User
@@ -88,23 +90,34 @@ class VerifyEmailViewSet(viewsets.ViewSet):
         send_mail(
             subject=f'WePlate Email Verification',
             message='',
-            html_message=f'Hi {user.email},'
-                         f'<br><br>Visit <a href="{verify_url}">this link</a> to verify your email!'
-                         f'<br><br>Cheers, The WePlate Team',
+            html_message=render(request, 'email/email.html', {
+                'action': 'Email Verification',
+                'action_verb': 'verify the email',
+                'url': verify_url
+            }),
             from_email=None,
             recipient_list=[user.email],
         )
         return Response({'detail': 'ok'})
 
     def list(self, request: Request):
-        user = user_from_email(request.GET.get('email'))
-        if (profile := StudentProfile.objects.filter(user=user).first()) is None:
-            raise APIException('User is not a student')
-        EmailVerificationToken.objects.process_token(user, request.GET.get('token'))
-        profile.is_verified = True
-        profile.save()
+        error = None
+        try:
+            user = user_from_email(request.GET.get('email'))
+            if (profile := StudentProfile.objects.filter(user=user).first()) is None:
+                raise APIException('User is not a student')
+            EmailVerificationToken.objects.process_token(user, request.GET.get('token'))
+            profile.is_verified = True
+            profile.save()
+        except APIException as e:
+            error = str(e)
 
-        return Response(f'Email verified for user {user.username}! You may now login using the app!')
+        return render(request, 'email/result.html', {
+            'action': 'Email Verification',
+            'action_verb': 'email has been verified',
+            'email': request.GET.get('email', 'Anonymous User'),
+            'error': error
+        })
 
 
 class ResetPasswordViewSet(viewsets.ViewSet):
@@ -123,18 +136,29 @@ class ResetPasswordViewSet(viewsets.ViewSet):
         send_mail(
             subject=f'WePlate Password Reset',
             message='',
-            html_message=f'Hi {user.email},'
-                         f'<br><br>Visit <a href="{reset_url}">this link</a> to reset your password!'
-                         f'<br><br>Cheers, The WePlate Team',
+            html_message=loader.get_template('email/email.html').render({
+                'action': 'Password Reset',
+                'action_verb': 'reset the password',
+                'url': reset_url
+            }, request),
             from_email=None,
-            recipient_list=[request.user.email],
+            recipient_list=[user.email],
         )
         return Response({'detail': 'ok'})
 
     def list(self, request: Request):
-        user = user_from_email(request.GET.get('email'))
-        token_obj = PasswordResetToken.objects.process_token(user, request.GET.get('token'))
-        user.set_password(token_obj.new_password)
-        user.save()
+        error = None
+        try:
+            user = user_from_email(request.GET.get('email'))
+            token_obj = PasswordResetToken.objects.process_token(user, request.GET.get('token'))
+            user.set_password(token_obj.new_password)
+            user.save()
+        except APIException as e:
+            error = str(e)
 
-        return Response(f'Password reset for user {user.username}!')
+        return render(request, 'email/result.html', {
+            'action': 'Password Reset',
+            'action_verb': 'password has been reset',
+            'email': request.GET.get('email', 'Anonymous User'),
+            'error': error
+        })
