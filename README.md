@@ -3,81 +3,88 @@ we plate in ur mom
 
 # Testing and Deployment
 
-## Setup
+## Local Setup
 
 If you're on Unix based systems, the correct Python command is most likely `python3`.
 
-Run the following commands:
+1. Clone the repo
+2. Install gcloud console
+3. Run `pip3 install -r requirements.txt`
 
-```bash
-pip3 install -r requirements.txt
-python3 manage.py createsuperuser
-python3 manage.py makemigrations
-python3 manage.py makemigrations backend
-python3 manage.py makemigrations authtoken
-python3 manage.py createcachetable
-python3 manage.py migrate
-```
+## Local Running
 
-To run the setup server, run `python3 manage.py runserver`
+### Remote DB
 
-## Remote DB
+The dev servers connect to a remote PostgreSQL DB on Gcloud, and thus need special setup.
 
-To connect to the remote DB, you must first get the Cloud SQL Auth proxy, suing:
-
-- [Windows](https://dl.google.com/cloudsql/cloud_sql_proxy_x64.exe)
-- Linux: run `wget https://dl.google.com/cloudsql/cloud_sql_proxy.linux.amd64 -O cloud_sql_proxy && chmod +x cloud_sql_proxy`
-  - You can also do `gcloud component add cloud_sql_proxy` and you will no longer need the `./`
+You must first get the Cloud SQL Auth proxy, by running the command `gcloud components add cloud_sql_proxy`.  To update the component, you may use `gcloud components update`.
 
 Then, run:
 
-- Windows: `./cloud_sql_proxy_x64.exe -instances="weplate-backend:northamerica-northeast2:db"=tcp:5432`
-- Linux: `./cloud_sql_proxy -instances="weplate-backend:northamerica-northeast2:db"=tcp:5432`
-  - Or `cloud_sql_proxy -instances="weplate-backend:northamerica-northeast2:db"=tcp:5432` if installed using `gcloud component add`
-
-## Deployment to AppEngine
-
-Install the Google Cloud console, and then:
-
 ```bash
-gcloud auth login
-gcloud app deploy app.yaml cron.yaml
+cloud_sql_proxy -instances="weplate-backend:northamerica-northeast2:db"=tcp:5432
 ```
 
-# Database 
+*Note: currently, the cloud SQL proxy is not being used on dev due to difficulties connecting to it from some machines.  However, this section still exists for reference as the proxy may be used again in the future.*
 
-## Loading Fixtures
-
-To add some fake data for testing, run the following:
-
-```bash
-python3 manage.py loaddata test_school.yaml
-python3 manage.py loaddata test_user.yaml
-```
-
-Here is also some base user info for the prod DB.
-
-```bash
-python3 manage.py loaddata prod_base.yaml
-```
-
-## Loading the Correct Database
+### Using the Correct Database
 
 Use `.env_prod_remote` when modifying DB on the remote, use `.env` (default) otherwise.  This can be done with
 
 * Unix Systems: `export ENV_FILE=.env_prod_remote`
 * Windows: `$Env:ENV_FILE=".env_prod_remote"`
 
-## Loading Meal Information
+### Execution
 
-Paging `/data_admin/update_school_data/` allows to launch scripts for the automatic addition of meal data.
+To run the dev server, run `python3 manage.py runserver`
 
-You must specify a module to load from.
+## Remote Setup
 
-### Babson
+When setting up a new production environment, it may make sense to create a new database.  After adding in the credentials to the relevant `.env` file, the new database must be initialized.
 
-- `data.babson.v0`: Feb 27 - March 5, also contains ingredients and item list.  **Must be loaded before any other version**
-- `data.babson.v1`: March 7 - Now
+### DB Initialization
+
+Run the following commands to create a superuser and setup migrations.
+
+```bash
+python3 manage.py createsuperuser
+python3 manage.py makemigrations
+python3 manage.py makemigrations backend
+python3 manage.py makemigrations authtoken
+python3 manage.py createcachetable
+python3 manage.py migrate
+````
+
+### Fixtures
+
+There is also some initial data to be loaded onto the database.  The first two files are for basic testing (but it doesn't hurt to add them anyway), and the last is some basic production info, including some hardcoded sample users and school object.
+
+```bash
+python3 manage.py loaddata test_school.yaml
+python3 manage.py loaddata test_user.yaml
+python3 manage.py loaddata prod_base.yaml
+```
+
+### Loading Meal Information
+
+Paging `/data_admin/update_school_data/` allows the loading of pre-parsed data (which should make up the majority of WePlate database data).
+
+Files are assumed to be from the submodule `backend_data_parsing` in the JSON format.  **Make sure to run the parsing script to generate/regenerate the files before uploading.**
+
+## Deployment to AppEngine
+
+First, we must make sure the static files will be uploaded using the following command.  Note that if static files are changed, this command must be run again to update them.  If the files still do not appear to update, try clearing your browser cache.
+
+```bash
+python3 manage.py collectstatic
+```
+
+Next, run
+
+```bash
+gcloud auth login
+gcloud app deploy app.yaml cron.yaml
+```
 
 # Endpoints
 
