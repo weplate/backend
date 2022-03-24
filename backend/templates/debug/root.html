@@ -5,20 +5,23 @@
     <title>Root</title>
 </head>
 <body>
-    <h1>Weplate Root</h1>
+    <h1>Weplate (Non-Django) Root</h1>
 
     <ul>
         <li>
-            <a href="{% url 'da_view_all' %}">View All</a>
+            <a href="{% url 'da:view_all' %}">View All</a>
         </li>
         <li>
-            <a href="{% url 'da_update_school_data' %}">Update School Data</a>
+            <a href="{% url 'da:update_school_data' %}">Update School Data</a>
         </li>
         <li>
-            <a href="{% url 'da_test_algorithm_choices' %}">Test Algorithm (Choices and Portions)</a>
+            <a href="{% url 'da:test_algorithm_choices' %}">Test Algorithm (Choices and Portions)</a>
         </li>
         <li>
-            <a href="{% url 'da_clear_cache' %}">Clear Cache</a>
+            <a href="{% url 'da:clear_cache' %}">Clear Cache</a>
+        </li>
+        <li>
+            <a href="/admin/logout/">Logout</a>
         </li>
     </ul>
 

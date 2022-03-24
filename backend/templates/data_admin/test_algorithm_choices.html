@@ -6,5 +6,26 @@
 </head>
 <body>
 
+<div>
+    <h2>Results</h2>
+</div>
+<div>
+    <h2>Run Tests</h2>
+
+    <h3>Choose Meal and Profile</h3>
+    <form action="{% url 'da:test_algorithm_choices' %}" method="post">
+        {% csrf_token %}
+        {{ choices_form.as_p }}
+        <input type="submit" value="Submit">
+    </form>
+
+    <h3>Portions</h3>
+    <form action="{% url 'da:test_algorithm_portions' %}" method="post">
+        {% csrf_token %}
+        {{ portions_form.as_p }}
+        <input type="submit" value="Submit">
+    </form>
+</div>
+
 </body>
 </html>

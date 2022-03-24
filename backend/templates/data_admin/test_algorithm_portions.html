@@ -6,9 +6,14 @@
 </head>
 <body>
 
-<p>Back to <a>choices</a></p>
+<h1>Testing Algorithm Portions</h1>
 
-<h1>Testing Algorithm</h1>
+<p>Back to <a href="{% url 'da:test_algorithm_choices' %}">choices</a></p>
+<hr>
+
+{% if error %}
+    <p>There are the following errors that are preventing the tester from working: {{ error }}</p>
+{% else %}
 <ul>
     <li><p>User: {{ profile }} (id: {{ profile.id }})</p></li>
     <li><p>Large Item: {{ large }} (id: {{ large.id }})<p></li>
@@ -44,6 +49,7 @@
     <li>Small 1 Size: {{ small1_size }}mL</li>
     <li>Small 2 Size: {{ small2_size }}mL</li>
 </ul>
+{% endif %}
 
 </body>
 </html>
