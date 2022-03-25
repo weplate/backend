@@ -20,7 +20,6 @@ class School(models.Model):
 
 class Ingredient(models.Model):
     name = models.CharField(max_length=64)
-    version = models.IntegerField(verbose_name='Object Version')
     school = models.ForeignKey(to=School, on_delete=models.CASCADE)
 
     def __str__(self):
@@ -29,7 +28,6 @@ class Ingredient(models.Model):
 
 class MealItem(models.Model):
     name = models.CharField(max_length=64)
-    version = models.IntegerField(verbose_name='Object Version')
     station = models.CharField(max_length=64)
     graphic = models.FileField(upload_to=MEAL_ITEM_GRAPHICS, null=True, blank=True)
 
@@ -84,7 +82,6 @@ class MealItem(models.Model):
 
 class MealSelection(models.Model):
     name = models.CharField(max_length=64)
-    version = models.IntegerField(verbose_name='Object Version')
     group = models.CharField(max_length=64, default='default')
     timestamp = models.DateTimeField()
     items = models.ManyToManyField(to=MealItem)
