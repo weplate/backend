@@ -14,7 +14,16 @@ class SchoolAdmin(admin.ModelAdmin):
     search_fields = ('name',)
 
 
-admin.site.register(SchoolProfile)
+@admin.register(SchoolProfile, site=admin.site)
+class SchoolProfileAdmin(admin.ModelAdmin):
+    list_display = ('id', 'user_id', 'name', 'school')
+    list_display_links = ('name',)
+    list_filter = ('school',)
+    ordering = ('name',)
+    search_fields = ('name',)
+
+    def user_id(self, obj):
+        return obj.user.id
 
 
 @admin.register(StudentProfile, site=admin.site)
@@ -37,6 +46,8 @@ class MealSelectionAdmin(admin.ModelAdmin):
     ordering = ('timestamp',)
     search_fields = ('name', 'group')
 
+    filter_horizontal = ('items',)
+
     def item_count(self, obj):
         return obj.items.count()
 
@@ -50,7 +61,9 @@ class MealItemAdmin(admin.ModelAdmin):
     search_fields = ('name', 'station', 'cafeteria_id')
 
 
-admin.site.register(Ingredient)
+@admin.register(Ingredient, site=admin.site)
+class IngredientAdmin(admin.ModelAdmin):
+    pass
 
 
 @admin.register(LogMealChoice, site=admin.site)
@@ -68,8 +81,14 @@ class LogMealChoiceAdmin(admin.ModelAdmin):
         return obj.profile.user.username
 
 
-admin.site.register(LogMealItemVote)
-admin.site.register(LogSurvey)
+@admin.register(LogMealItemVote, site=admin.site)
+class LogMealItemVoteAdmin(admin.ModelAdmin):
+    pass
+
+
+@admin.register(LogSurvey, site=admin.site)
+class LogSurveyAdmin(admin.ModelAdmin):
+    pass
 
 
 @admin.register(LogTextFeedback, site=admin.site)

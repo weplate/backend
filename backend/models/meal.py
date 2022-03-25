@@ -77,7 +77,7 @@ class MealItem(models.Model):
         return self.portion_weight / self.portion_volume
 
     def __str__(self):
-        return f'{self.name} @ station {self.station} @ {self.school.name}'
+        return f'{self.name} @ {self.station} (ID: {self.id})'
 
 
 class MealSelection(models.Model):

@@ -67,3 +67,21 @@
     ban: []
     favour: []
     allergies: []
+
+- model: auth.User
+  pk: 4
+  fields:
+    password: 'pbkdf2_sha256$320000$izg69CpVCM8NyrDUXGRZO5$37uvhHPDH8u+m/SuJ3E3ydg3N9pZPg5APMzPpuoejMM='  # pass: goodpassword123
+    last_login: 2000-1-01 00:00:00Z
+    username: 'admin@babson.edu'
+    email: 'admin@babson.edu'
+    is_superuser: false # Admin account
+    is_staff: true
+    is_active: true
+    date_joined: 2022-2-11 11:23:10Z
+- model: backend.SchoolProfile
+  pk: 4
+  fields:
+    name: 'Babson Admin'
+    user: 4 # Should link to above profile
+    school: 10
