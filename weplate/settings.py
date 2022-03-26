@@ -51,6 +51,7 @@ INSTALLED_APPS = [
     'backend.apps.BackendConfig',
     'rest_framework',
     'rest_framework.authtoken',
+    'debug_permissions',
     
     'django.contrib.admin',
     'django.contrib.auth',

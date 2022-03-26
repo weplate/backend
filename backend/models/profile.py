@@ -113,9 +113,3 @@ class StudentProfile(models.Model):
 
     def __str__(self):
         return f'{self.name} @ {self.school.name} (Email: {self.user.username}, Id: {self.id})'
-
-
-class SchoolProfile(models.Model):
-    name = models.CharField(max_length=64)
-    user = models.ForeignKey(to=User, on_delete=models.CASCADE)
-    school = models.ForeignKey(to=School, on_delete=models.CASCADE)

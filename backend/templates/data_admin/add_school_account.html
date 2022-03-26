@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Add School Accounts</title>
+</head>
+<body>
+
+<h1>School Accounts</h1>
+
+<p>
+    To edit and delete school accounts, please visit the Django Admin Page.
+</p>
+
+<p>
+    <a href="/admin/auth/user/?is_staff__exact=1&is_superuser__exact=0">School accounts on Admin Panel</a>.
+</p>
+
+<h2>Add new School Account</h2>
+
+<form method="post" action="{% url 'da:add_school_account' %}">
+    {% csrf_token %}
+    {{ form.as_p }}
+    <input type="submit" value="Submit">
+</form>
+
+{% if messages %}
+    <h2>Messages</h2>
+    <ul>
+        {% for message in messages %}
+            <li>{{ message }}</li>
+        {% endfor %}
+    </ul>
+{% endif %}
+
+<h2>List of School Accounts</h2>
+
+Note: A school account is defined as any user that is staff but not superuser.
+
+<ul>
+    {% for user in staff %}
+        <li>{{ user.first_name }} - {{ user.email }} (ID: {{ user.id }})</li>
+    {% endfor %}
+</ul>
+
+</body>
+</html>

@@ -6,18 +6,20 @@ from pathlib import Path
 from django import forms
 from django.conf import settings
 from django.contrib.auth.decorators import login_required
+from django.contrib.auth.models import User, Permission
+from django.contrib.contenttypes.models import ContentType
 from django.core.cache import cache
 from django.core.exceptions import ValidationError
 from django.core.management import call_command
 from django.db import transaction
 from django.http import HttpResponse
-from django.shortcuts import render, get_object_or_404
+from django.shortcuts import render
 from django.urls import path
 from django.views.generic import FormView
 
 from backend.algorithm.item_choice import PlateSection, MealItemSelector
 from backend.algorithm.portion import SimulatedAnnealing
-from backend.models import School, StudentProfile, MealSelection, MealItem, Ingredient, SchoolProfile
+from backend.models import School, StudentProfile, MealSelection, MealItem, Ingredient
 
 DATA_FIXTURE_PATH = settings.BASE_DIR / 'backend_data_parsing'
 SCHOOLS = ('babson',)
@@ -47,7 +49,6 @@ def view_all(request):
         'meals': MealSelection.objects.all(),
         'meal_items': MealItem.objects.all(),
         'ingredients': Ingredient.objects.all(),
-        'school_profiles': SchoolProfile.objects.all()
     })
 
 
@@ -234,10 +235,91 @@ def debug_view(request):
     })
 
 
+class AddSchoolAccountForm(forms.Form):
+    username = forms.EmailField(max_length=64, required=True)
+    password = forms.CharField(max_length=64, required=True)
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.fields['school'] = forms.ChoiceField(
+            choices=tuple(
+                (school.id, f'{school.name} (ID: {school.id})') for school in School.objects.all()
+            ),
+            required=True
+        )
+
+    def clean(self):
+        cleaned_data = super().clean()
+        resolve_form_id(School, cleaned_data, 'school')
+        return cleaned_data
+
+
+def retrieve_permissions(codenames):
+    """
+    Given a list of codenames, it retrieves the list of permissions associated with those codenames.  Validity is not
+    checked
+    """
+    return tuple(Permission.objects.get(codename=codename) for codename in codenames)
+
+
+def school_permission(school: School):
+    """
+    Given a school object, retrieves (or creates) a permission associating the user with that school
+    """
+    perm, created = Permission.objects.get_or_create(
+        codename=f'admin_school.{school.id}',
+        defaults=dict(
+            name=f'Administrator of {school}',
+            content_type=ContentType.objects.get_for_model(School)
+        )
+    )
+    if created:
+        perm.save()
+
+    return perm
+
+
+@data_admin_view
+def add_school_account_view(request):
+    messages = []
+    form = AddSchoolAccountForm()
+    if request.method == 'POST':
+        form = AddSchoolAccountForm(request.POST)
+        if form.is_valid():
+            data = dict(**form.cleaned_data)
+            school: School = data.pop('school')
+
+            try:
+                user = User.objects.create_user(**data,
+                                                email=data['username'],
+                                                is_staff=True,
+                                                first_name=f'{school.name}: {data["username"]}')
+                user.save()
+
+                perms = retrieve_permissions(
+                    tuple(f'{t}_{m}' for t, m in itertools.product(('add', 'change', 'delete', 'view'),
+                                                                   ('mealitem', 'mealselection', 'ingredient')))) \
+                        + (school_permission(school),)
+                print(perms)
+                user.user_permissions.add(*perms)
+                user.save()
+
+                messages.append(f'Successfully created school user {user.email} for {school.name}')
+            except Exception as e:
+                messages.append(f'Error: {e}')
+
+    return render(request, 'data_admin/add_school_account.html', {
+        'form': form,
+        'messages': messages,
+        'staff': User.objects.filter(is_staff=True, is_superuser=False)
+    })
+
+
 app_name = 'backend'
 
 urlpatterns = [
     path('view_all/', view_all, name='view_all'),
+    path('add_school_account/', add_school_account_view, name='add_school_account'),
     path('update_school_data/', data_admin_view(UpdateSchoolDataFormView.as_view()), name='update_school_data'),
     path('test_algorithm_portions/', test_algorithm_portions, name='test_algorithm_portions'),
     path('test_algorithm_choices/', test_algorithm_choices, name='test_algorithm_choices'),

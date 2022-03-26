@@ -23,7 +23,7 @@ class Ingredient(models.Model):
     school = models.ForeignKey(to=School, on_delete=models.CASCADE)
 
     def __str__(self):
-        return f'{self.name} @ {self.school.name}'
+        return self.name
 
 
 class MealItem(models.Model):
