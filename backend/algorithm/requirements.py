@@ -9,46 +9,46 @@ INF = 10**20
 # https://www.notion.so/weplate/Mathematical-Calculations-f561b494f2444cfc87023ef615cf2bea#a976edca5f394d26b536704ff6f691ce
 DEFAULT_LO_REQS = dict(
     # Macro
-    calories=-1,  # closest
-    carbohydrate=-1,  # closest
-    protein=-1,  # closest
-    total_fat=-1,  # closest
-    saturated_fat=-1,  # closest
-    trans_fat=0,  # closest
+    calories=-1,
+    carbohydrate=-1,
+    protein=-1,
+    total_fat=-1,
+    saturated_fat=-1,
+    trans_fat=0,
 
     # Micro
-    sugar=-INF,  # at most
-    cholesterol=-INF,  # at most
-    fiber=30,  # at least
-    sodium=1500,  # range
-    potassium=3000,  # at least
-    calcium=1000,  # at least
-    iron=8,  # at least
-    vitamin_d=600,  # at least
-    vitamin_c=90,  # at least
-    vitamin_a=3000,  # at least
+    sugar=-INF,
+    cholesterol=-INF,
+    fiber=30,
+    sodium=1500,
+    potassium=3000,
+    calcium=1000,
+    iron=8,
+    vitamin_d=600,
+    vitamin_c=90,
+    vitamin_a=3000,
 )
 
 DEFAULT_HI_REQS = dict(
     # Macro
-    calories=-1,  # closest
-    carbohydrate=-1,  # closest
-    protein=-1,  # closest
-    total_fat=-1,  # closest
-    saturated_fat=-1,  # closest
-    trans_fat=0,  # closest
+    calories=-1,
+    carbohydrate=-1,
+    protein=-1,
+    total_fat=-1,
+    saturated_fat=-1,
+    trans_fat=0,
 
     # Micro
-    sugar=27,  # at most
-    cholesterol=300,  # at most
-    fiber=INF,  # at least
-    sodium=4000,  # at most
-    potassium=INF,  # at least
-    calcium=2500,  # at least
-    iron=45,  # at least
-    vitamin_d=4000,  # at least
-    vitamin_c=2000,  # at least
-    vitamin_a=10000,  # at least
+    sugar=27,
+    cholesterol=300,
+    fiber=INF,
+    sodium=4000,
+    potassium=INF,
+    calcium=2500,
+    iron=45,
+    vitamin_d=4000,
+    vitamin_c=2000,
+    vitamin_a=10000,
 )
 
 # Calorie coefficients
@@ -114,8 +114,11 @@ def nutritional_info_for(profile: StudentProfile) -> tuple[Nutrition, Nutrition]
     hi.protein = protein[1] * profile.weight
     lo.carbohydrate = carb[0] * profile.weight
     hi.carbohydrate = carb[1] * profile.weight
-    lo.total_fat = fat[0] * calories / CALS_IN_FAT  # Use exact calorie requirements
+    # Use exact calorie requirements
+    lo.total_fat = fat[0] * calories / CALS_IN_FAT
     hi.total_fat = fat[1] * calories / CALS_IN_FAT
+    lo.saturated_fat = sat_fat[0] * calories / CALS_IN_FAT
+    hi.saturated_fat = sat_fat[1] * calories / CALS_IN_FAT
 
     # Divide reqs by 3 since these are daily
     for prop in DEFAULT_HI_REQS.keys():  # Doesn't matter if hi or lo
