@@ -105,6 +105,8 @@ Under `api/`:
   - GET query parameter `date=yyyy-mm-dd`: Filters by day
   - `meals/<meal_id>/`: lists detailed information about a meal
 - GET `nutritional_requirements/`: Requires auth: returns nutritional requirements for this person
+  - Two objects are returned as a JSON dict with keys `lo` and `hi`, representing the lower and upper nutrient bounds (per meal)
+  - Values greater than `10**10` should be treated as infinite.  JSON does not support infinity so this is what we'll do.
 - GET `settings/`: Requires auth: lists settings
   - POST `settings/update/`: Allows updating of settings
     - Partial updating is supported.  Updated settings should be given in the same format as how they are retrieved in `settings/`, except the fields `ban`, `favour`, `allergies` should be lists of primary keys (IDs) instead of objects
