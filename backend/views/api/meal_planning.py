@@ -21,7 +21,11 @@ class NutritionalRequirementsViewSet(viewsets.ViewSet):
 
     def list(self, request):
         profile = StudentProfile.objects.get(user=request.user)
-        return Response(nutritional_info_for(profile).as_dict())
+        lo, hi = nutritional_info_for(profile)
+        return Response({
+            'lo': lo.as_dict(),
+            'hi': hi.as_dict()
+        })
 
 
 class PortionRequestSerializer(serializers.Serializer):

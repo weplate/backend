@@ -50,7 +50,7 @@ class SimulatedAnnealing:
     def __init__(self, profile: StudentProfile, large: MealItem, small1: MealItem, small2: MealItem,
                  alpha: float = 0.999, smallest_temp: float = 0.0005):
         # Info properties
-        self.req = nutritional_info_for(profile)
+        self.lo_req, self.hi_req = nutritional_info_for(profile)
         self.l_nut = Nutrition.from_meal_item(large) / large.portion_volume
         self.s1_nut = Nutrition.from_meal_item(small1) / small1.portion_volume
         self.s2_nut = Nutrition.from_meal_item(small2) / small2.portion_volume
@@ -97,13 +97,18 @@ class SimulatedAnnealing:
         cur_info = self.nutrition_of(state)
         res = 0
 
+        def dist_sq(x, l, r):
+            if x < l: return (l - x) ** 2
+            elif r < x: return (x - r) ** 2
+            return 0
+
         # For macros, the weights are (generally) the amount of calories in each item
-        res += (cur_info.calories - self.req.calories) ** 2
-        res += 8 * (cur_info.carbohydrate - self.req.carbohydrate) ** 2
-        res += 20 * (cur_info.protein - self.req.protein) ** 2
-        res += 50 * (cur_info.total_fat - self.req.total_fat) ** 2
-        res += 1.5 * 50 * (cur_info.saturated_fat - self.req.saturated_fat) ** 2
-        res += 50 * (cur_info.trans_fat - self.req.trans_fat) ** 2
+        res += dist_sq(cur_info.calories, self.lo_req.calories, self.hi_req.calories)
+        res += 8 * dist_sq(cur_info.carbohydrate, self.lo_req.carbohydrate, self.hi_req.carbohydrate)
+        res += 20 * dist_sq(cur_info.carbohydrate, self.lo_req.carbohydrate, self.hi_req.carbohydrate)
+        res += 50 * dist_sq(cur_info.total_fat, self.lo_req.total_fat, self.hi_req.total_fat)
+        res += 1.5 * 50 * dist_sq(cur_info.saturated_fat, self.lo_req.saturated_fat, self.hi_req.saturated_fat)
+        res += 50 * dist_sq(cur_info.trans_fat, self.lo_req.trans_fat, self.hi_req.trans_fat)
 
         # # For the rest... I'm kinda just yoloing this ngl...
         # res += 3 * (cur_info.sugar - self.req.sugar) ** 2

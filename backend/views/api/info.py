@@ -2,12 +2,9 @@ import datetime
 
 from django.shortcuts import get_object_or_404
 from rest_framework import viewsets, serializers
-from rest_framework.authentication import SessionAuthentication, TokenAuthentication
-from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 
 from backend.models import School, StudentProfile, Ingredient, MealSelection, MealItem
-from backend.utils import IsStudent
 
 MAX_MEALS = 5
 
