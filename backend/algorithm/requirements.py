@@ -3,8 +3,32 @@ import datetime
 from backend.algorithm.common import Nutrition
 from backend.models import StudentProfile
 
+INF = float('inf')
+
 # https://www.notion.so/weplate/Mathematical-Calculations-f561b494f2444cfc87023ef615cf2bea#a976edca5f394d26b536704ff6f691ce
-DEFAULT_REQS = dict(
+DEFAULT_LO_REQS = dict(
+    # Macro
+    calories=-1,  # closest
+    carbohydrate=-1,  # closest
+    protein=-1,  # closest
+    total_fat=-1,  # closest
+    saturated_fat=-1,  # closest
+    trans_fat=0,  # closest
+
+    # Micro
+    sugar=-INF,  # at most
+    cholesterol=-INF,  # at most
+    fiber=30,  # at least
+    sodium=1500,  # range
+    potassium=3000,  # at least
+    calcium=1000,  # at least
+    iron=8,  # at least
+    vitamin_d=600,  # at least
+    vitamin_c=90,  # at least
+    vitamin_a=3000,  # at least
+)
+
+DEFAULT_HI_REQS = dict(
     # Macro
     calories=-1,  # closest
     carbohydrate=-1,  # closest
@@ -16,14 +40,14 @@ DEFAULT_REQS = dict(
     # Micro
     sugar=27,  # at most
     cholesterol=300,  # at most
-    fiber=30,  # at least
+    fiber=INF,  # at least
     sodium=4000,  # at most
-    potassium=3000,  # at least
-    calcium=1000,  # at least
-    iron=8,  # at least
-    vitamin_d=600,  # at least
-    vitamin_c=90,  # at least
-    vitamin_a=3000,  # at least
+    potassium=INF,  # at least
+    calcium=2500,  # at least
+    iron=45,  # at least
+    vitamin_d=4000,  # at least
+    vitamin_c=2000,  # at least
+    vitamin_a=10000,  # at least
 )
 
 # Calorie coefficients
