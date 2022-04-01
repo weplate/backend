@@ -2,7 +2,7 @@ from django.urls import path, include
 from rest_framework import routers
 from rest_framework.authtoken.views import obtain_auth_token
 
-from .info import SchoolViewSet, IngredientViewSet, MealSelectionViewSet, SchoolMealItemsViewSet
+from .info import SchoolViewSet, IngredientViewSet, MealSelectionViewSet, SchoolMealItemsViewSet, VersionViewSet
 from .meal_planning import NutritionalRequirementsViewSet, SuggestViewSet
 from .auth import register_student_view, check_email_view, VerifyEmailViewSet, ResetPasswordViewSet
 from .settings import SettingsViewSet
@@ -12,6 +12,7 @@ router.register(r'schools', SchoolViewSet)
 router.register(r'ingredients', IngredientViewSet, basename='Ingredient')
 router.register(r'school_items', SchoolMealItemsViewSet, basename='SchoolMealItems')
 router.register(r'meals', MealSelectionViewSet, basename='MealSelection')
+router.register(r'version', VersionViewSet, 'Version')
 router.register(r'settings', SettingsViewSet, basename='Settings')
 
 router.register(r'nutritional_requirements', NutritionalRequirementsViewSet, basename='NutritionalRequirements')

@@ -99,6 +99,9 @@ Under `api/`:
 
 - GET `schools/`: Lists schools
 - GET `ingredients/<school_id>/`: Lists all ingredients associated with a school
+- GET `version/`: Returns compatibility information about the backend given a frontend version
+  - GET query parameter `version=<version>`: Version of the frontend.  Must be a string of the form `X.Y.Z`, where X, Y, Z are integers and should be at most 32 characters long
+  - Returns an object of the form `{"backend_version": "A.B.C", "compatible": true | false, "handling_update": "none" | "force" | "recommend" | "maintenance" }`, where A, B, C are integers
 - GET `school_items/`: Requires auth: lists all meal items associated with a school
 - GET `meals/`: Requires auth: lists all meals associated with a school, 5 earliest in increasing order of timestamp
   - GET query parameter `group=<group>`: Filters by group
