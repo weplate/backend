@@ -31,11 +31,15 @@ CHOOSE_COUNT = 3
 
 
 class MealItemSelector:
-    def __init__(self, meal: MealSelection, profile: StudentProfile, sa_alpha: float = 0.99, sa_lo: float = 0.01):
+    def __init__(self, meal: MealSelection, profile: StudentProfile,
+                 large_portion_max: float, small_portion_max: float,
+                 sa_alpha: float = 0.99, sa_lo: float = 0.01):
         self.meal = meal
         self.profile = profile
         self.sa_alpha = sa_alpha
         self.sa_lo = sa_lo
+        self.large_portion_max = large_portion_max
+        self.small_portion_max = small_portion_max
 
         self.requirements = nutritional_info_for(profile)
         self.result_dict = {}
@@ -65,7 +69,7 @@ class MealItemSelector:
             return f'{item_1.pk}-{item_2.pk}-{item_3.pk}'
 
         for item_l, item_s1, item_s2 in itertools.product(large_items.all(), small1_items.all(), small2_items.all()):
-            sa = SimulatedAnnealing(self.profile, item_l, item_s1, item_s2, self.sa_alpha, self.sa_lo)
+            sa = SimulatedAnnealing(self.profile, item_l, item_s1, item_s2, self.large_portion_max, self.small_portion_max, self.sa_alpha, self.sa_lo)
             sa.run_algorithm()
             cost_cache[cache_id(item_l, item_s1, item_s2)] = sa.final_cost
 

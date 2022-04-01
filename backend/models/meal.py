@@ -46,6 +46,7 @@ class MealItem(models.Model):
     # Ingredients, nutrition, other numbers
     portion_weight = models.FloatField(verbose_name='Portion Weight (g)')
     portion_volume = models.FloatField(verbose_name='Portion Volume (ml)')
+    max_pieces = models.IntegerField(verbose_name='Max # of Pieces')
     ingredients = models.ManyToManyField(to=Ingredient, blank=True)
 
     # School it belongs to

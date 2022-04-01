@@ -32,11 +32,13 @@ class PortionRequestSerializer(serializers.Serializer):
     small1 = serializers.PrimaryKeyRelatedField(queryset=MealItem.objects.all())
     small2 = serializers.PrimaryKeyRelatedField(queryset=MealItem.objects.all())
     large = serializers.PrimaryKeyRelatedField(queryset=MealItem.objects.all())
+    large_max_volume = serializers.FloatField()
+    small_max_volume = serializers.FloatField()
 
 
-TEST_COMBO_TRIES = 100
-COMBOS_NEEDED = 3
-CACHE_TIMEOUT = datetime.timedelta(hours=6).total_seconds()
+class ChoiceRequestSerializer(serializers.Serializer):
+    large_max_volume = serializers.FloatField()
+    small_max_volume = serializers.FloatField()
 
 
 class SuggestViewSet(viewsets.ViewSet):
@@ -53,8 +55,10 @@ class SuggestViewSet(viewsets.ViewSet):
     def items(self, request: Request, pk=None):
         meal = get_object_or_404(MealSelection, pk=pk)
         profile = StudentProfile.objects.get(user=request.user)
+        ser = ChoiceRequestSerializer(data=request.query_params)
+        ser.is_valid(raise_exception=True)
 
-        alg = MealItemSelector(meal, profile)
+        alg = MealItemSelector(meal, profile, ser.validated_data['large_max_volume'], ser.validated_data['small_max_volume'])
         alg.run_algorithm()
 
         return Response(alg.result_dict)
@@ -68,21 +72,19 @@ class SuggestViewSet(viewsets.ViewSet):
         small2 = req_ser.validated_data['small2']
         large = req_ser.validated_data['large']
 
-        algo = SimulatedAnnealing(profile, large, small1, small2)
+        algo = SimulatedAnnealing(profile, large, small1, small2,
+                                  req_ser.validated_data['large_max_volume'], req_ser.validated_data['small_max_volume'])
         algo.run_algorithm()
 
         return Response({
             'small1': {
                 'volume': algo.small1_volume,
-                'weight': algo.small1_volume * small1.density()
             },
             'small2': {
                 'volume': algo.small2_volume,
-                'weight': algo.small2_volume * small2.density()
             },
             'large': {
                 'volume': algo.large_volume,
-                'weight': algo.large_volume * large.density()
             },
             'quality': {
                 'cost': algo.final_cost,

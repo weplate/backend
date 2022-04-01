@@ -82,9 +82,6 @@ MACROS_COEFF = {
 # https://www.notion.so/weplate/Mathematical-Calculations-f561b494f2444cfc87023ef615cf2bea#422b95b3b18c47dbbbee6eec642ee779
 # Max portion sizes and min fill requirement, in ML
 CALS_IN_FAT = 9
-SMALL_PORTION_MAX = 270
-LARGE_PORTION_MAX = 610
-MIN_FILL = 0.5
 
 
 def nutritional_info_for(profile: StudentProfile) -> tuple[Nutrition, Nutrition]:
