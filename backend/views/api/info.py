@@ -1,7 +1,10 @@
 import datetime
+import re
 
+from django.conf import settings
 from django.shortcuts import get_object_or_404
 from rest_framework import viewsets, serializers
+from rest_framework.exceptions import APIException
 from rest_framework.response import Response
 
 from backend.models import School, StudentProfile, Ingredient, MealSelection, MealItem
@@ -80,3 +83,30 @@ class SchoolMealItemsViewSet(viewsets.ReadOnlyModelViewSet):
     def get_queryset(self):
         profile = StudentProfile.objects.get(user=self.request.user)
         return MealItem.objects.filter(school=profile.school)
+
+
+class VersionSerializer(serializers.Serializer):
+    version = serializers.CharField(max_length=32)
+
+    def is_valid(self, raise_exception=False):
+        super().is_valid(raise_exception)
+        version_str = self.validated_data['version']
+        if m := re.match(r'(\d+)\.(\d+)\.(\d+)', version_str):
+            self.validated_data['version'] = (int(m.group(1)), int(m.group(2)), int(m.group(3)))
+        else:
+            raise APIException(
+                f'Invalid version string {version_str}, should be of the form X.Y.Z, where X, Y, Z are numbers')
+
+
+class VersionViewSet(viewsets.ViewSet):
+    permission_classes = []
+
+    def list(self, _):
+        ser = VersionSerializer(data=self.request.query_params)
+        ser.is_valid(raise_exception=True)
+
+        return Response({
+            'backend_version': settings.BACKEND_VERSION,
+            'compatible': not settings.MAINTENANCE,
+            'handling_update': 'maintenance' if settings.MAINTENANCE else 'none'
+        })

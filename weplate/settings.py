@@ -152,7 +152,7 @@ REST_FRAMEWORK = {
     'DEFAULT_PERMISSION_CLASSES': [
         'rest_framework.permissions.IsAuthenticated',
         'backend.utils.IsStudent',
-        # 'backend.utils.IsVerified'
+        'backend.utils.IsVerified'
     ],
     'DEFAULT_AUTHENTICATION_CLASSES': [
         'rest_framework.authentication.SessionAuthentication',
@@ -165,3 +165,6 @@ REST_FRAMEWORK = {
 
 STATIC_ROOT = 'static_weplate'
 STATIC_URL = '/static_weplate/'
+
+BACKEND_VERSION = '1.0.0'
+MAINTENANCE = True
