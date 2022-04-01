@@ -31,13 +31,13 @@
         <th>Low</th>
         <th>High</th>
     </tr>
-    {% for k, v1, v2, v3, v4 in info %}
+    {% for k, v1, v2, v3, v4, v5 in info %}
         <tr>
             <td>{{ k }}</td>
-            <td>{{ v1 }}</td>
-            <td>{{ v2 }}</td>
+            <td style="text-align: center;">{{ v1 }}-{{ v2 }}</td>
             <td>{{ v3 }}</td>
             <td>{{ v4 }}</td>
+            <td>{{ v5 }}</td>
         </tr>
     {% endfor %}
 </table>
