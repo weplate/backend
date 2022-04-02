@@ -90,11 +90,11 @@ class VerifyEmailViewSet(viewsets.ViewSet):
         send_mail(
             subject=f'WePlate Email Verification',
             message='',
-            html_message=render(request, 'email/email.html', {
+            html_message=loader.get_template('email/email.html').render({
                 'action': 'Email Verification',
                 'action_verb': 'verify the email',
                 'url': verify_url
-            }),
+            }, request),
             from_email=None,
             recipient_list=[user.email],
         )
