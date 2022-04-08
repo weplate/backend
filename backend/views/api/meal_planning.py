@@ -29,9 +29,9 @@ class NutritionalRequirementsViewSet(viewsets.ViewSet):
 
 
 class PortionRequestSerializer(serializers.Serializer):
-    small1 = serializers.PrimaryKeyRelatedField(queryset=MealItem.objects.all())
-    small2 = serializers.PrimaryKeyRelatedField(queryset=MealItem.objects.all())
-    large = serializers.PrimaryKeyRelatedField(queryset=MealItem.objects.all())
+    small1 = serializers.PrimaryKeyRelatedField(queryset=MealItem.objects.all(), many=True)
+    small2 = serializers.PrimaryKeyRelatedField(queryset=MealItem.objects.all(), many=True)
+    large = serializers.PrimaryKeyRelatedField(queryset=MealItem.objects.all(), many=True)
     large_max_volume = serializers.FloatField()
     small_max_volume = serializers.FloatField()
 
@@ -49,7 +49,7 @@ class SuggestViewSet(viewsets.ViewSet):
         return Response({'detail': 'page either suggest/<meal_id>/items or suggest/portions!'})
 
     def retrieve(self, _, pk=None):
-        return Response({'detail': 'You\'re paging the detail=True endpoint, please page suggest/items'})
+        return Response({'detail': 'You\'re paging the detail=True endpoint, please page suggest/<meal_id>/items or suggest/portions!'})
 
     @action(methods=['get'], detail=True)
     def items(self, request: Request, pk=None):
@@ -61,7 +61,7 @@ class SuggestViewSet(viewsets.ViewSet):
         alg = MealItemSelector(meal, profile, ser.validated_data['large_max_volume'], ser.validated_data['small_max_volume'])
         alg.run_algorithm()
 
-        return Response(alg.result_dict)
+        return Response(alg.result_obj())
 
     @action(methods=['get'], detail=False)
     def portions(self, request: Request):
@@ -76,18 +76,4 @@ class SuggestViewSet(viewsets.ViewSet):
                                   req_ser.validated_data['large_max_volume'], req_ser.validated_data['small_max_volume'])
         algo.run_algorithm()
 
-        return Response({
-            'small1': {
-                'volume': algo.small1_volume,
-            },
-            'small2': {
-                'volume': algo.small2_volume,
-            },
-            'large': {
-                'volume': algo.large_volume,
-            },
-            'quality': {
-                'cost': algo.final_cost,
-                'runtime': algo.runtime
-            }
-        })
+        return Response(algo.result_obj())

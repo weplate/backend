@@ -42,7 +42,7 @@ class MealItemSelector:
         self.small_portion_max = small_portion_max
 
         self.requirements = nutritional_info_for(profile)
-        self.result_dict = {}
+        self._result_obj = {}
         self.result_cost = -1
         self.runtime = -1
         self.done = False
@@ -69,16 +69,17 @@ class MealItemSelector:
             return f'{item_1.pk}-{item_2.pk}-{item_3.pk}'
 
         for item_l, item_s1, item_s2 in itertools.product(large_items.all(), small1_items.all(), small2_items.all()):
-            sa = SimulatedAnnealing(self.profile, item_l, item_s1, item_s2, self.large_portion_max, self.small_portion_max, self.sa_alpha, self.sa_lo)
+            sa = SimulatedAnnealing(self.profile, [item_l], [item_s1], [item_s2], self.large_portion_max,
+                                    self.small_portion_max, self.sa_alpha, self.sa_lo)
             sa.run_algorithm()
             cost_cache[cache_id(item_l, item_s1, item_s2)] = sa.final_cost
 
         best = ([], [], [])
         best_cost = sum(cost_cache.values()) + 1
         for comb_l, comb_s1, comb_s2 in itertools.product(
-            itertools.combinations(large_items.all(), min(CHOOSE_COUNT, large_items.count())),
-            itertools.combinations(small1_items.all(), min(CHOOSE_COUNT, small1_items.count())),
-            itertools.combinations(small2_items.all(), min(CHOOSE_COUNT, small2_items.count()))
+                itertools.combinations(large_items.all(), min(CHOOSE_COUNT, large_items.count())),
+                itertools.combinations(small1_items.all(), min(CHOOSE_COUNT, small1_items.count())),
+                itertools.combinations(small2_items.all(), min(CHOOSE_COUNT, small2_items.count()))
         ):
             l1 = list(comb_l)
             l2 = list(comb_s1)
@@ -95,7 +96,7 @@ class MealItemSelector:
             return [item.pk for item in items]
 
         l1, l2, l3 = best
-        self.result_dict = {
+        self._result_obj = {
             PlateSection.LARGE: {
                 'items': to_pk_list(l1),
                 'category': large_category
@@ -112,3 +113,6 @@ class MealItemSelector:
         self.result_cost = best_cost
         self.runtime = time.perf_counter() - start_time
         self.done = True
+
+    def result_obj(self):
+        return self._result_obj

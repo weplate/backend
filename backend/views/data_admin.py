@@ -202,7 +202,7 @@ def test_algorithm_choices(request):
             portions_form = AlgorithmTestPortionsForm({
                 'plate_sizes': f'{plate_sizes[0]},{plate_sizes[1]}',
                 'profile': profile.id
-            }, result=alg.result_dict)
+            }, result=alg._result_obj)
 
             return render(request, 'data_admin/test_algorithm_choices.html', {
                 'choices_form': form,
