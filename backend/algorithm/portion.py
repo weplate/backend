@@ -6,14 +6,48 @@ from dataclasses import dataclass
 from math import exp
 from typing import Union
 
-from django.conf import settings
+from .common import Nutrition
 
-from backend.algorithm.common import Nutrition
-from backend.algorithm.requirements import nutritional_info_for
-from backend.models import MealItem, StudentProfile
+
+@dataclass
+class MealItemSpec:
+    id: int
+    category: str
+    cafeteria_id: str
+    portion_volume: float
+    max_pieces: int
+
+    calories: float = 0.
+    carbohydrate: float = 0.
+    protein: float = 0.
+    total_fat: float = 0.
+    saturated_fat: float = 0.
+    trans_fat: float = 0.
+
+    sugar: float = 0.
+    cholesterol: float = 0.
+    fiber: float = 0.
+
+    sodium: float = 0.
+    potassium: float = 0.
+    calcium: float = 0.
+    iron: float = 0.
+
+    vitamin_a: float = 0.
+    vitamin_c: float = 0.
+    vitamin_d: float = 0.
 
 
 def clamp(x: float, a: float, b: float) -> float:
+    """
+    Clamps a value x within the range [a, b]
+
+    @param x: Value to clamp
+    @param a: Lower bound
+    @param b: Upper bound
+    @return:
+    """
+
     if x < a:
         return a
     elif x > b:
@@ -22,6 +56,14 @@ def clamp(x: float, a: float, b: float) -> float:
 
 
 def dist_sq(x: float, l: float, r: float) -> float:
+    """
+    Returns smallest distance (squared) from x to any number in the range [l, r]
+
+    @param x: Point to check distance of (on the number line)
+    @param l: Lower bound of the range
+    @param r: Upper bound of the range
+    @return:
+    """
     if x < l:
         return (l - x) ** 2
     elif r < x:
@@ -31,14 +73,19 @@ def dist_sq(x: float, l: float, r: float) -> float:
 
 def random_sign() -> int:
     """
-    randomly returns -1 or 1
+    Randomly returns -1 or 1
+    @return:
     """
     return 1 - 2 * random.randint(0, 1)  # random sign
 
 
 def ceil_div(a: int, b: int) -> int:
     """
-    Ceiling division with integers.  Only works for non-negative
+    Given non-negative integers, returns ceil(a / b)
+
+    @param a: self-explanatory
+    @param b: self-explanatory
+    @return:
     """
     return (a + b - 1) // b
 
@@ -46,20 +93,22 @@ def ceil_div(a: int, b: int) -> int:
 @dataclass
 class PlateSectionState:
     nutrition: Nutrition
-    volume: Union[float, int]
     portion_volume: Union[float, int]
-    max_volume: Union[float, int]
-    section_name: str
     discrete: bool
+    max_volume: Union[float, int]
+    volume: Union[float, int] = 0
+    section_name: str = 'n/a'
+    id: str = 'n/a'  # We allow string for both the integration (which expects primary keys (ints)) and whatever penelope is doing
 
     @classmethod
-    def from_meal_item(cls, item: MealItem, container_volume: float, num_sections: int, section_name: str):
+    def from_item_spec(cls, item: MealItemSpec, container_volume: float, num_sections: int, section_name: str):
         """
-        Creates a PlateSectionState (with 0 cur. volume) from a given meal item and other parameters
+        Creates a PlateSectionState (with 0 cur. volume) from a given meal item (as MealItemSpec) and other parameters
         @param item The meal item to create the object from
         @param container_volume The total container volume, in DB format (i.e. positive for continuous, negative integer for discrete)
         @param num_sections The number of sections this container is divided into (so the actual volume can be computed by how much of the section this occupies)
         @param section_name The name of the section (currently, "large", "small1", or "small2")
+        @return A PlateSectionState object
         """
         discrete = item.portion_volume < 0
         if discrete:
@@ -71,50 +120,57 @@ class PlateSectionState:
             portion_volume = item.portion_volume
             max_volume = container_volume / num_sections
 
-        return cls(Nutrition.from_meal_item(item), volume, portion_volume, max_volume, section_name, discrete)
+        return PlateSectionState(nutrition=Nutrition.from_object(item),
+                                 portion_volume=portion_volume,
+                                 discrete=discrete,
+                                 max_volume=max_volume,
+                                 volume=volume,
+                                 section_name=section_name,
+                                 id=str(item.id))
 
     @property
     def min_volume(self):
         """
-        Returns the min volume instead of the max volume
+        @return: Returns the min volume instead of the max volume
         """
         return max(1, ceil_div(self.max_volume, 2)) if self.discrete else self.max_volume / 2
 
     def scaled_nutrition(self):
         """
-        Returns the nutrition facts scaled by the portion volume
+        @return: Returns the nutrition facts scaled by the portion volume
         """
         return self.nutrition * (self.volume / self.portion_volume)
 
     def format_volume(self):
         """
-        Returns the volume of the item but formatted properly (i.e. discrete volumes are negative
+        @return: Returns the volume of the item but formatted properly (i.e. discrete volumes are negative
         """
         return self.volume if not self.discrete else float(-self.volume)
 
     def format_max_volume(self):
         """
-        Returns the volume of the item but formatted properly (i.e. discrete volumes will be formatted as negative floats)
+        @return: Returns the volume of the item but formatted properly (i.e. discrete volumes will be formatted as negative floats)
         """
         return self.max_volume if not self.discrete else float(-self.max_volume)
 
     def as_dict(self):
         """
         Convert fields to dict
-        @returns dict with the fields
+        @return: dict with the fields
         """
         return dataclasses.asdict(self)
 
     def copy(self):
         """
-        Creates a copy, nutrition fact is cloned
+        @return: Creates a copy, nutrition facts are cloned recursively
         """
         return PlateSectionState(nutrition=self.nutrition.copy(),
                                  volume=self.volume,
                                  portion_volume=self.portion_volume,
                                  max_volume=self.max_volume,
                                  section_name=self.section_name,
-                                 discrete=self.discrete)
+                                 discrete=self.discrete,
+                                 id=self.id)
 
     def with_min_volume(self):
         """
@@ -148,18 +204,24 @@ class PlateSectionState:
         Updates the volume based on some fraction/ratio of the max volume, making sure to clamp at max/min values, and
         dealing with special cases with discrete values
         @param ratio Ratio to nudge the volume by
-        @returns The old volume, pre-nudge
+        @return: The old volume, pre-nudge
         """
         old_volume = self.volume
         if self.discrete:
             abs_change = int(math.ceil(abs(ratio) * self.max_volume))
-            self.volume = clamp(self.volume + abs_change * int((ratio > 0) - (ratio < 0)), self.min_volume, self.max_volume)
+            self.volume = clamp(self.volume + abs_change * int((ratio > 0) - (ratio < 0)), self.min_volume,
+                                self.max_volume)
         else:
             self.volume = clamp(self.volume + ratio * self.max_volume, self.min_volume, self.max_volume)
         return old_volume
 
 
 def nutrition_of(state: list[PlateSectionState]):
+    """
+    Given a list of PlateSectionStates, sums the scaled nutrition facts over the states
+    @param state:
+    @return: The summed nutrition facts over all states
+    """
     res = Nutrition()
     for s in state:
         res += s.scaled_nutrition()
@@ -170,27 +232,32 @@ def nutrition_of(state: list[PlateSectionState]):
 # https://codeforces.com/blog/entry/94437
 # I am peak intuition
 class SimulatedAnnealing:
-    def __init__(self, profile: StudentProfile, large: list[MealItem], small1: list[MealItem], small2: list[MealItem],
-                 large_max_volume: float, small_max_volume: float,
-                 alpha: float = 0.999, smallest_temp: float = 0.0005):
+    def __init__(self, lo_req: Nutrition, hi_req: Nutrition, state: list[PlateSectionState],
+                 alpha: float, smallest_temp: float, seed: int):
+        """
+        Creates a SimulatedAnnealing object which can run the portion-selecting algorithm
+        @param lo_req: Nutritional minimums.  Treat |x| > 1e10 as INF
+        @param hi_req: Nutritional maximums.  Treat |x| > 1e10 as INF
+        @param state: Initial algorithm state, as a list of PlateSectionState.  For the purposes of data analysis of
+        algorithm performance, each element can be constructed using the first four parameters with the rest being in
+        their default state.
+        @param alpha: Optional. Amount temperature is multiplied by after each iteration
+        @param smallest_temp: Optional. Minimal temperature before algorithm termination.
+        @param seed: Optional.  Seed value of RNG to make run deterministic.  -1 means no set seed
+        """
         # Info properties
-        self.lo_req, self.hi_req = nutritional_info_for(profile)
+        self.lo_req = lo_req
+        self.hi_req = hi_req
 
         # Parameter properties
+        self.seed = seed
         self.alpha = alpha
         self.smallest_temp = smallest_temp
 
         # State properties
         self.t = 1
         self.last_nudge: tuple[int, float] = (0, 0)
-        self.state: list[PlateSectionState] = []
-        self.item_ids: list[int] = []  # list of meal items corresponding to the item that each state represents
-        for items, container_volume, section_name in zip((large, small1, small2),
-                                                         (large_max_volume, small_max_volume, small_max_volume),
-                                                         ('large', 'small1', 'small2')):
-            for item in items:
-                self.state.append(PlateSectionState.from_meal_item(item, container_volume, len(items), section_name))
-                self.item_ids.append(item.id)
+        self.state: list[PlateSectionState] = state
 
         # Result properties
         self.done = False
@@ -199,37 +266,44 @@ class SimulatedAnnealing:
 
     def mid_state(self):
         """
-        Returns the middle state
+        @return: Copies the current state except state[i].volume is at the middle value
         """
         return [state.with_mid_volume() for state in self.state]
 
     def lo_state(self):
         """
-        Returns the minimum possible state
+        @return: Copies the current state except state[i].volume is at the min value
         """
         return [state.with_min_volume() for state in self.state]
 
     def hi_state(self):
         """
-        Returns the maximum possible state
+        @return: Copies the current state except state[i].volume is at the max value
         """
         return [state.with_max_volume() for state in self.state]
 
     def nudge(self, t):
         """
-        Nudges the current state to a random neighbour based on a given temperature
+        Nudges self.state to a random neighbour based on a given temperature
+        @return: None
         """
         idx = random.randint(0, len(self.state) - 1)
         self.last_nudge = idx, self.state[idx].nudge(t * random_sign())
 
     def un_nudge(self):
         """
-        Un-nudges self.state based on the self.last_nudge property (which is set by self.nudge)
+        Un-nudges self.state based on the self.last_nudge property (which is set by self.nudge(...))
+        @return: None
         """
         idx, old_volume = self.last_nudge
         self.state[idx].volume = old_volume
 
     def cost_of(self, state):
+        """
+        Given a state, returns its cost, which is based on the current nutritional limits (upper and lower).
+        @param state: Self-explanatory
+        @return: Self-explanatory
+        """
         cur_info = nutrition_of(state)
         res = 0
 
@@ -258,22 +332,29 @@ class SimulatedAnnealing:
         return res
 
     def accept_probability_of(self, c_new: float, c_old: float, scale_coeff: float):
+        """
+        Computes the acceptance probability of a new state given the costs of the old and new state.  See
+        https://en.wikipedia.org/wiki/Simulated_annealing
+        @param c_new: Cost of the new state
+        @param c_old: Cost of the old state
+        @param scale_coeff: Coefficient to scale the cost difference by when computing acceptance probability.
+        @return: Self-explanatory
+        """
         return 1 if c_new <= c_old else exp(-(c_new - c_old) * scale_coeff / self.t)
 
     def run_algorithm(self):
-        # set RNG
-        if settings.PROD:
-            random.seed(20210226)
+        """
+        Runs the algorithm
+        @return: None, the result of the algorithm will be stored in the final state (self.state).  You can use
+        backend.algorithm.integration to retrieve the result in a way that will be returned to the frontend.
+        """
+        if self.seed != -1:
+            random.seed(self.seed)
 
         # Initialization
         cost_bound = max(self.cost_of(self.lo_state()), self.cost_of(self.hi_state()))
         scale_cost_by = 60 / cost_bound
         self.state = self.mid_state()
-
-        # tot=0
-        # def volumes():
-        #     return [s.volume for s in self.state]
-        # print(self.state)
 
         # Run algorithm
         start_time = time.perf_counter()
@@ -281,34 +362,15 @@ class SimulatedAnnealing:
         while t >= self.smallest_temp:
 
             c_old = self.cost_of(self.state)
-            # if tot <= 100: print(f'{t=} {volumes()=}, new_state: ', end='')
             self.nudge(t)
             c_new = self.cost_of(self.state)
-            # if tot <= 100: print(f'{volumes()=} {c_old=} {c_new=}')
-            # tot+=1
             if self.accept_probability_of(c_new, c_old, scale_cost_by) < random.random():
                 self.un_nudge()  # undo the nudge if it failed
 
             # update tmp
             t *= self.alpha
 
-        # print(nutrition_of(self.state))
-
-
         # Set result vars
         self.runtime = time.perf_counter() - start_time
         self.final_cost = self.cost_of(self.state)
         self.done = True
-
-    # Some result properties
-    def result_obj(self):
-        """
-        Returns the result of the algorithm according to the endpoint specifications in the README.md.  The result will
-        be in a JSON-serializable format
-        """
-        return [{
-            'id': item_id,
-            'volume': state.volume,
-            'total_volume': state.max_volume,
-            'section': state.section_name
-        } for state, item_id in zip(self.state, self.item_ids)]

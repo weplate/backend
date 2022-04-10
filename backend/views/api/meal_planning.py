@@ -1,5 +1,3 @@
-import datetime
-
 from rest_framework import viewsets, serializers
 from rest_framework.authentication import SessionAuthentication, TokenAuthentication
 from rest_framework.decorators import action
@@ -8,8 +6,8 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.request import Request
 from rest_framework.response import Response
 
-from backend.algorithm.item_choice import MealItemSelector
-from backend.algorithm.portion import SimulatedAnnealing
+from backend.algorithm.integration import meal_item_selector_from_model, simulated_annealing_from_model, \
+    result_object_for_simulated_annealing
 from backend.algorithm.requirements import nutritional_info_for
 from backend.models import StudentProfile, MealItem, MealSelection
 from backend.utils import IsStudent
@@ -49,7 +47,8 @@ class SuggestViewSet(viewsets.ViewSet):
         return Response({'detail': 'page either suggest/<meal_id>/items or suggest/portions!'})
 
     def retrieve(self, _, pk=None):
-        return Response({'detail': 'You\'re paging the detail=True endpoint, please page suggest/<meal_id>/items or suggest/portions!'})
+        return Response({
+                            'detail': 'You\'re paging the detail=True endpoint, please page suggest/<meal_id>/items or suggest/portions!'})
 
     @action(methods=['get'], detail=True)
     def items(self, request: Request, pk=None):
@@ -58,7 +57,8 @@ class SuggestViewSet(viewsets.ViewSet):
         ser = ChoiceRequestSerializer(data=request.query_params)
         ser.is_valid(raise_exception=True)
 
-        alg = MealItemSelector(meal, profile, ser.validated_data['large_max_volume'], ser.validated_data['small_max_volume'])
+        alg = meal_item_selector_from_model(meal, profile, ser.validated_data['large_max_volume'],
+                                            ser.validated_data['small_max_volume'])
         alg.run_algorithm()
 
         return Response(alg.result_obj())
@@ -72,8 +72,9 @@ class SuggestViewSet(viewsets.ViewSet):
         small2 = req_ser.validated_data['small2']
         large = req_ser.validated_data['large']
 
-        algo = SimulatedAnnealing(profile, large, small1, small2,
-                                  req_ser.validated_data['large_max_volume'], req_ser.validated_data['small_max_volume'])
+        algo = simulated_annealing_from_model(profile, large, small1, small2,
+                                              req_ser.validated_data['large_max_volume'],
+                                              req_ser.validated_data['small_max_volume'])
         algo.run_algorithm()
 
-        return Response(algo.result_obj())
+        return Response(result_object_for_simulated_annealing(algo))

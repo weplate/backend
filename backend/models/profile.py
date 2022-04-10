@@ -2,6 +2,8 @@ from django.contrib.auth.models import User
 from django.core.exceptions import ValidationError
 from django.db import models
 
+from backend.algorithm.common import LOSE_WEIGHT, ATHLETIC_PERFORMANCE, IMPROVE_TONE, IMPROVE_HEALTH, BUILD_MUSCLE, \
+    MALE, FEMALE, SEDENTARY, MILD, MODERATE, HEAVY, EXTREME, BREAKFAST, MORN_SNACK, AFT_SNACK, DINNER, EVE_SNACK, LUNCH
 from backend.models.meal import School, MealItem, Ingredient
 
 
@@ -21,12 +23,6 @@ class StudentProfile(models.Model):
     meal_length = models.FloatField(verbose_name='Meal Length (minutes)')
 
     # Choice stuff
-    LOSE_WEIGHT = 'lose_weight'
-    BUILD_MUSCLE = 'build_muscle'
-    ATHLETIC_PERFORMANCE = 'athletic_performance'
-    IMPROVE_TONE = 'improve_tone'
-    IMPROVE_HEALTH = 'improve_health'
-
     HEALTH_GOALS = [
         (LOSE_WEIGHT, 'Lose Weight'),
         (BUILD_MUSCLE, 'Build Muscle'),
@@ -35,19 +31,10 @@ class StudentProfile(models.Model):
         (IMPROVE_HEALTH, 'Improve Health')
     ]
 
-    MALE = 'male'
-    FEMALE = 'female'
-
     SEXES = [
         (MALE, 'Male'),
         (FEMALE, 'Female')
     ]
-
-    SEDENTARY = 'sedentary'
-    MILD = 'mild'
-    MODERATE = 'moderate'
-    HEAVY = 'heavy'
-    EXTREME = 'extreme'
 
     ACTIVITY_LEVELS = [
         (SEDENTARY, 'Sedentary'),
@@ -58,13 +45,6 @@ class StudentProfile(models.Model):
     ]
 
     # This one will be written differently since it's not "really" a choicefield
-    BREAKFAST = 'breakfast'
-    MORN_SNACK = 'morning_snack'
-    LUNCH = 'lunch'
-    AFT_SNACK = 'afternoon_snack'
-    DINNER = 'dinner'
-    EVE_SNACK = 'evening_snack'
-
     MEALS = [
         (BREAKFAST, 'Breakfast'),
         (MORN_SNACK, 'Morning Snack'),
