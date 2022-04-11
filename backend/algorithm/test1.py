@@ -10,8 +10,7 @@ from backend.algorithm.portion import SimulatedAnnealing, PlateSectionState
 from backend.algorithm.requirements import StudentProfileSpec, nutritional_info_for
 
 
-def item_choice_example():
-    print('hello')
+def item_choice_example(height, weight, birthdate, meals, meal_lenth, sex, health_goal, activity_level):
     profile = StudentProfileSpec(
         height=1.78,
         weight=80,
@@ -36,9 +35,10 @@ def item_choice_example():
     )
     algo.run_algorithm()
     algo.result_obj()  # Check this for result
+    return algo.result_obj()
 
 
-def item_portion_example1(height):#, weight, birthdate, meals, meal_lenth, sex, health_goal, activity_level):
+def item_portion_example(height, weight, birthdate, meals, meal_lenth, sex, health_goal, activity_level):
     profile = StudentProfileSpec(
         height=height,
         weight=80,
@@ -94,5 +94,5 @@ if __name__ == '__main__':
     sex = MALE
     health_goal = ATHLETIC_PERFORMANCE
     activity_level = MODERATE
-    algo_state = item_choice_example1(height)#, weight, birthdate, meals, meal_lenth, sex, health_goal, activity_level)
+    algo_state = item_choice_example(height, weight, birthdate, meals, meal_lenth, sex, health_goal, activity_level)
     print(algo_state)
