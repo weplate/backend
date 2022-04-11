@@ -28,3 +28,6 @@ db.sqlite3
 backend_data_parsing/
 cloud_sql_proxy
 cloud_sql_proxy_x64.exe
+
+# Examples
+backend/algorithm/example_for_penelope.py
