@@ -31,7 +31,7 @@ def item_choice_example():
                 category='vegetable',
                 cafeteria_id='123456.789',
                 portion_volume=101,
-                max_pieces=-1,
+                max_pieces=-1,  # doesn't really matter what this value is if the item is not discrete
                 calories=0,
                 carbohydrate=0,
                 protein=0,
@@ -53,7 +53,7 @@ def item_choice_example():
                 id=1019,
                 category='protein',
                 cafeteria_id='123456.789',
-                portion_volume=-2,
+                portion_volume=-2,  # item is discrete
                 max_pieces=15,
                 calories=0,
                 carbohydrate=0,
@@ -95,11 +95,38 @@ def item_portion_example(height):#, weight, birthdate, meals, meal_lenth, sex, h
         health_goal='athletic_performance',
         activity_level='moderate'
     )
+
     lo_req, hi_req = nutritional_info_for(profile)
+
+    example_item = MealItemSpec(
+        id=1019,
+        category='protein',
+        cafeteria_id='123456.789',
+        portion_volume=-2,  # item is discrete
+        max_pieces=15,
+        calories=0,
+        carbohydrate=0,
+        protein=0,
+        total_fat=0,
+        saturated_fat=0,
+        trans_fat=0,
+        sugar=0,
+        cholesterol=0,
+        fiber=0,
+        sodium=0,
+        potassium=0,
+        calcium=0,
+        iron=0,
+        vitamin_a=0,
+        vitamin_c=0,
+        vitamin_d=0,
+    )
+
     algo = SimulatedAnnealing(
         lo_req=lo_req,
         hi_req=hi_req,
         state=[
+            #platesectionstate can be initialized directly, or
             PlateSectionState(
                 nutrition=Nutrition(
                     # nutrition facts
@@ -117,7 +144,12 @@ def item_portion_example(height):#, weight, birthdate, meals, meal_lenth, sex, h
                 discrete=True,
                 max_volume=10,  # Max num. of pieces
                 id='penelopeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee'
-            )  # more obviously...
+            ),
+            # done using the helper function
+            PlateSectionState.from_item_spec(example_item,
+                                             container_volume=610,  # Volume of the section of the container
+                                             num_sections=1,  # Number of items with the given section name, used to calculate the true max volume
+                                             section_name='large')
         ],
         alpha=0.999,
         smallest_temp=0.0005,
