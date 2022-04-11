@@ -146,10 +146,20 @@ def item_portion_example(height):#, weight, birthdate, meals, meal_lenth, sex, h
                 id='penelopeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee'
             ),
             # done using the helper function
+            # Below is an example assuming we had the 'default' weplate plate configuration.
+            # ofc use more than one item :p
             PlateSectionState.from_item_spec(example_item,
                                              container_volume=610,  # Volume of the section of the container
                                              num_sections=1,  # Number of items with the given section name, used to calculate the true max volume
-                                             section_name='large')
+                                             section_name='large'),
+            PlateSectionState.from_item_spec(example_item,
+                                             container_volume=270,
+                                             num_sections=1,
+                                             section_name='small1'),
+            PlateSectionState.from_item_spec(example_item,
+                                             container_volume=270,
+                                             num_sections=1,
+                                             section_name='small2')
         ],
         alpha=0.999,
         smallest_temp=0.0005,
