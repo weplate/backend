@@ -1,8 +1,8 @@
 import datetime
 
-from backend.algorithm.common import ATHLETIC_PERFORMANCE, MALE, MODERATE, Nutrition
+from backend.algorithm.common import ATHLETIC_PERFORMANCE, MALE, MODERATE, Nutrition, VEGETABLE
 from backend.algorithm.item_choice import MealItemSelector
-from backend.algorithm.portion import SimulatedAnnealing, PlateSectionState
+from backend.algorithm.portion import SimulatedAnnealing, PlateSectionState, MealItemSpec
 from backend.algorithm.requirements import StudentProfileSpec, nutritional_info_for
 
 
@@ -13,14 +13,60 @@ def item_choice_example():
         birthdate=datetime.date(year=2003, month=11, day=30),
         meals=['breakfast', 'lunch'],
         meal_length=50,
-        sex=MALE,
-        health_goal=ATHLETIC_PERFORMANCE,
-        activity_level=MODERATE
+        sex='male',
+        health_goal='athletic_performance',
+        activity_level='moderate'
     )
 
     algo = MealItemSelector(
         profile=profile,
         items=[
+            MealItemSpec(
+                id=1018,
+                category='vegetable',
+                cafeteria_id='123456.789',
+                portion_volume=101,
+                max_pieces=-1,
+                calories=0,
+                carbohydrate=0,
+                protein=0,
+                total_fat=0,
+                saturated_fat=0,
+                trans_fat=0,
+                sugar=0,
+                cholesterol=0,
+                fiber=0,
+                sodium=0,
+                potassium=0,
+                calcium=0,
+                iron=0,
+                vitamin_a=0,
+                vitamin_c=0,
+                vitamin_d=0,
+            ),
+            MealItemSpec(
+                id=1019,
+                category='protein',
+                cafeteria_id='123456.789',
+                portion_volume=-2,
+                max_pieces=15,
+                calories=0,
+                carbohydrate=0,
+                protein=0,
+                total_fat=0,
+                saturated_fat=0,
+                trans_fat=0,
+                sugar=0,
+                cholesterol=0,
+                fiber=0,
+                sodium=0,
+                potassium=0,
+                calcium=0,
+                iron=0,
+                vitamin_a=0,
+                vitamin_c=0,
+                vitamin_d=0,
+            )
             # ...list of MealItemSpec objects...
         ],
         large_portion_max=610,
@@ -40,9 +86,9 @@ def item_portion_example():
         birthdate=datetime.date(year=2003, month=11, day=30),
         meals=['breakfast', 'lunch'],
         meal_length=50,
-        sex=MALE,
-        health_goal=ATHLETIC_PERFORMANCE,
-        activity_level=MODERATE
+        sex='male',
+        health_goal='athletic_performance',
+        activity_level='moderate'
     )
     lo_req, hi_req = nutritional_info_for(profile)
     algo = SimulatedAnnealing(
