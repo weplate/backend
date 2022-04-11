@@ -167,4 +167,4 @@ STATIC_ROOT = 'static_weplate'
 STATIC_URL = '/static_weplate/'
 
 BACKEND_VERSION = '1.0.0'
-MAINTENANCE = True
+MAINTENANCE = False
