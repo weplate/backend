@@ -113,8 +113,8 @@ class PlateSectionState:
         discrete = item.portion_volume < 0
         if discrete:
             volume = 0
-            portion_volume = ceil_div(int(abs(round(item.portion_volume))), num_sections)
-            max_volume = item.max_pieces
+            portion_volume = -item.portion_volume
+            max_volume = ceil_div(item.max_pieces, num_sections)
         else:
             volume = 0.
             portion_volume = item.portion_volume
