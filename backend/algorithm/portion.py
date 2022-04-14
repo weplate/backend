@@ -353,14 +353,13 @@ class SimulatedAnnealing:
 
         # Initialization
         cost_bound = max(self.cost_of(self.lo_state()), self.cost_of(self.hi_state()))
-        scale_cost_by = 60 / cost_bound
+        scale_cost_by = 60 / (cost_bound + 0.0001)  # special case when cost_bound == 0
         self.state = self.mid_state()
 
         # Run algorithm
         start_time = time.perf_counter()
         t = 0.5  # Initial Temp, we only take half to full filled anyway
         while t >= self.smallest_temp:
-
             c_old = self.cost_of(self.state)
             self.nudge(t)
             c_new = self.cost_of(self.state)
