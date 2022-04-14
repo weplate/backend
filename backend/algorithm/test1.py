@@ -18,7 +18,7 @@ NUTRIENTS = ['calories', 'carbohydrate', 'protein','total_fat','saturated_fat', 
 'sugar', 'cholesterol', 'fiber','sodium', 'potassium', 'calcium','iron', 'vitamin_a', 'vitamin_c', 'vitamin_d']
 NUTRITION_TABLE_LATEST = os.path.join(sys.path[0], 'backend_data_parsing/babson/master_nutrition/nutrition_table.csv')
 MENU_LATEST= os.path.join(sys.path[0], 'backend_data_parsing/babson/master_menu/old_file/menu.csv')
-STUDENT = r'C:\Users\Penelope\Desktop\ML\Weplate\synthetic_data\fake_data_shorter.csv'
+STUDENT = r'C:\Users\Penelope\Desktop\ML\Weplate\synthetic_data\fake_data_male_apr13_31.csv'
 
 def item_choice_example(height, weight, birthdate, meals, meal_length, sex, health_goal, activity_level, meal_items):
     profile = StudentProfileSpec(height=height,weight=weight,birthdate=birthdate,
@@ -166,7 +166,7 @@ if __name__ == '__main__':
     converters={'cafeteria_id': lambda x: str(x), 'category': lambda x: str(x)})
     student_df = pd.read_csv(STUDENT)
     student_df['Birthday'] = pd.to_datetime(student_df['Birthday'])
-
+    DATA = []
     for ind_student, student_row in student_df.iterrows():
         print('student-index:', ind_student)
         height = student_row['Height']
@@ -181,7 +181,7 @@ if __name__ == '__main__':
         birthdate = datetime.date(year=yr, month=mon, day=dat)
         meals = ['breakfast', 'lunch']
         age = 2022 - yr
-        DATA = []
+        
         for ind, menu_row in master_menu_df.iterrows():
             day = menu_row['timestamp']
             meal_name = menu_row['name']
@@ -235,7 +235,6 @@ if __name__ == '__main__':
                 
                 for combination_count,combination in enumerate(combinations):          
                     state=[]
-                    print(combination)
                     for ind_combination, id_combination in enumerate(combination):
                         item_index = short_list_df[short_list_df.pk == id_combination].index
 
@@ -246,14 +245,14 @@ if __name__ == '__main__':
                         if ind_combination == 0:
                             if discrete:
                                 max_volume=int(short_list_df.loc[item_index,'max_pieces'])
-                                portion_volume=int(short_list_df.loc[item_index, 'portion_volume'])*-1
+                                portion_volume=float(short_list_df.loc[item_index, 'portion_volume'])*-1
                             else:
                                 max_volume=610
                                 portion_volume = float(short_list_df.loc[item_index, 'portion_volume'])
                         else:
                             if discrete:
                                 max_volume = int(short_list_df.loc[item_index, 'max_pieces'])
-                                portion_volume=int(short_list_df.loc[item_index, 'portion_volume'])*-1
+                                portion_volume=float(short_list_df.loc[item_index, 'portion_volume'])*-1
                             else:
                                 max_volume=270
                                 portion_volume=float(short_list_df.loc[item_index, 'portion_volume'])
@@ -281,19 +280,23 @@ if __name__ == '__main__':
 
                         state.append(PlateSectionState(discrete=discrete, id=id_combination, max_volume=max_volume, 
                         portion_volume=portion_volume, nutrition=nutrition))
-                        print(portion_volume)
                     
                     algo_portion_state = item_portion_example(height, weight, birthdate, meals, meal_length, sex, health_goal, activity_level, state)
                     #print('Result Combination:', combination_count+1)
 
                     #print(algo_portion_state)
-                    d = [ind_student, sex, height, weight, health_goal, activity_level, age, day, meal_name, num_combination, combination_count+1, combination]
+                    d = [ind_student+52, sex, height, weight, health_goal, activity_level, age, day, meal_name, num_combination, combination_count+1, combination]
                     d += retrieve_result(algo_portion_state)
 
                     DATA.append(d)
             else:
                 pass
-    print(DATA)
+        if ind_student % 10 == 0:
+            DATA_df_inter =  pd.DataFrame(DATA, columns=['Student_Number', 'Sex', 'Height', 'Weight', 'Health_Goal', 'Activity', 'Age', 
+            'Date', 'Meal_Name','Total_Combination', 'Current_Combination', 'Combination', 
+            'Vol_Large', 'Vol_Small1', 'Vol_Small2']+NUTRIENTS)
+            DATA_df_inter.to_csv('test_inter.csv', index=False)    
+
     DATA_df = pd.DataFrame(DATA, columns=['Student_Number', 'Sex', 'Height', 'Weight', 'Health_Goal', 'Activity', 'Age', 
     'Date', 'Meal_Name','Total_Combination', 'Current_Combination', 'Combination', 
     'Vol_Large', 'Vol_Small1', 'Vol_Small2']+NUTRIENTS)
