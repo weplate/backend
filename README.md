@@ -11,6 +11,8 @@ If you're on Unix based systems, the correct Python command is most likely `pyth
 2. Install gcloud console
 3. Run `pip3 install -r requirements.txt`
 
+**Note: For some reason, pip doesn't like the `psycopg2` package very much.  Try running `pip3 install psycopg2-binary` instead.**
+
 ## Local Running
 
 ### Remote DB

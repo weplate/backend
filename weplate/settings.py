@@ -26,6 +26,7 @@ SETTINGS_LOG_MSG = []
 env = environ.Env(
     DEBUG=(bool, True),
     SECRET_KEY=(str, 'django-insecure-h1#o@85ph_lx=$*pcdfo$=w^m_ayh6tl($9&ceftmzncu+d5fp'),
+    SENDGRID_API_KEY=(str, None),
     PROD=(bool, False),
 )
 env_file = os.environ.get('ENV_FILE', '.env')
@@ -40,9 +41,11 @@ environ.Env.read_env(BASE_DIR / env_file)
 SECRET_KEY = env('SECRET_KEY')
 DEBUG = env('DEBUG')
 PROD = env('PROD')
+SENDGRID_API_KEY = env('SENDGRID_API_KEY')
 SETTINGS_LOG_MSG.append(('DEBUG', DEBUG))
 SETTINGS_LOG_MSG.append(('SECRET_KEY', SECRET_KEY))
 SETTINGS_LOG_MSG.append(('prod', PROD))
+SETTINGS_LOG_MSG.append(('sendgrid api key', SENDGRID_API_KEY))
 
 ALLOWED_HOSTS = ['*']  # Bro...
 
@@ -127,7 +130,6 @@ CACHES = {
     }
 }
 
-
 # Internationalization
 # https://docs.djangoproject.com/en/4.0/topics/i18n/
 LANGUAGE_CODE = 'en-us'
@@ -139,14 +141,6 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/4.0/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
-
-# Finally some app specific settings
-EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
-EMAIL_HOST = 'smtp.gmail.com'
-EMAIL_USE_TLS = True
-EMAIL_PORT = 587
-EMAIL_HOST_USER = 'mosesxu@efaglobal.org'
-EMAIL_HOST_PASSWORD = 'vrNhwQ9LJSA4Zyh'
 
 REST_FRAMEWORK = {
     'DEFAULT_PERMISSION_CLASSES': [
@@ -168,3 +162,6 @@ STATIC_URL = '/static_weplate/'
 
 BACKEND_VERSION = '1.0.0'
 MAINTENANCE = False
+
+# Email sending
+SENDGRID_EMAIL_SENDER = 'info@weplate.app'

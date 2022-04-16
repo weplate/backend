@@ -1,9 +1,13 @@
+from django.conf import settings
 from django.core.exceptions import ValidationError
 from django.db import models
 from rest_framework import permissions, serializers
 from rest_framework.exceptions import APIException
 
 from backend.models import StudentProfile
+
+import sendgrid
+from sendgrid.helpers.mail import *
 
 
 def fetch_or_apiexcept(model, message, **kwargs):
@@ -53,3 +57,21 @@ def update_object(serializer: serializers.ModelSerializer, obj: models.Model) ->
         raise APIException(str(e))
 
     return upd
+
+
+def send_html_email(recipient: str, subject: str, html_message: str):
+    """
+    Sends an HTML content email to the recipient using SendGrid, email is sent from SENDGRID_EMAIL_SENDER email setting
+    @param recipient: Email address of recipient
+    @param subject: Subject of email
+    @param html_message: HTML content of the message
+    @return: The HTTP response after trying to send the email
+    """
+    sg = sendgrid.SendGridAPIClient(api_key=settings.SENDGRID_API_KEY)
+    from_email = Email(settings.SENDGRID_EMAIL_SENDER)
+    to_email = To(recipient)
+    subject = subject
+    content = Content('text/html', html_message)
+    mail = Mail(from_email, to_email, subject, content)
+    response = sg.client.mail.send.post(request_body=mail.get())
+    return response

@@ -16,6 +16,7 @@ from rest_framework.response import Response
 
 from backend.models import StudentProfile
 from backend.models.token import EmailVerificationToken, PasswordResetToken
+from backend.utils import send_html_email
 
 
 class UserSerializer(serializers.ModelSerializer):
@@ -87,16 +88,14 @@ class VerifyEmailViewSet(viewsets.ViewSet):
             'email': user.email,
             'token': token_obj.token
         }))
-        send_mail(
-            subject=f'WePlate Email Verification',
-            message='',
-            html_message=loader.get_template('email/email.html').render({
+        send_html_email(
+            user.email,
+            'WePlate Email Verification',
+            loader.get_template('email/email.html').render({
                 'action': 'Email Verification',
                 'action_verb': 'verify the email',
                 'url': verify_url
-            }, request),
-            from_email=None,
-            recipient_list=[user.email],
+            }, request)
         )
         return Response({'detail': 'ok'})
 
@@ -133,16 +132,14 @@ class ResetPasswordViewSet(viewsets.ViewSet):
             'email': user.email,
             'token': token_obj.token
         }))
-        send_mail(
-            subject=f'WePlate Password Reset',
-            message='',
-            html_message=loader.get_template('email/email.html').render({
+        send_html_email(
+            user.email,
+            'WePlate Password Reset',
+            loader.get_template('email/email.html').render({
                 'action': 'Password Reset',
                 'action_verb': 'reset the password',
                 'url': reset_url
-            }, request),
-            from_email=None,
-            recipient_list=[user.email],
+            }, request)
         )
         return Response({'detail': 'ok'})
 
