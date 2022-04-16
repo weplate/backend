@@ -18,7 +18,7 @@ NUTRIENTS = ['calories', 'carbohydrate', 'protein','total_fat','saturated_fat', 
 'sugar', 'cholesterol', 'fiber','sodium', 'potassium', 'calcium','iron', 'vitamin_a', 'vitamin_c', 'vitamin_d']
 NUTRITION_TABLE_LATEST = os.path.join(sys.path[0], 'backend_data_parsing/babson/master_nutrition/nutrition_table.csv')
 MENU_LATEST= os.path.join(sys.path[0], 'backend_data_parsing/babson/master_menu/old_file/menu.csv')
-STUDENT = r'C:\Users\Penelope\Desktop\ML\Weplate\synthetic_data\fake_data_male_apr13_31.csv'
+STUDENT = r'C:\Users\Penelope\Desktop\ML\Weplate\synthetic_data\fake_data_male.csv'
 
 def item_choice_example(height, weight, birthdate, meals, meal_length, sex, health_goal, activity_level, meal_items):
     profile = StudentProfileSpec(height=height,weight=weight,birthdate=birthdate,
@@ -285,7 +285,7 @@ if __name__ == '__main__':
                     #print('Result Combination:', combination_count+1)
 
                     #print(algo_portion_state)
-                    d = [ind_student+52, sex, height, weight, health_goal, activity_level, age, day, meal_name, num_combination, combination_count+1, combination]
+                    d = [ind_student, sex, height, weight, health_goal, activity_level, age, day, meal_name, num_combination, combination_count+1, combination]
                     d += retrieve_result(algo_portion_state)
 
                     DATA.append(d)

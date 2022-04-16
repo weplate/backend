@@ -29,3 +29,4 @@ backend/test_inter.csv
 backend/test_copy.csv
 backend/test_inter_0-30.csv
 backend/test_inter_31-51.csv
+*.csv
