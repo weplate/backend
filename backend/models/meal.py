@@ -1,5 +1,7 @@
 from django.db import models
 
+from backend.algorithm.common import VEGETABLE, GRAINS, PROTEIN
+
 MEAL_ITEM_GRAPHICS = 'assets/meal_items/'
 
 
@@ -31,9 +33,6 @@ class MealItem(models.Model):
     station = models.CharField(max_length=64)
     graphic = models.FileField(upload_to=MEAL_ITEM_GRAPHICS, null=True, blank=True)
 
-    VEGETABLE = 'vegetable'
-    PROTEIN = 'protein'
-    GRAINS = 'grain'
     CATEGORIES = (
         (VEGETABLE, 'Vegetable'),
         (PROTEIN, 'Protein'),
@@ -46,6 +45,7 @@ class MealItem(models.Model):
     # Ingredients, nutrition, other numbers
     portion_weight = models.FloatField(verbose_name='Portion Weight (g)')
     portion_volume = models.FloatField(verbose_name='Portion Volume (ml)')
+    max_pieces = models.IntegerField(verbose_name='Max # of Pieces', default=10)
     ingredients = models.ManyToManyField(to=Ingredient, blank=True)
 
     # School it belongs to

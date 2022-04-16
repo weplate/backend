@@ -1,6 +1,35 @@
 from dataclasses import dataclass, fields, asdict
 
-from backend.models import MealItem
+# Health goals
+LOSE_WEIGHT = 'lose_weight'
+BUILD_MUSCLE = 'build_muscle'
+ATHLETIC_PERFORMANCE = 'athletic_performance'
+IMPROVE_TONE = 'improve_tone'
+IMPROVE_HEALTH = 'improve_health'
+
+# Sex
+MALE = 'male'
+FEMALE = 'female'
+
+# Activity levels
+SEDENTARY = 'sedentary'
+MILD = 'mild'
+MODERATE = 'moderate'
+HEAVY = 'heavy'
+EXTREME = 'extreme'
+
+# Different possible meals
+BREAKFAST = 'breakfast'
+MORN_SNACK = 'morning_snack'
+LUNCH = 'lunch'
+AFT_SNACK = 'afternoon_snack'
+DINNER = 'dinner'
+EVE_SNACK = 'evening_snack'
+
+# Category (of food)
+VEGETABLE = 'vegetable'
+PROTEIN = 'protein'
+GRAINS = 'grain'
 
 
 @dataclass
@@ -26,14 +55,15 @@ class Nutrition:
     vitamin_d: float = 0.
 
     @classmethod
-    def from_meal_item(cls, meal_item):
+    def from_object(cls, obj):
+        """
+        Creates a Nutrition object from any other object that has the same attributes.  Does not do type checking
+        @param obj Object to initialize from
+        """
         field_dict = {}
         for prop in fields(Nutrition):
-            field_dict[prop.name] = getattr(meal_item, prop.name)
+            field_dict[prop.name] = getattr(obj, prop.name)
         return cls(**field_dict)
-
-    def as_meal_item(self):
-        return MealItem(**{prop: getattr(self, prop.name) for prop in fields(Nutrition)})
 
     def as_dict(self):
         return asdict(self)

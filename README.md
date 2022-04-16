@@ -108,16 +108,32 @@ Under `api/`:
   - GET query parameter `date=yyyy-mm-dd`: Filters by day
   - `meals/<meal_id>/`: lists detailed information about a meal
 - GET `nutritional_requirements/`: Requires auth: returns nutritional requirements for this person
+  - Two objects are returned as a JSON dict with keys `lo` and `hi`, representing the lower and upper nutrient bounds (per meal)
+    - Each object contains the keys `calories, carbohydrate, protein, total_fat, saturated_fat, trans_fat, sugar, cholesterol, fiber, sodium, potassium, calcium, iron, vitamin_a, vitamin_c, vitamin_d` with float values
+  - Values greater than `10**10` should be treated as infinite.  JSON does not support infinity so this is what we'll do.
 - GET `settings/`: Requires auth: lists settings
   - POST `settings/update/`: Allows updating of settings
     - Partial updating is supported.  Updated settings should be given in the same format as how they are retrieved in `settings/`, except the fields `ban`, `favour`, `allergies` should be lists of primary keys (IDs) instead of objects
 - `suggest/`: Requires auth: for meal suggestions
   - GET `suggest/<meal_id>/items/`: Returns a possible selection of meal items that could be selected
-    - SelectionObj (represents the possible selections for a single part of the 'box': `{ "category": "vegetable" | "protein" | "carbohydrate", "items": [ list of MealItem IDs ]`
-    - Response: `{ "large": SelectionObj, "small1": SelectionObj, "small2": SelectionObj }`
+    - GET query parameter `large_max_volume=<mL>`.  Should be a float value, the maximum size of a large section of a container
+    - GET query parameter `small_max_volume=<mL>`.  Should be a float value, the maximum size of a small section of a container
+    - Response: `{ "large": SelectionObj, "small1": SelectionObj, "small2": SelectionObj }`.  A `SelectionObj` is a JSOn object with the fields:
+      - `category`: `"vegetable" | "protein" | "carbohydrate"`
+      - `items`: `[ list of MealItem IDs ]`
   - GET `suggest/portions/`: Returns a possible set of portion sizes for a given selection of Meal Items, trying to balance it with the authenticated profile's nutritional requirements
-    - Requires GET parameters: `small1`, `small2`, `large`.  Each parameter should be the id (primary key) of a MealItem
-    - Returns an object of the form: `{ "small1": { "volume": <in mL>, "weight": <in g> }, "small2": { ... }, "large": { ... }` (the responses for `small2` and `large` are the same as for `small1`)
+    - GET query parameter `small1=<id>`.  Should be a list of ids of MealItems (Note: a list can be specified by listing the query parameter multiple times)
+    - GET query parameter `small2=<id>`.  Should be a list of ids of a MealItems
+    - GET query parameter `large=<id>`.  Should be a list of ids a MealItems
+    - GET query parameter `large_max_volume=<mL>`.  Should be a float value, the maximum size of a large section of a container
+    - GET query parameter `small_max_volume=<mL>`.  Should be a float value, the maximum size of a small section of a container
+    - Returns an object of the form: `[ResultObject, ResultObject, ...]` where `ResultObject` is a JSON object with fields:
+      - `id`: ID of the meal item the object corresponds to
+      - `volume`: Volume of the item recommended, in mL
+        - Discrete items will be reported as `-K`, where K is the number of pieces
+      - `total_volume`: The total volume of that section, in mL (usually the total size of the section divided by the # of items in that section)
+        - Discrete items will be reported as `-K`, where K is the number of pieces
+      - `section`: The section that the object belongs to, either `large`, `small1`, or `small2` (strings)
 
 ### Authentication Related
 
