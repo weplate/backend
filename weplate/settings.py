@@ -42,12 +42,9 @@ SECRET_KEY = env('SECRET_KEY')
 DEBUG = env('DEBUG')
 PROD = env('PROD')
 SENDGRID_API_KEY = env('SENDGRID_API_KEY')
-SETTINGS_LOG_MSG.append(('DEBUG', DEBUG))
-SETTINGS_LOG_MSG.append(('SECRET_KEY', SECRET_KEY))
-SETTINGS_LOG_MSG.append(('prod', PROD))
-SETTINGS_LOG_MSG.append(('sendgrid api key', SENDGRID_API_KEY))
 
 ALLOWED_HOSTS = ['*']  # Bro...
+SECURE_REDIRECT_EXEMPT = ['^jobs/.*']  # Don't redirect any appengine jobs to https
 
 # Application definition
 INSTALLED_APPS = [
@@ -156,12 +153,17 @@ REST_FRAMEWORK = {
 
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/4.0/howto/static-files/
-
 STATIC_ROOT = 'static_weplate'
 STATIC_URL = '/static_weplate/'
+
+# Job related things
+JOB_LOG_MAX_SIZE = 1000
 
 BACKEND_VERSION = '1.0.0'
 MAINTENANCE = False
 
 # Email sending
 SENDGRID_EMAIL_SENDER = 'info@weplate.app'
+
+# Push notification sending
+EXPO_PUSH_TOKEN = 'ExponentPushToken[XXXXXXXXXXXXXXXXXXXXX]'  # TODO: Currently invalid
