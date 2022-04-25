@@ -1,28 +1,20 @@
 import functools
 import itertools
-import os
-from pathlib import Path
 
 from django import forms
-from django.conf import settings
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.models import User, Permission
 from django.contrib.contenttypes.models import ContentType
 from django.core.cache import cache
 from django.core.exceptions import ValidationError
-from django.core.management import call_command
-from django.db import transaction
 from django.http import HttpResponse
 from django.shortcuts import render
 from django.urls import path
-from django.views.generic import FormView
 
 from backend.algorithm.item_choice import PlateSection, MealItemSelector
 from backend.algorithm.portion import SimulatedAnnealing
 from backend.models import School, StudentProfile, MealSelection, MealItem, Ingredient
-
-DATA_FIXTURE_PATH = settings.BASE_DIR / 'backend_data_parsing'
-SCHOOLS = ('babson',)
+from backend.views.jobs import get_job_results
 
 
 def data_admin_view(fun):
@@ -50,50 +42,6 @@ def view_all(request):
         'meal_items': MealItem.objects.all(),
         'ingredients': Ingredient.objects.all(),
     })
-
-
-class UpdateSchoolDataForm(forms.Form):
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-
-        if Path(DATA_FIXTURE_PATH).exists():
-            files: list[Path] = list(itertools.chain(*(
-                (DATA_FIXTURE_PATH / school / file
-                 for file in os.listdir(DATA_FIXTURE_PATH / school) if file.endswith('.json'))
-                for school in SCHOOLS)))
-            self.not_found = False
-        else:
-            files: list[Path] = []
-            self.not_found = True
-
-        self.fields['fixtures'] = forms.MultipleChoiceField(
-            required=False,
-            widget=forms.CheckboxSelectMultiple,
-            choices=[(str(file), str(file.relative_to(file.parent.parent))) for file in files],
-        )
-
-    def clean(self):
-        cleaned_data = super().clean()
-        if self.not_found:
-            self.add_error('fixtures', f'Directory {DATA_FIXTURE_PATH} was not found.  No fixtures can be loaded.  '
-                                       f'Maybe you are working on prod? (the submodule is not copied over)')
-        return cleaned_data
-
-
-class UpdateSchoolDataFormView(FormView):
-    template_name = 'data_admin/update_school_data.html'
-    form_class = UpdateSchoolDataForm
-    success_url = '/'
-
-    def form_valid(self, form):
-        # print(form.cleaned_data['fixtures'])
-        with transaction.atomic():
-            for fixture_path in form.cleaned_data['fixtures']:
-                print(f'Loading fixture path {fixture_path}')
-                call_command('loaddata', fixture_path)
-
-        return super().form_valid(form)
-
 
 def resolve_form_id(model, cleaned_data, field):
     if field_id := cleaned_data.get(field):
@@ -350,13 +298,20 @@ def add_school_account_view(request):
     })
 
 
+@data_admin_view
+def view_past_jobs(request):
+    return render(request, 'data_admin/view_past_jobs.html', {
+        'jobs': get_job_results()
+    })
+
+
 app_name = 'backend'
 
 urlpatterns = [
     path('view_all/', view_all, name='view_all'),
     path('add_school_account/', add_school_account_view, name='add_school_account'),
-    path('update_school_data/', data_admin_view(UpdateSchoolDataFormView.as_view()), name='update_school_data'),
     path('test_algorithm_portions/', test_algorithm_portions, name='test_algorithm_portions'),
     path('test_algorithm_choices/', test_algorithm_choices, name='test_algorithm_choices'),
     path('clear_cache/', clear_cache, name='clear_cache'),
+    path('view_past_jobs/', view_past_jobs, name='view_past_jobs')
 ]

@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Past Jobs</title>
+</head>
+<body>
+
+<h1>Past Jobs</h1>
+
+<p>
+    <a href="/">Back to main</a>.
+</p>
+
+{% if jobs %}
+    <table>
+    <tr>
+        <th>Timestamp</th>
+        <th>URL</th>
+        <th>Result</th>
+    </tr>
+        {% for job in jobs %}
+            <tr>
+            <td>{{ job.timestamp }}</td>
+            <td>{{ job.url }}</td>
+            <td>{{ job.response }}</td>
+            </tr>
+        {% endfor %}
+    </table>
+{% else %}
+    <p style="color: red;">Could not find any past job history.  Maybe the cache was cleared recently or the
+        server has just started?</p>
+{% endif %}
+
+</body>
+</html>

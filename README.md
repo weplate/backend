@@ -1,6 +1,8 @@
 # weplate
 we plate in ur mom
 
+**Notes on random bugs/specifics on the bottom**
+
 # Testing and Deployment
 
 ## Local Setup
@@ -188,9 +190,14 @@ If they are correct, the response will contain a token.
 
 To authenticate using the token, add `Authorization: Token <token>` to your request headers.
 
-# TODO
+# Notes
 
-- /api/settings and /api/register can be refractored I'm sure (by using serializers more effectively, see the logging endpoints)
+- In `cron.yaml`, make sure to append slashes to urls.  Otherwise, the response will be a 301 and the cron may fail.
+
+[//]: # (# TODO)
+
+[//]: # ()
+[//]: # (- /api/settings and /api/register can be refractored I'm sure &#40;by using serializers more effectively, see the logging endpoints&#41;)
 
 [comment]: <> (# Design Paradigms &#40;redundant?&#41;)
 
