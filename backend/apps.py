@@ -7,6 +7,6 @@ class BackendConfig(AppConfig):
     name = 'backend'
 
     def ready(self):
-        print('Init Log Messages')
         for k, v in settings.SETTINGS_LOG_MSG:
             print(f'{k}: {v}')
+        print()
