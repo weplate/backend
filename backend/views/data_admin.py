@@ -5,7 +5,6 @@ from django import forms
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.models import User, Permission
 from django.contrib.contenttypes.models import ContentType
-from django.core.cache import cache
 from django.core.exceptions import ValidationError
 from django.http import HttpResponse
 from django.shortcuts import render
@@ -204,16 +203,10 @@ def test_algorithm_portions(request):
 
 
 @data_admin_view
-def clear_cache(_):
-    cache.clear()
-    return HttpResponse('Cleared cache')
-
-
-@data_admin_view
 def debug_view(request):
     messages = []
 
-    return render(request, 'debug/root.html', {
+    return render(request, 'data_admin/root.html', {
         'messages': messages,
     })
 
@@ -312,6 +305,5 @@ urlpatterns = [
     path('add_school_account/', add_school_account_view, name='add_school_account'),
     path('test_algorithm_portions/', test_algorithm_portions, name='test_algorithm_portions'),
     path('test_algorithm_choices/', test_algorithm_choices, name='test_algorithm_choices'),
-    path('clear_cache/', clear_cache, name='clear_cache'),
     path('view_past_jobs/', view_past_jobs, name='view_past_jobs')
 ]
