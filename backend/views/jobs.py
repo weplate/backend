@@ -2,11 +2,12 @@ import datetime
 import functools
 from dataclasses import dataclass
 
+import pytz
 import requests
 from django.conf import settings
 from django.core.cache import cache
 from django.core.handlers.wsgi import WSGIRequest
-from django.http import HttpResponse
+from django.http import HttpResponse, HttpResponseForbidden
 from django.urls import path
 from rest_framework.authtoken.models import Token
 
@@ -47,12 +48,13 @@ def get_job_results() -> list[JobResult]:
 def appengine_job(view_fun):
     @functools.wraps(view_fun)
     def wrapper(request: WSGIRequest, *args, **kwargs):
+        print('wee woo', request)
         if not settings.PROD or request.headers.get('X-Appengine-Cron', None) == 'true':
             response: HttpResponse = view_fun(request, *args, **kwargs)
             add_job_result(request.path, str(response.content, 'utf8'))
             return response
         else:
-            return HttpResponse('Job access denied')
+            return HttpResponseForbidden('Job access denied')
 
     return wrapper
 
@@ -91,23 +93,21 @@ def post_push_request(title: str, body: str, data: dict[str, any]):
 
 @appengine_job
 def send_push(_):
-    prev_time = max(cache.get_or_set(PUSH_LAST_MEAL_CACHE_KEY, datetime.datetime.utcfromtimestamp(0)),
-                    datetime.datetime.utcnow())
-    next_meal = None
+    prev_time = cache.get_or_set(PUSH_LAST_MEAL_CACHE_KEY, datetime.datetime.utcfromtimestamp(0))
 
-    if next_meal := MealSelection.objects.filter(timestamp__gt=prev_time).order_by('timestamp').first():
-        prev_time = next_meal.timestamp
-        post_push_request(
-            'your mom meal: ' + next_meal.name,
-            'your mom mom',
-            {
-                'your': 'mom'
-            }
-        )
+    if next_meal := MealSelection.objects.filter(timestamp__gt=datetime.datetime.utcnow()).order_by('timestamp').first():
+        if next_meal.timestamp > prev_time:
+            post_push_request(
+                'your mom meal: ' + next_meal.name,
+                'your mom mom',
+                {
+                    'your': 'mom'
+                }
+            )
+            cache.set(PUSH_LAST_MEAL_CACHE_KEY, next_meal.timestamp)
+            return HttpResponse(f'Sent push notification for "{next_meal.name}"')
 
-    cache.set(PUSH_LAST_MEAL_CACHE_KEY, prev_time)
-
-    return HttpResponse(f'Sent push notification for "{next_meal.name}"' if next_meal else 'No future meals exist, could not send notification')
+    return HttpResponse('No next meal found or push notification already sent for next meal')
 
 
 urlpatterns = [

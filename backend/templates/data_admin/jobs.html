@@ -2,15 +2,29 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Past Jobs</title>
+    <title>Jobs</title>
 </head>
 <body>
-
-<h1>Past Jobs</h1>
 
 <p>
     <a href="/">Back to main</a>.
 </p>
+
+<h1>Send Job</h1>
+
+<form method="post" action="{% url 'da:jobs' %}">
+    {% csrf_token %}
+    {{ form.as_p }}
+    <input type="submit" value="Send Job">
+</form>
+
+{% if message %}
+    <p style="font-weight: bold;">
+        <pre>{{ message }}</pre>
+    </p>
+{% endif %}
+
+<h1>Past Jobs</h1>
 
 {% if jobs %}
     <table>

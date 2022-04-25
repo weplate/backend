@@ -57,9 +57,9 @@ class Command(BaseCommand):
             return None
 
     def add_arguments(self, parser):
-        parser.add_argument('--all', dest='all', action='store_const', const=True, default=False,
+        parser.add_argument('-l', '--all', dest='all', action='store_const', const=True, default=False,
                             help='Upload all fixture files found, regardless of which fixture files are specified')
-        parser.add_argument('--list', dest='list', action='store_const', const=True, default=False,
+        parser.add_argument('-l', '--list', dest='list', action='store_const', const=True, default=False,
                             help='Lists available fixture files, nothing will be uploaded')
         parser.add_argument('files', nargs='*', type=int,
                             help='List of indices of fixture files to upload.  Use option --list to see available '

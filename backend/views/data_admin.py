@@ -2,11 +2,12 @@ import functools
 import itertools
 
 from django import forms
+from django.test.client import Client
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.models import User, Permission
 from django.contrib.contenttypes.models import ContentType
 from django.core.exceptions import ValidationError
-from django.http import HttpResponse
+from django.http import HttpResponse, HttpResponsePermanentRedirect
 from django.shortcuts import render
 from django.urls import path
 
@@ -276,7 +277,6 @@ def add_school_account_view(request):
                     tuple(f'{t}_{m}' for t, m in itertools.product(('add', 'change', 'delete', 'view'),
                                                                    ('mealitem', 'mealselection', 'ingredient')))) \
                         + (school_permission(school),)
-                print(perms)
                 user.user_permissions.add(*perms)
                 user.save()
 
@@ -291,10 +291,30 @@ def add_school_account_view(request):
     })
 
 
+class SelectJobForm(forms.Form):
+    job = forms.ChoiceField(choices=(
+         (f'/jobs/{job}/', job) for job in ('clear_tokens', 'clear_cache', 'send_push')
+    ))
+
+
 @data_admin_view
-def view_past_jobs(request):
-    return render(request, 'data_admin/view_past_jobs.html', {
-        'jobs': get_job_results()
+def jobs(request):
+    message = None
+    if request.method == 'POST':
+        form = SelectJobForm(data=request.POST)
+        if form.is_valid():
+            endpoint = form.cleaned_data['job']
+            c = Client()
+            response = c.get(endpoint, **{'X-Appengine-Cron': 'True'})
+            message = f'Job {endpoint} got\n' \
+                      f'- {response}'
+    else:
+        form = SelectJobForm()
+
+    return render(request, 'data_admin/jobs.html', {
+        'jobs': get_job_results(),
+        'form': form,
+        'message': message
     })
 
 
@@ -305,5 +325,5 @@ urlpatterns = [
     path('add_school_account/', add_school_account_view, name='add_school_account'),
     path('test_algorithm_portions/', test_algorithm_portions, name='test_algorithm_portions'),
     path('test_algorithm_choices/', test_algorithm_choices, name='test_algorithm_choices'),
-    path('view_past_jobs/', view_past_jobs, name='view_past_jobs')
+    path('jobs', jobs, name='jobs')
 ]

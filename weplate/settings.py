@@ -44,7 +44,7 @@ PROD = env('PROD')
 SENDGRID_API_KEY = env('SENDGRID_API_KEY')
 
 ALLOWED_HOSTS = ['*']  # Bro...
-SECURE_REDIRECT_EXEMPT = ['^jobs/.*']  # Don't redirect any appengine jobs to https
+SECURE_REDIRECT_EXEMPT = [r'^jobs/.*']  # Don't redirect any appengine jobs to https
 
 # Application definition
 INSTALLED_APPS = [
