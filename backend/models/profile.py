@@ -22,6 +22,9 @@ class StudentProfile(models.Model):
     meals = models.JSONField(verbose_name='Meals Eaten')
     meal_length = models.FloatField(verbose_name='Meal Length (minutes)')
 
+    # Notifications
+    expo_push_token = models.CharField(max_length=256, blank=True, null=True)
+
     # Choice stuff
     HEALTH_GOALS = [
         (LOSE_WEIGHT, 'Lose Weight'),

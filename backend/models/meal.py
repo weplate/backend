@@ -2,7 +2,8 @@ from django.db import models
 
 from backend.algorithm.common import VEGETABLE, GRAINS, PROTEIN
 
-MEAL_ITEM_GRAPHICS = 'assets/meal_items/'
+GRAPHICS_MAX_SIZE = 256 * 1024  # 256kb
+MEAL_ITEM_IMAGE_DIR = 'meal_item_image'
 
 
 class School(models.Model):
@@ -31,7 +32,7 @@ class Ingredient(models.Model):
 class MealItem(models.Model):
     name = models.CharField(max_length=64)
     station = models.CharField(max_length=64)
-    graphic = models.FileField(upload_to=MEAL_ITEM_GRAPHICS, null=True, blank=True)
+    image = models.ImageField(upload_to=MEAL_ITEM_IMAGE_DIR, blank=True)  # can be empty
 
     CATEGORIES = (
         (VEGETABLE, 'Vegetable'),

@@ -19,6 +19,8 @@ from pathlib import Path
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 from urllib.parse import urlparse
 
+from google.oauth2 import service_account
+
 BASE_DIR = Path(__file__).resolve().parent.parent
 
 SETTINGS_LOG_MSG = []
@@ -26,8 +28,8 @@ SETTINGS_LOG_MSG = []
 env = environ.Env(
     DEBUG=(bool, True),
     SECRET_KEY=(str, 'django-insecure-h1#o@85ph_lx=$*pcdfo$=w^m_ayh6tl($9&ceftmzncu+d5fp'),
-    SENDGRID_API_KEY=(str, None),
     PROD=(bool, False),
+    GS_BUCKET_NAME=(str, '')
 )
 env_file = os.environ.get('ENV_FILE', '.env')
 SETTINGS_LOG_MSG.append(('.env file', env_file))
@@ -41,7 +43,6 @@ environ.Env.read_env(BASE_DIR / env_file)
 SECRET_KEY = env('SECRET_KEY')
 DEBUG = env('DEBUG')
 PROD = env('PROD')
-SENDGRID_API_KEY = env('SENDGRID_API_KEY')
 
 ALLOWED_HOSTS = ['*']  # Bro...
 SECURE_REDIRECT_EXEMPT = [r'^jobs/.*']  # Don't redirect any appengine jobs to https
@@ -155,15 +156,24 @@ REST_FRAMEWORK = {
 # https://docs.djangoproject.com/en/4.0/howto/static-files/
 STATIC_ROOT = 'static_weplate'
 STATIC_URL = '/static_weplate/'
+# TODO: consider moving static file storage to gcloud too?
+# https://django-storages.readthedocs.io/en/latest/backends/gcloud.html
+
+# GS file storage
+DEFAULT_FILE_STORAGE = 'storages.backends.gcloud.GoogleCloudStorage'
+GS_BUCKET_NAME = env('GS_BUCKET_NAME')
+GS_PROJECT_ID = 'weplate-backend'
+GS_CREDENTIALS = service_account.Credentials.from_service_account_file(
+    'gae-service-account-key.json'
+)
+
+# Email sending
+SENDGRID_EMAIL_SENDER = 'info@weplate.app'
+SENDGRID_API_KEY = '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'
 
 # Job related things
 JOB_LOG_MAX_SIZE = 1000
 
+# Versioning
 BACKEND_VERSION = '1.0.0'
 MAINTENANCE = False
-
-# Email sending
-SENDGRID_EMAIL_SENDER = 'info@weplate.app'
-
-# Push notification sending
-EXPO_PUSH_TOKEN = 'ExponentPushToken[XXXXXXXXXXXXXXXXXXXXX]'  # TODO: Currently invalid

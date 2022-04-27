@@ -97,15 +97,17 @@ def send_push(_):
 
     if next_meal := MealSelection.objects.filter(timestamp__gt=datetime.datetime.utcnow()).order_by('timestamp').first():
         if next_meal.timestamp > prev_time:
-            post_push_request(
-                'your mom meal: ' + next_meal.name,
-                'your mom mom',
-                {
-                    'your': 'mom'
-                }
-            )
+            # TODO: Implement
+            # post_push_request(
+            #     'your mom meal: ' + next_meal.name,
+            #     'your mom mom',
+            #     {
+            #         'your': 'mom'
+            #     }
+            # )
             cache.set(PUSH_LAST_MEAL_CACHE_KEY, next_meal.timestamp)
-            return HttpResponse(f'Sent push notification for "{next_meal.name}"')
+            return HttpResponse(f'Sent push notification for "{next_meal.name}".  NOTE: push requests have not been '
+                                f'properly implemented yet.  No request was sent.')
 
     return HttpResponse('No next meal found or push notification already sent for next meal')
 
