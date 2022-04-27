@@ -5,7 +5,6 @@ import os
 from pathlib import Path
 from typing import Union
 
-from alive_progress import alive_bar
 from django.apps import apps
 from django.conf import settings
 from django.core.management import BaseCommand
@@ -25,10 +24,11 @@ KEY_FUN_FOR_DICT = {
 
 DATA_FIXTURE_PATH = settings.BASE_DIR / 'backend_data_parsing'
 SCHOOLS = ('babson',)
+SCHOOL_IDS = (10,)
 
 
 class Command(BaseCommand):
-    help = 'Uploads meal data in the form of fixtures to the DB.  '
+    help = 'Uploads meal data in the form of fixtures to the DB.  Also includes some other related functionality.'
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -57,13 +57,16 @@ class Command(BaseCommand):
             return None
 
     def add_arguments(self, parser):
-        parser.add_argument('-l', '--all', dest='all', action='store_const', const=True, default=False,
+        parser.add_argument('-a', '--all', dest='all', action='store_true',
                             help='Upload all fixture files found, regardless of which fixture files are specified')
-        parser.add_argument('-l', '--list', dest='list', action='store_const', const=True, default=False,
+        parser.add_argument('-l', '--list', dest='list', action='store_true',
                             help='Lists available fixture files, nothing will be uploaded')
         parser.add_argument('files', nargs='*', type=int,
                             help='List of indices of fixture files to upload.  Use option --list to see available '
                                  'fixture indices, or --all to upload all')
+        parser.add_argument('--flush', action='store_true',
+                            help='Clears all objects from the database tables that this command can upload to across '
+                                 'all schools.  Nothing will be uploaded')
 
     def handle(self, *args, **options):
         if all(Path(DATA_FIXTURE_PATH / school).exists() for school in SCHOOLS):
@@ -72,7 +75,12 @@ class Command(BaseCommand):
                  for file in os.listdir(DATA_FIXTURE_PATH / school) if file.endswith('.json'))
                 for school in SCHOOLS)))
 
-            if options['list']:
+            if options['flush']:
+                for school_id, school_name in zip(SCHOOL_IDS, SCHOOLS):
+                    for model_path in KEY_FUN_FOR_MODEL.keys():
+                        apps.get_model(*model_path.split('.', maxsplit=1)).objects.filter(school__id=school_id).delete()
+                        self.stdout.write(f'For school {school_name} (id={school_id}): flushed model {model_path}')
+            elif options['list']:
                 self.stdout.write('-- [ Fixture List ] --')
                 for i, path in enumerate(files):
                     self.stdout.write(f'- (Index: {i}) {path}')
