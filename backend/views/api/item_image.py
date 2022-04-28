@@ -27,4 +27,6 @@ class ItemImageViewSet(viewsets.ViewSet):
 
     def retrieve(self, request, pk=None):
         item: MealItem = get_object_or_404(MealItem, pk=pk)
+        print(item)
+        print(item.image)
         return Response({'url': item.image.url if item.image else None})

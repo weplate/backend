@@ -6,7 +6,7 @@ from django.core.handlers.wsgi import WSGIRequest
 from django.db import models
 
 from .models import LogTextFeedback, LogSurvey, LogMealItemVote, LogMealChoice, Ingredient, MealItem, School, \
-    StudentProfile, MealSelection
+    StudentProfile, MealSelection, ImageQueueEntry
 
 
 # Register your models here.
@@ -113,6 +113,14 @@ class IngredientAdmin(school_account_admin_class(Ingredient, [])):
     list_filter = ('school',)
     ordering = ('school', 'name')
     search_fields = ('name',)
+
+
+@admin.register(ImageQueueEntry, site=admin.site)
+class ImageQueueEntryAdmin(admin.ModelAdmin):
+    list_display = ('item', 'profile', 'timestamp')
+    list_display_links = ('item',)
+    ordering = ('timestamp',)
+    search_fields = ('item', 'profile')
 
 
 @admin.register(LogMealChoice, site=admin.site)

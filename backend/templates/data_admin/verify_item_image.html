@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Verify Item Images</title>
+</head>
+<body>
+    <p><a href="/">Back to main</a>.</p>
+
+    <h1>Verify Item Images</h1>
+
+{% if queue_entry %}
+    <p style="font-weight: bold;">There are {{ num_queue_entries }} image{{ num_queue_entries|pluralize }} left in the queue.</p>
+    <img src="{{ queue_entry.image.url }}" alt="queue image" style="display: block; margin: auto; width: 60%;"/>
+    <ul>
+    <li>Item Name: {{ queue_entry.item }}</li>
+    <li>User: {{ queue_entry.profile }}</li>
+    <li>Timestamp: {{ queue_entry.timestamp }}</li>
+    </ul>
+
+    <form action="{% url 'da:verify_item_image' %}" method="post">
+        {% csrf_token %}
+        {{ form_accept.as_p }}
+        <input type="submit" value="Accept">
+    </form>
+
+    <form action="{% url 'da:verify_item_image' %}" method="post">
+        {% csrf_token %}
+        {{ form_reject.as_p }}
+        <input type="submit" value="Reject">
+    </form>
+{% else %}
+    <p style="font-weight: bold;">No more images in the queue.  You are done!</p>
+{% endif %}
+
+<div style="color: red">
+    {% if errors %}
+        <h2>Errors</h2>
+        {{ errors }}
+    {% endif %}
+</div>
+</body>
+</html>

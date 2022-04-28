@@ -13,7 +13,7 @@ from django.urls import path
 
 from backend.algorithm.item_choice import PlateSection, MealItemSelector
 from backend.algorithm.portion import SimulatedAnnealing
-from backend.models import School, StudentProfile, MealSelection, MealItem, Ingredient
+from backend.models import School, StudentProfile, MealSelection, MealItem, Ingredient, ImageQueueEntry
 from backend.views.jobs import get_job_results
 
 
@@ -42,6 +42,7 @@ def view_all(request):
         'meal_items': MealItem.objects.all(),
         'ingredients': Ingredient.objects.all(),
     })
+
 
 def resolve_form_id(model, cleaned_data, field):
     if field_id := cleaned_data.get(field):
@@ -118,7 +119,8 @@ class AlgorithmTestPortionsForm(forms.Form):
             for section in PlateSection.all():
                 self.fields[section] = forms.ChoiceField(
                     choices=tuple(
-                        (lambda item: (item.id, item.name))(MealItem.objects.get(id=id)) for id in result[section]['items']
+                        (lambda item: (item.id, item.name))(MealItem.objects.get(id=id)) for id in
+                        result[section]['items']
                     ) if result else tuple(),
                     required=True
                 )
@@ -186,7 +188,8 @@ def test_algorithm_portions(request):
             'small1': small1,
             'small2': small2,
             'info': [(k, v1, v2, v3, v4, v5) for (k, v1), (_, v2), (__, v3), (___, v4), (____, v5) in
-                     zip(sa.lo_req.as_dict().items(), sa.hi_req.as_dict().items(), got_info.as_dict().items(), lo_info.as_dict().items(),
+                     zip(sa.lo_req.as_dict().items(), sa.hi_req.as_dict().items(), got_info.as_dict().items(),
+                         lo_info.as_dict().items(),
                          hi_info.as_dict().items())
                      if k != '_state' and k != 'id' and k != 'name'],
             'cost': sa.final_cost,
@@ -257,7 +260,7 @@ def school_permission(school: School):
 
 
 @data_admin_view
-def add_school_account_view(request):
+def add_school_account(request):
     messages = []
     form = AddSchoolAccountForm()
     if request.method == 'POST':
@@ -293,7 +296,7 @@ def add_school_account_view(request):
 
 class SelectJobForm(forms.Form):
     job = forms.ChoiceField(choices=(
-         (f'/jobs/{job}/', job) for job in ('clear_tokens', 'clear_cache', 'send_push')
+        (f'/jobs/{job}/', job) for job in ('clear_tokens', 'clear_cache', 'send_push')
     ))
 
 
@@ -318,12 +321,60 @@ def jobs(request):
     })
 
 
+class ImageQueueDecisionForm(forms.Form):
+    queue_entry = forms.IntegerField(widget=forms.HiddenInput(), required=True)
+    # https://stackoverflow.com/questions/8542839/django-form-with-booleanfield-always-invalid-unless-checked
+    accept = forms.BooleanField(widget=forms.HiddenInput(), required=False)
+
+    def clean(self):
+        cleaned_data = super().clean()
+
+        queue_entry_id = cleaned_data['queue_entry']
+        if queue_entry := ImageQueueEntry.objects.filter(id=queue_entry_id).first():
+            cleaned_data['queue_entry'] = queue_entry
+        else:
+            self.add_error('queue_entry', 'Queue entry ID does not correspond to actual queue entry')
+
+        return cleaned_data
+
+
+@data_admin_view
+def verify_item_image(request):
+    errors = None
+    if request.method == 'POST':
+        form = ImageQueueDecisionForm(request.POST)
+        if form.is_valid():
+            obj: ImageQueueEntry = form.cleaned_data['queue_entry']
+            if form.cleaned_data['accept']:
+                if obj.item.image:  # delete old image
+                    obj.item.image.delete(save=False)
+                obj.item.image = obj.image
+                obj.item.save()
+            else:
+                obj.image.delete(save=False)  # Delete image
+            obj.delete()
+        else:
+            print(form.errors)
+            errors = form.errors
+
+    first = ImageQueueEntry.objects.order_by('timestamp').first()
+    return render(request, 'data_admin/verify_item_image.html', {
+        'queue_entry': first,
+        'num_queue_entries': ImageQueueEntry.objects.count(),
+        'errors': errors
+    } | ({
+             'form_accept': ImageQueueDecisionForm(initial={'queue_entry': str(first.id), 'accept': True}),
+             'form_reject': ImageQueueDecisionForm(initial={'queue_entry': str(first.id), 'accept': False}),
+         } if first else {}))
+
+
 app_name = 'backend'
 
 urlpatterns = [
     path('view_all/', view_all, name='view_all'),
-    path('add_school_account/', add_school_account_view, name='add_school_account'),
     path('test_algorithm_portions/', test_algorithm_portions, name='test_algorithm_portions'),
     path('test_algorithm_choices/', test_algorithm_choices, name='test_algorithm_choices'),
-    path('jobs', jobs, name='jobs')
+    path('jobs', jobs, name='jobs'),
+    path('add_school_account/', add_school_account, name='add_school_account'),
+    path('verify_item_image/', verify_item_image, name='verify_item_image')
 ]

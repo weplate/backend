@@ -7,27 +7,34 @@
 <body>
     <h1>Weplate (Non-Django) Root</h1>
 
+    <h2>Debug</h2>
+
     <ul>
         <li>
             <a href="{% url 'da:view_all' %}">View All</a>
         </li>
         <li>
-            <a href="{% url 'da:add_school_account' %}">Add School Account</a>
-        </li>
-        <li>
             <a href="{% url 'da:test_algorithm_choices' %}">Test Algorithm (Choices and Portions)</a>
+        </li>
+    </ul>
+
+    <h2>Admin</h2>
+
+    <ul>
+        <li>
+            <a href="{% url 'da:add_school_account' %}">Add School Account</a>
         </li>
         <li>
             <a href="{% url 'da:jobs' %}">View Past Jobs</a>
         </li>
         <li>
-            <a href="/admin/logout/">Logout</a>
+            <a href="{% url 'da:verify_item_image' %}">Verify Meal Item Images</a>
         </li>
     </ul>
 
-    <h2>Django Admin</h2>
-
     <p>
+        <a href="/admin/logout/">Logout</a>
+        <br>
         <a href="/admin/">Django Admin</a>
     </p>
 
