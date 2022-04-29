@@ -138,6 +138,14 @@ Under `api/`:
       - `total_volume`: The total volume of that section, in mL (usually the total size of the section divided by the # of items in that section)
         - Discrete items will be reported as `-K`, where K is the number of pieces
       - `section`: The section that the object belongs to, either `large`, `small1`, or `small2` (strings)
+  - POST `item_image/`: Requires auth: endpoint for uploading an image
+    - Form data should have the following fields:
+      - `item`: ID of the meal item
+      - `image`: Image of the meal item
+  - GET `item_image/<id>/`: Requires auth: retrieves the image for an item
+    - `<id>` is the ID of the item
+    - You will receive a JSON object with the fields:
+      - `url`: URL to the image, or `null` if there is no image.
 
 ### Authentication Related
 
