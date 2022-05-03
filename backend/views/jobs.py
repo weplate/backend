@@ -12,6 +12,7 @@ from django.urls import path
 from rest_framework.authtoken.models import Token
 
 from backend.models import MealSelection
+from backend.models.token import ExpoPushToken
 
 JOB_LOG_CACHE_KEY = 'job_log'
 PUSH_LAST_MEAL_CACHE_KEY = 'last_meal_push_notifed'
@@ -73,9 +74,10 @@ def clear_cache(_):
     return HttpResponse('Cleared Cache')
 
 
-def post_push_request(title: str, body: str, data: dict[str, any]):
+def post_push_request(tokens: list[str], title: str, body: str, data: dict[str, any]):
     """
-    Sends a notification to all devices using the app through Expo.  Uses EXPO_PUSH_TOKEN setting.
+    Sends a notification to all devices using the app through Expo
+    @param tokens: A list of expo push tokens
     @param title: The title of the push notification
     @param body: The body of the push notification
     @param data: A dict, which should be JSON-serializable (i.e. you can do json.dumps(data))
@@ -83,12 +85,12 @@ def post_push_request(title: str, body: str, data: dict[str, any]):
     """
 
     return requests.post(url='https://exp.host/--/api/v2/push/send/',
-                         json={
-                             'to': settings.EXPO_PUSH_TOKEN,
+                         json=[{
+                             'to': token,
                              'title': title,
                              'body': body,
                              'data': data
-                         })
+                         } for token in tokens])
 
 
 @appengine_job
@@ -97,17 +99,10 @@ def send_push(_):
 
     if next_meal := MealSelection.objects.filter(timestamp__gt=datetime.datetime.utcnow()).order_by('timestamp').first():
         if next_meal.timestamp > prev_time:
-            # TODO: Implement
-            # post_push_request(
-            #     'your mom meal: ' + next_meal.name,
-            #     'your mom mom',
-            #     {
-            #         'your': 'mom'
-            #     }
-            # )
+            post_push_request(ExpoPushToken.objects.filter(user__studentprofile__school=next_meal.school).all(),
+                              'WePlate Meal Reminder', f'{next_meal.name} is soon!')
             cache.set(PUSH_LAST_MEAL_CACHE_KEY, next_meal.timestamp)
-            return HttpResponse(f'Sent push notification for "{next_meal.name}".  NOTE: push requests have not been '
-                                f'properly implemented yet.  No request was sent.')
+            return HttpResponse(f'Sent push notification for "{next_meal.name}"')
 
     return HttpResponse('No next meal found or push notification already sent for next meal')
 

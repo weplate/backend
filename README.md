@@ -147,6 +147,22 @@ Under `api/`:
     - You will receive a JSON object with the fields:
       - `url`: URL to the image, or `null` if there is no image.
 
+### Notifications
+
+Under `api/notification/`
+
+- POST `expo_push_token/`: Requires auth, adds a expo push token under the current user
+  - Form data should have the fields
+    - `token`: The expo push token to use
+    - `device`: The device name (used only for user bookkeeping purposes)
+- GET `expo_push_token/`: Requires auth, lists all expo push tokens under the user
+  - Return value is a list of objects with the fields
+    - `id`: ID of the token in the DB
+    - `token`: The push token
+    - `device`: Device name of the token
+    - `timestamp`: When the token was created
+- DELETE `expo_push_token/<id>/`: Requires auth, deletes the push token with the given DB id
+
 ### Authentication Related
 
 Also under `api/`:

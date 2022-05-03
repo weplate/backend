@@ -1,12 +1,9 @@
+import sendgrid
 from django.conf import settings
 from django.core.exceptions import ValidationError
 from django.db import models
 from rest_framework import permissions, serializers
 from rest_framework.exceptions import APIException
-
-from backend.models import StudentProfile
-
-import sendgrid
 from sendgrid.helpers.mail import *
 
 
@@ -28,15 +25,14 @@ class IsStudent(permissions.BasePermission):
     message = 'Must be authenticated as student user'
 
     def has_permission(self, request, view):
-        return StudentProfile.objects.filter(user=request.user).exists()
+        return request.user.studentprofile is not None
 
 
 class IsVerified(permissions.BasePermission):
     message = 'Must have verified email'
 
     def has_permission(self, request, view):
-        profile = StudentProfile.objects.get(user=request.user)
-        return profile.is_verified
+        return request.user.studentprofile.is_verified
 
 
 def update_object(serializer: serializers.ModelSerializer, obj: models.Model) -> list:
@@ -70,7 +66,6 @@ def send_html_email(recipient: str, subject: str, html_message: str):
     sg = sendgrid.SendGridAPIClient(api_key=settings.SENDGRID_API_KEY)
     from_email = Email(settings.SENDGRID_EMAIL_SENDER)
     to_email = To(recipient)
-    subject = subject
     content = Content('text/html', html_message)
     mail = Mail(from_email, to_email, subject, content)
     response = sg.client.mail.send.post(request_body=mail.get())

@@ -35,5 +35,6 @@ urlpatterns = [
 
     # Endpoints
     path('analytics/', include('backend.views.api.analytics')),
+    path('notification/', include('backend.views.api.notification')),
     path('', include(router.urls)),
 ]

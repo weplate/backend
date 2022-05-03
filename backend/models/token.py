@@ -5,6 +5,7 @@ from django.db import models
 from django.utils.crypto import get_random_string
 from rest_framework.exceptions import APIException
 
+from backend.models import StudentProfile
 from backend.utils import fetch_or_none
 
 import pytz
@@ -81,3 +82,10 @@ class PasswordResetToken(models.Model):
     expire_at = models.DateTimeField()
 
     objects = TokenManager()
+
+
+class ExpoPushToken(models.Model):
+    user = models.ForeignKey(to=User, on_delete=models.CASCADE)
+    token = models.CharField(max_length=64)
+    device = models.CharField(max_length=64)
+    timestamp = models.DateTimeField()
