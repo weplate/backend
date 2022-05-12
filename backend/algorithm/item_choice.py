@@ -34,7 +34,7 @@ CHOOSE_COUNT = 3
 class MealItemSelector:
     def __init__(self, profile: StudentProfileSpec, items: list[MealItemSpec],
                  large_portion_max: float, small_portion_max: float,
-                 sa_alpha: float, sa_lo: float, seed: int):
+                 coefficients: list[float], sa_alpha: float, sa_lo: float, seed: int):
         """
         Creates a MealItemSelector object, which runs the algorithm that selects the best item choices given a list of
         meal items.
@@ -42,13 +42,18 @@ class MealItemSelector:
         @param items: A list of MealItemSpec, which represent the list of meal items available at the meal
         @param large_portion_max: Size of the large plate section (mL)
         @param small_portion_max: Size of the small plate sections (mL)
-        @param sa_alpha: Optional. Alpha for simulated annealing runs
-        @param sa_lo: Optional. Minimum temperature for simulated annealing runs
-        @param seed: Optional. RNG seed for simulated annealing runs
+        @param coefficients: List of weights denoting how much each nutrient is weighted.  The cost of a state is
+        determined by the distance of its nutrition facts to the 'allowed' range.  Euclidian distance**2 is the metric
+        used to measure how far each nutrient is from its goal.  These are then scaled by the individual coefficients.
+        See SimulatedAnnealing.cost_of for more details on which coefficient affects what.
+        @param sa_alpha: Alpha for simulated annealing runs
+        @param sa_lo: Minimum temperature for simulated annealing runs
+        @param seed: RNG seed for simulated annealing runs
         """
         self.profile = profile
         self.items = items
 
+        self.coefficients = coefficients
         self.sa_alpha = sa_alpha
         self.sa_lo = sa_lo
         self.seed = seed
@@ -83,13 +88,12 @@ class MealItemSelector:
         def cache_id(item_1, item_2, item_3):
             return f'{item_1.id}-{item_2.id}-{item_3.id}'
 
-        lo_req, hi_req = nutritional_info_for(self.profile)
         for item_l, item_s1, item_s2 in itertools.product(large_items, small1_items, small2_items):
-            sa = SimulatedAnnealing(lo_req=lo_req,
-                                    hi_req=hi_req,
+            sa = SimulatedAnnealing(profile=self.profile,
                                     state=[PlateSectionState.from_item_spec(item, volume, 1, 'who cares')
                                            for item, volume in zip((item_l, item_s1, item_s2), (
                                         self.large_portion_max, self.small_portion_max, self.small_portion_max))],
+                                    coefficients=self.coefficients,
                                     alpha=self.sa_alpha,
                                     smallest_temp=self.sa_lo,
                                     seed=self.seed)

@@ -7,6 +7,7 @@ from math import exp
 from typing import Union
 
 from .common import Nutrition
+from .requirements import nutritional_info_for, StudentProfileSpec
 
 
 @dataclass
@@ -97,8 +98,8 @@ class PlateSectionState:
     discrete: bool
     max_volume: Union[float, int]
     volume: Union[float, int] = 0
-    section_name: str = 'n/a'
-    id: str = 'n/a'  # We allow string for both the integration (which expects primary keys (ints)) and whatever penelope is doing
+    section_name: str = ''
+    id: Union[str, int] = ''  # We allow either pk (int) or cafeteria_id (str)
 
     @classmethod
     def from_item_spec(cls, item: MealItemSpec, container_volume: float, num_sections: int, section_name: str):
@@ -126,7 +127,7 @@ class PlateSectionState:
                                  max_volume=max_volume,
                                  volume=volume,
                                  section_name=section_name,
-                                 id=str(item.id))
+                                 id=item.id)
 
     @property
     def min_volume(self):
@@ -228,31 +229,55 @@ def nutrition_of(state: list[PlateSectionState]):
     return res
 
 
+DEFAULT_COEFFICIENTS = [
+    1,  # Calories
+    8,  # Carbohydrate
+    20,  # Protein
+    50,  # Total fat
+    1.5 * 50,  # Saturated fat
+    50,  # Trans fat
+
+    0,  # Sugar
+    0,  # Cholesterol
+    0,  # Fiber
+    0,  # Sodium
+    0,  # Potassium
+    0,  # Calcium
+    0,  # Iron
+
+    0,  # Vitamin C
+    0,  # Vitamin D
+    0,  # Vitamin A
+]
+
+
 # Source: https://en.wikipedia.org/wiki/Simulated_annealing#Overview
 # https://codeforces.com/blog/entry/94437
-# I am peak intuition
 class SimulatedAnnealing:
-    def __init__(self, lo_req: Nutrition, hi_req: Nutrition, state: list[PlateSectionState],
-                 alpha: float, smallest_temp: float, seed: int):
+    def __init__(self, profile: StudentProfileSpec, state: list[PlateSectionState],
+                 coefficients: tuple[float], alpha: float, smallest_temp: float, seed: int):
         """
         Creates a SimulatedAnnealing object which can run the portion-selecting algorithm
-        @param lo_req: Nutritional minimums.  Treat |x| > 1e10 as INF
-        @param hi_req: Nutritional maximums.  Treat |x| > 1e10 as INF
+        @param
         @param state: Initial algorithm state, as a list of PlateSectionState.  For the purposes of data analysis of
         algorithm performance, each element can be constructed using the first four parameters with the rest being in
         their default state.
-        @param alpha: Optional. Amount temperature is multiplied by after each iteration
-        @param smallest_temp: Optional. Minimal temperature before algorithm termination.
-        @param seed: Optional.  Seed value of RNG to make run deterministic.  -1 means no set seed
+        @param coefficients: List of weights denoting how much each nutrient is weighted.  The cost of a state is
+        determined by the distance of its nutrition facts to the 'allowed' range.  Euclidian distance**2 is the metric
+        used to measure how far each nutrient is from its goal.  These are then scaled by the individual coefficients.
+        See self.cost_of for more details on which coefficient affects what.
+        @param alpha: Amount temperature is multiplied by after each iteration
+        @param smallest_temp: Minimal temperature before algorithm termination.
+        @param seed: Seed value of RNG to make run deterministic.  -1 means no set seed
         """
         # Info properties
-        self.lo_req = lo_req
-        self.hi_req = hi_req
+        self.lo_req, self.hi_req = nutritional_info_for(profile)
 
         # Parameter properties
         self.seed = seed
         self.alpha = alpha
         self.smallest_temp = smallest_temp
+        self.coefficients = coefficients
 
         # State properties
         self.t = 1
@@ -305,31 +330,22 @@ class SimulatedAnnealing:
         @return: Self-explanatory
         """
         cur_info = nutrition_of(state)
-        res = 0
-
-        # For macros, the weights are (generally) the amount of calories in each item
-        res += dist_sq(cur_info.calories, self.lo_req.calories, self.hi_req.calories)
-        res += 8 * dist_sq(cur_info.carbohydrate, self.lo_req.carbohydrate, self.hi_req.carbohydrate)
-        res += 20 * dist_sq(cur_info.carbohydrate, self.lo_req.carbohydrate, self.hi_req.carbohydrate)
-        res += 50 * dist_sq(cur_info.total_fat, self.lo_req.total_fat, self.hi_req.total_fat)
-        res += 1.5 * 50 * dist_sq(cur_info.saturated_fat, self.lo_req.saturated_fat, self.hi_req.saturated_fat)
-        res += 50 * dist_sq(cur_info.trans_fat, self.lo_req.trans_fat, self.hi_req.trans_fat)
-
-        # # For the rest... I'm kinda just yoloing this ngl...
-        # res += 3 * (cur_info.sugar - self.req.sugar) ** 2
-        # res += 0.1 * (cur_info.cholesterol - self.req.cholesterol)
-        # res += 4 * (cur_info.fiber - self.req.fiber)
-        # res += 0.2 * (cur_info.sodium - self.req.sodium)
-        # res += 0.1 * (cur_info.potassium - self.req.potassium)
-        # res += 0.15 * (cur_info.calcium - self.req.calcium)
-        # res += 0.5 * (cur_info.iron - self.req.iron)
-        #
-        # # Vitamins!!!
-        # res += 0.1 * max(0., self.req.vitamin_c - cur_info.vitamin_c) ** 2
-        # res += 0.1 * max(0., self.req.vitamin_d - cur_info.vitamin_d) ** 2
-        # res += 0.1 * max(0., self.req.vitamin_a - cur_info.vitamin_a) ** 2
-
-        return res
+        return self.coefficients[0] * dist_sq(cur_info.calories, self.lo_req.calories, self.hi_req.calories) + \
+               self.coefficients[1] * dist_sq(cur_info.carbohydrate, self.lo_req.carbohydrate, self.hi_req.carbohydrate) + \
+               self.coefficients[2] * dist_sq(cur_info.carbohydrate, self.lo_req.carbohydrate, self.hi_req.carbohydrate) + \
+               self.coefficients[3] * dist_sq(cur_info.total_fat, self.lo_req.total_fat, self.hi_req.total_fat) + \
+               self.coefficients[4] * dist_sq(cur_info.saturated_fat, self.lo_req.saturated_fat, self.hi_req.saturated_fat) + \
+               self.coefficients[5] * dist_sq(cur_info.trans_fat, self.lo_req.trans_fat, self.hi_req.trans_fat) + \
+               self.coefficients[5] * dist_sq(cur_info.sugar, self.lo_req.sugar, self.hi_req.sugar) + \
+               self.coefficients[6] * dist_sq(cur_info.cholesterol, self.lo_req.cholesterol, self.hi_req.cholesterol) + \
+               self.coefficients[7] * dist_sq(cur_info.fiber, self.lo_req.fiber, self.hi_req.fiber) + \
+               self.coefficients[8] * dist_sq(cur_info.sodium, self.lo_req.sodium, self.hi_req.sodium) + \
+               self.coefficients[9] * dist_sq(cur_info.potassium, self.lo_req.potassium, self.hi_req.potassium) + \
+               self.coefficients[10] * dist_sq(cur_info.calcium, self.lo_req.calcium, self.hi_req.calcium) + \
+               self.coefficients[11] * dist_sq(cur_info.iron, self.lo_req.iron, self.hi_req.iron) + \
+               self.coefficients[12] * dist_sq(cur_info.vitamin_c, self.lo_req.vitamin_c, self.hi_req.vitamin_c) + \
+               self.coefficients[13] * dist_sq(cur_info.vitamin_d, self.lo_req.vitamin_d, self.hi_req.vitamin_d) + \
+               self.coefficients[14] * dist_sq(cur_info.vitamin_a, self.lo_req.vitamin_a, self.hi_req.vitamin_a)
 
     def accept_probability_of(self, c_new: float, c_old: float, scale_coeff: float):
         """
