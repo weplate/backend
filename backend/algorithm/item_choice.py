@@ -24,7 +24,7 @@ LARGE_PORTION = {
     ATHLETIC_PERFORMANCE: GRAINS,
     LOSE_WEIGHT: VEGETABLE,
     IMPROVE_TONE: PROTEIN,
-    IMPROVE_HEALTH: VEGETABLE
+    IMPROVE_HEALTH: VEGETABLE,
 }
 
 # How many items to pick
@@ -34,7 +34,7 @@ CHOOSE_COUNT = 3
 class MealItemSelector:
     def __init__(self, profile: StudentProfileSpec, items: list[MealItemSpec],
                  large_portion_max: float, small_portion_max: float,
-                 coefficients: list[float], sa_alpha: float, sa_lo: float, seed: int):
+                 coefficients: tuple[float], sa_alpha: float, sa_lo: float, seed: int):
         """
         Creates a MealItemSelector object, which runs the algorithm that selects the best item choices given a list of
         meal items.
@@ -75,10 +75,15 @@ class MealItemSelector:
         small1_items = [item for item in self.items if item.category == VEGETABLE]
         small2_items = [item for item in self.items if item.category == GRAINS]
 
-        if LARGE_PORTION[self.profile.health_goal] == VEGETABLE:
+        large_portion = LARGE_PORTION[self.profile.health_goal]
+        # TODO: remove later, temporary workaround to allow for 2 sections for testing breakfast
+        if self.large_portion_max == 0:
+            large_portion = PROTEIN
+
+        if large_portion == VEGETABLE:
             large_items, small1_items = small1_items, large_items
             large_category, small1_category = small1_category, large_category
-        elif LARGE_PORTION[self.profile.health_goal] == GRAINS:
+        elif large_portion == GRAINS:
             large_items, small2_items = small2_items, large_items
             large_category, small2_category = small2_category, large_category
 
