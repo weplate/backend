@@ -332,7 +332,7 @@ class SimulatedAnnealing:
         cur_info = nutrition_of(state)
         return self.coefficients[0] * dist_sq(cur_info.calories, self.lo_req.calories, self.hi_req.calories) + \
                self.coefficients[1] * dist_sq(cur_info.carbohydrate, self.lo_req.carbohydrate, self.hi_req.carbohydrate) + \
-               self.coefficients[2] * dist_sq(cur_info.carbohydrate, self.lo_req.carbohydrate, self.hi_req.carbohydrate) + \
+               self.coefficients[2] * dist_sq(cur_info.protein, self.lo_req.protein, self.hi_req.protein) + \
                self.coefficients[3] * dist_sq(cur_info.total_fat, self.lo_req.total_fat, self.hi_req.total_fat) + \
                self.coefficients[4] * dist_sq(cur_info.saturated_fat, self.lo_req.saturated_fat, self.hi_req.saturated_fat) + \
                self.coefficients[5] * dist_sq(cur_info.trans_fat, self.lo_req.trans_fat, self.hi_req.trans_fat) + \
