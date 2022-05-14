@@ -230,7 +230,7 @@ def nutrition_of(state: list[PlateSectionState]):
 
 
 DEFAULT_COEFFICIENTS = [
-    1,  # Calories
+    100000, #1,  # Calories
     8,  # Carbohydrate
     20,  # Protein
     50,  # Total fat

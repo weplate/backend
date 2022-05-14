@@ -19,8 +19,8 @@ from backend.algorithm.common import Nutrition
 NUTRIENTS = ['calories', 'carbohydrate', 'protein','total_fat','saturated_fat', 'trans_fat',
 'sugar', 'cholesterol', 'fiber','sodium', 'potassium', 'calcium','iron', 'vitamin_a', 'vitamin_c', 'vitamin_d']
 NUTRITION_TABLE_LATEST = os.path.join(sys.path[0], 'backend_data_parsing/babson/master_nutrition/nutrition_table.csv')
-MENU_LATEST= os.path.join(sys.path[0], 'backend_data_parsing/babson/master_menu/old_file/menu.csv')
-STUDENT = r'C:\Users\Penelope\Desktop\ML\Weplate\synthetic_data\fake_data_may_male.csv'
+MENU_LATEST= os.path.join(sys.path[0], 'backend_data_parsing/babson/master_menu/menu.csv')
+STUDENT = r'C:\Users\Penelope\Desktop\ML\Weplate\synthetic_data\fake_data_male.csv'
 
 
 
@@ -72,7 +72,7 @@ if __name__ == '__main__':
         print('student-index:', ind_student)
         height = student_row['Height']
         weight = student_row['Weight']
-        sex = student_row['Sex']
+        sex = eval(student_row['Sex'])
         meal_length = 50
         health_goal = eval(student_row['Health_Goal'].upper())
         activity_level = eval(student_row['Activity'].upper())
@@ -92,10 +92,11 @@ if __name__ == '__main__':
         limit_s =  get_nutrient_limit(profile_s)
         with alive_bar(total=len(master_menu_df)) as bar:
             for ind, menu_row in master_menu_df.iterrows():
+                if ind > 80:
+                    break 
             
                 day = menu_row['timestamp']
                 meal_name = menu_row['name']
-                #print(meal_name)
                 menu = eval(menu_row['items']) #pk
 
                 if len(menu) > 0:
@@ -129,14 +130,16 @@ if __name__ == '__main__':
                         total_fat=total_fat, saturated_fat=saturated_fat, sugar=sugar, cholesterol=cholesterol,
                         fiber=fiber, sodium=sodium, potassium=potassium,iron=iron, vitamin_a=vitamin_a,
                         vitamin_c=vitamin_c, vitamin_d=vitamin_d))
-
+                    """
                     if 'Breakfast' in meal_name:
                         large_vol_s = 0 
                         small_vol_s = 575
                     else:
                         large_vol_s = 610
-                        small_vol_s = 575               
-
+                        small_vol_s = 270        
+                    """       
+                    large_vol_s = 610
+                    small_vol_s = 270
 
                     select_meals = MealItemSelector(profile = profile_s, items= meal_items,
                     large_portion_max= large_vol_s , small_portion_max= small_vol_s,
@@ -236,13 +239,13 @@ if __name__ == '__main__':
                 DATA_df_inter =  pd.DataFrame(DATA, columns=['Student_Number', 'Sex', 'Height', 'Weight', 'Health_Goal', 'Activity', 'Age', 
                 'protein_lim', 'carbohydrate_lim', 'total_fat_lim', 'saturated_fat_lim', 'Date', 'Meal_Name','Total_Combination', 'Current_Combination', 'Combination', 
                 'Vol_Large', 'Vol_Small1', 'Vol_Small2']+NUTRIENTS)
-                DATA_df_inter.to_csv('test_inter_may.csv', index=False)    
+                DATA_df_inter.to_csv('test_inter_may_calories_male.csv', index=False)    
             
 
         DATA_df = pd.DataFrame(DATA, columns=['Student_Number', 'Sex', 'Height', 'Weight', 'Health_Goal', 'Activity', 'Age', 
                 'protein_lim', 'carbohydrate_lim', 'total_fat_lim', 'saturated_fat_lim', 'Date', 'Meal_Name','Total_Combination', 'Current_Combination', 'Combination', 
                 'Vol_Large', 'Vol_Small1', 'Vol_Small2']+NUTRIENTS)
-        DATA_df.to_csv('test_may.csv', index=False)
+        DATA_df.to_csv('test_may_calories_male.csv', index=False)
 
 
     
