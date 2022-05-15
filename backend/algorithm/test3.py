@@ -239,13 +239,13 @@ if __name__ == '__main__':
                 DATA_df_inter =  pd.DataFrame(DATA, columns=['Student_Number', 'Sex', 'Height', 'Weight', 'Health_Goal', 'Activity', 'Age', 
                 'protein_lim', 'carbohydrate_lim', 'total_fat_lim', 'saturated_fat_lim', 'Date', 'Meal_Name','Total_Combination', 'Current_Combination', 'Combination', 
                 'Vol_Large', 'Vol_Small1', 'Vol_Small2']+NUTRIENTS)
-                DATA_df_inter.to_csv('test_inter_may_calories_male.csv', index=False)    
+                DATA_df_inter.to_csv('test_inter_may_totalfat_male.csv', index=False)    
             
 
         DATA_df = pd.DataFrame(DATA, columns=['Student_Number', 'Sex', 'Height', 'Weight', 'Health_Goal', 'Activity', 'Age', 
                 'protein_lim', 'carbohydrate_lim', 'total_fat_lim', 'saturated_fat_lim', 'Date', 'Meal_Name','Total_Combination', 'Current_Combination', 'Combination', 
                 'Vol_Large', 'Vol_Small1', 'Vol_Small2']+NUTRIENTS)
-        DATA_df.to_csv('test_may_calories_male.csv', index=False)
+        DATA_df.to_csv('test_may_totalfat_male.csv', index=False)
 
 
     
