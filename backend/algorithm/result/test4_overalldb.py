@@ -8,7 +8,6 @@ import numpy as np
 import os
 from dataclasses import fields
 from datetime import date
-import time
 from alive_progress import alive_bar
 
 from backend.algorithm.common import * 
@@ -61,6 +60,16 @@ def get_nutrient_limit(spec):
     n_lo, n_hi = nutritional_info_for(spec)
     return list(zip(nutrition_to_list(n_lo), nutrition_to_list(n_hi)))
 
+def overall_items(df, k):
+    dishes = []
+    sub_meal_df = df[df['name'].str.contains(k)]
+    for r, ir in sub_meal_df.iterrows():
+        m = eval(ir['items'])
+        for mm in m:
+            dishes.append(mm)
+    return list(set(dishes))
+
+
 if __name__ == '__main__':
     master_nutrition_df = pd.read_csv(NUTRITION_TABLE_LATEST, 
     converters={'cafeteria_id': lambda x: str(x), 'category': lambda x: str(x)})
@@ -69,6 +78,13 @@ if __name__ == '__main__':
     student_df = pd.read_csv(STUDENT)
     student_df['Birthday'] = pd.to_datetime(student_df['Birthday'])
     DATA = []
+
+    breakfast = overall_items(master_menu_df, 'Breakfast')
+    lunch= overall_items(master_menu_df, 'Lunch')
+    afterlunch = overall_items(master_menu_df, 'Afterlunch')
+    dinner = overall_items(master_menu_df, 'Dinner')
+    menu_dict = {'breakfast':breakfast, 'lunch': lunch, 'afterlunch': afterlunch, 'dinner': dinner}
+
     for ind_student, student_row in student_df.iterrows():
         print('student-index:', ind_student)
         height = student_row['Height']
@@ -91,14 +107,13 @@ if __name__ == '__main__':
                                         activity_level=activity_level)
 
         limit_s =  get_nutrient_limit(profile_s)
-        with alive_bar(total=len(master_menu_df)) as bar:
-            for ind, menu_row in master_menu_df.iterrows():
-                if ind > 80:
-                    break 
-            
-                day = menu_row['timestamp']
-                meal_name = menu_row['name']
-                menu = eval(menu_row['items']) #pk
+
+
+
+        with alive_bar(total=len(menu_dict.keys())) as bar:
+            for k in menu_dict.keys():
+                meal_name = k
+                menu = menu_dict[k]
 
                 if len(menu) > 0:
                     meal_items = []
@@ -145,12 +160,8 @@ if __name__ == '__main__':
                     select_meals = MealItemSelector(profile = profile_s, items= meal_items,
                     large_portion_max= large_vol_s , small_portion_max= small_vol_s,
                     coefficients= DEFAULT_COEFFICIENTS, sa_alpha=0.99, sa_lo = 0.01, seed=20210101)
-                    print('find dishes')
-                    start_time = time.perf_counter()
-                    select_meals.run_algorithm()
-                    start_time = time.perf_counter() - start_time
-                    print(start_time)
 
+                    select_meals.run_algorithm()
                     algo_state = select_meals.result_obj()
                     #algo_state = item_choice_example(profile_s, meal_items)
                     #print(algo_state)
@@ -166,9 +177,7 @@ if __name__ == '__main__':
                             for small2_id in algo_state['small2']['items']:
                                 combinations.append([large_id, small1_id, small2_id])
                     
-                    print('total_combinations:', len(combinations))
-                    for combination_count,combination in enumerate(combinations):         
-                        print('combination#:',combination_count) 
+                    for combination_count,combination in enumerate(combinations):          
                         state=[]
                         for ind_combination, id_combination in enumerate(combination):
                             item_index = short_list_df[short_list_df.pk == id_combination].index
@@ -222,11 +231,8 @@ if __name__ == '__main__':
                                                     alpha= 0.999,
                                                     smallest_temp = 0.0005, 
                                                     seed = 20210101)
-                        print('find_portion')
-                        start_time = time.perf_counter()
+                        
                         AnnealObj.run_algorithm()
-                        start_time = time.perf_counter() - start_time
-                        print(start_time)
 
                         protein_limit = limit_s[0]
                         carbohydrate_limit = limit_s[1]
@@ -241,7 +247,6 @@ if __name__ == '__main__':
                         d += retrieve_result(AnnealObj.state)
 
                         DATA.append(d)
-
                     bar()        
                 else:
                     pass
@@ -250,13 +255,13 @@ if __name__ == '__main__':
                 DATA_df_inter =  pd.DataFrame(DATA, columns=['Student_Number', 'Sex', 'Height', 'Weight', 'Health_Goal', 'Activity', 'Age', 
                 'protein_lim', 'carbohydrate_lim', 'total_fat_lim', 'saturated_fat_lim', 'Date', 'Meal_Name','Total_Combination', 'Current_Combination', 'Combination', 
                 'Vol_Large', 'Vol_Small1', 'Vol_Small2']+NUTRIENTS)
-                DATA_df_inter.to_csv('test_inter_may_totalfat_male.csv', index=False)    
+                DATA_df_inter.to_csv('test_inter_may_overall_male.csv', index=False)    
             
 
         DATA_df = pd.DataFrame(DATA, columns=['Student_Number', 'Sex', 'Height', 'Weight', 'Health_Goal', 'Activity', 'Age', 
                 'protein_lim', 'carbohydrate_lim', 'total_fat_lim', 'saturated_fat_lim', 'Date', 'Meal_Name','Total_Combination', 'Current_Combination', 'Combination', 
                 'Vol_Large', 'Vol_Small1', 'Vol_Small2']+NUTRIENTS)
-        DATA_df.to_csv('test_may_totalfat_male.csv', index=False)
+        DATA_df.to_csv('test_may_overall_male.csv', index=False)
 
 
     

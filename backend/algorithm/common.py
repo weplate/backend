@@ -71,6 +71,7 @@ class Nutrition:
     # speed?
     # this is bad coding I know
     # http://threecop1.blogspot.com/2011/04/python-3x-does-setattr-and-getattr-slow.html
+
     def __iadd__(self, other):
         self.calories += other.calories
         self.carbohydrate += other.carbohydrate

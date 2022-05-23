@@ -5,6 +5,7 @@ import time
 from dataclasses import dataclass
 from math import exp
 from typing import Union
+import numpy as np
 
 from .common import Nutrition
 from .requirements import nutritional_info_for, StudentProfileSpec
@@ -230,7 +231,7 @@ def nutrition_of(state: list[PlateSectionState]):
 
 
 DEFAULT_COEFFICIENTS = [
-    100000, #1,  # Calories
+    1,  # Calories
     8,  # Carbohydrate
     20,  # Protein
     50,  # Total fat
@@ -247,7 +248,7 @@ DEFAULT_COEFFICIENTS = [
 
     0,  # Vitamin C
     0,  # Vitamin D
-    0,  # Vitamin A
+    0,  # Vit
 ]
 
 
@@ -329,7 +330,9 @@ class SimulatedAnnealing:
         @param state: Self-explanatory
         @return: Self-explanatory
         """
+
         cur_info = nutrition_of(state)
+        
         return self.coefficients[0] * dist_sq(cur_info.calories, self.lo_req.calories, self.hi_req.calories) + \
                self.coefficients[1] * dist_sq(cur_info.carbohydrate, self.lo_req.carbohydrate, self.hi_req.carbohydrate) + \
                self.coefficients[2] * dist_sq(cur_info.protein, self.lo_req.protein, self.hi_req.protein) + \
@@ -346,7 +349,7 @@ class SimulatedAnnealing:
                self.coefficients[12] * dist_sq(cur_info.vitamin_c, self.lo_req.vitamin_c, self.hi_req.vitamin_c) + \
                self.coefficients[13] * dist_sq(cur_info.vitamin_d, self.lo_req.vitamin_d, self.hi_req.vitamin_d) + \
                self.coefficients[14] * dist_sq(cur_info.vitamin_a, self.lo_req.vitamin_a, self.hi_req.vitamin_a)
-
+        
     def accept_probability_of(self, c_new: float, c_old: float, scale_coeff: float):
         """
         Computes the acceptance probability of a new state given the costs of the old and new state.  See
@@ -387,5 +390,6 @@ class SimulatedAnnealing:
 
         # Set result vars
         self.runtime = time.perf_counter() - start_time
+
         self.final_cost = self.cost_of(self.state)
         self.done = True
