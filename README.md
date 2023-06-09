@@ -1,5 +1,4 @@
 # weplate
-we plate in ur mom
 
 **Notes on random bugs/specifics on the bottom**
 
